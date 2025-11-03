@@ -1,0 +1,746 @@
+[
+ {
+  "name": "Agnus",
+  "alpha_acid": {
+   "value": 14,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 7.5,
+   "unit": "%"
+  },
+  "origin": "Czech Republic"
+ },
+ {
+  "name": "Ahtanum",
+  "alpha_acid": {
+   "value": 9.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 5.75,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Amarillo",
+  "alpha_acid": {
+   "value": 9.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 6.5,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Apollo",
+  "alpha_acid": {
+   "value": 17,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 7,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Bor",
+  "alpha_acid": {
+   "value": 8,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 5,
+   "unit": "%"
+  },
+  "origin": "Czech Republic"
+ },
+ {
+  "name": "Bramling",
+  "alpha_acid": {
+   "value": 6,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 2.8,
+   "unit": "%"
+  },
+  "origin": "England"
+ },
+ {
+  "name": "Bravo",
+  "alpha_acid": {
+   "value": 15.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 3.5,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Brewers Gold",
+  "alpha_acid": {
+   "value": 7.6,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 0,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Bullion",
+  "alpha_acid": {
+   "value": 7.75,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 5.5,
+   "unit": "%"
+  },
+  "origin": "England"
+ },
+ {
+  "name": "Cascade",
+  "alpha_acid": {
+   "value": 6,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 6,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Centennial",
+  "alpha_acid": {
+   "value": 10.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Challenger",
+  "alpha_acid": {
+   "value": 7,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4.25,
+   "unit": "%"
+  },
+  "origin": "England"
+ },
+ {
+  "name": "Chelan",
+  "alpha_acid": {
+   "value": 13,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 9.15,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Chinook",
+  "alpha_acid": {
+   "value": 13,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 3.5,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Citra",
+  "alpha_acid": {
+   "value": 12,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Cluster",
+  "alpha_acid": {
+   "value": 7.75,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 5,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Columbus/Tomahawk/Zeus",
+  "alpha_acid": {
+   "value": 15.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4.5,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Crystal",
+  "alpha_acid": {
+   "value": 4.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 5.5,
+   "unit": "%"
+  },
+  "origin": null
+ },
+ {
+  "name": "El Dorado",
+  "alpha_acid": {
+   "value": 15,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 7.5,
+   "unit": "%"
+  },
+  "origin": null
+ },
+ {
+  "name": "First Gold",
+  "alpha_acid": {
+   "value": 7.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 3.5,
+   "unit": "%"
+  },
+  "origin": "England"
+ },
+ {
+  "name": "Fuggles",
+  "alpha_acid": {
+   "value": 4.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 2.5,
+   "unit": "%"
+  },
+  "origin": "England"
+ },
+ {
+  "name": "Galena",
+  "alpha_acid": {
+   "value": 12,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 8,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Glacier",
+  "alpha_acid": {
+   "value": 5.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 8.2,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Golding",
+  "alpha_acid": {
+   "value": 5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 2.5,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Green Bullet",
+  "alpha_acid": {
+   "value": 11,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 7,
+   "unit": "%"
+  },
+  "origin": "New Zealand"
+ },
+ {
+  "name": "Hallertau",
+  "alpha_acid": {
+   "value": 4.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4.5,
+   "unit": "%"
+  },
+  "origin": null
+ },
+ {
+  "name": "Harmonie",
+  "alpha_acid": {
+   "value": 6,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 6,
+   "unit": "%"
+  },
+  "origin": "Czech Republic"
+ },
+ {
+  "name": "Hersbrucker",
+  "alpha_acid": {
+   "value": 3,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 5.25,
+   "unit": "%"
+  },
+  "origin": "Germany"
+ },
+ {
+  "name": "Kent Goldings",
+  "alpha_acid": {
+   "value": 5.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 2.4,
+   "unit": "%"
+  },
+  "origin": "England"
+ },
+ {
+  "name": "Liberty",
+  "alpha_acid": {
+   "value": 4.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 3.5,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Lublin (Lubelski)",
+  "alpha_acid": {
+   "value": 4,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 0,
+   "unit": "%"
+  },
+  "origin": "Poland"
+ },
+ {
+  "name": "Magnum",
+  "alpha_acid": {
+   "value": 13.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 6,
+   "unit": "%"
+  },
+  "origin": "Germany"
+ },
+ {
+  "name": "Marynka",
+  "alpha_acid": {
+   "value": 10,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 11,
+   "unit": "%"
+  },
+  "origin": "Poland"
+ },
+ {
+  "name": "Millennium",
+  "alpha_acid": {
+   "value": 15.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4.8,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Mount Hood",
+  "alpha_acid": {
+   "value": 5.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 6.5,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Northern Brewer",
+  "alpha_acid": {
+   "value": 9,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4,
+   "unit": "%"
+  },
+  "origin": "England"
+ },
+ {
+  "name": "Nugget",
+  "alpha_acid": {
+   "value": 13,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 5,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Palisade",
+  "alpha_acid": {
+   "value": 7.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 7,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Perle",
+  "alpha_acid": {
+   "value": 7,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4,
+   "unit": "%"
+  },
+  "origin": null
+ },
+ {
+  "name": "Phoenix",
+  "alpha_acid": {
+   "value": 11,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4.4,
+   "unit": "%"
+  },
+  "origin": "England"
+ },
+ {
+  "name": "Premiant",
+  "alpha_acid": {
+   "value": 8,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4.5,
+   "unit": "%"
+  },
+  "origin": "Czech Republic"
+ },
+ {
+  "name": "Pride of Ringwood",
+  "alpha_acid": {
+   "value": 8.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 5,
+   "unit": "%"
+  },
+  "origin": "Australia"
+ },
+ {
+  "name": "Progress",
+  "alpha_acid": {
+   "value": 5.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 2.3,
+   "unit": "%"
+  },
+  "origin": "England"
+ },
+ {
+  "name": "Rubin",
+  "alpha_acid": {
+   "value": 12,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 5,
+   "unit": "%"
+  },
+  "origin": "Czech Republic"
+ },
+ {
+  "name": "Saaz (Czech Republic)",
+  "alpha_acid": {
+   "value": 4.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 5.5,
+   "unit": "%"
+  },
+  "origin": "Czech Republic"
+ },
+ {
+  "name": "Saaz (USA)",
+  "alpha_acid": {
+   "value": 3.75,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 3.75,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Simcoe",
+  "alpha_acid": {
+   "value": 13,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4.5,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Sladek",
+  "alpha_acid": {
+   "value": 6,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 7.5,
+   "unit": "%"
+  },
+  "origin": "Czech Republic"
+ },
+ {
+  "name": "Sorachi Ace",
+  "alpha_acid": {
+   "value": 10,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 0,
+   "unit": "%"
+  },
+  "origin": "Japan"
+ },
+ {
+  "name": "Spalt",
+  "alpha_acid": {
+   "value": 5.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4,
+   "unit": "%"
+  },
+  "origin": "Germany"
+ },
+ {
+  "name": "Sterling",
+  "alpha_acid": {
+   "value": 4.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 5.5,
+   "unit": "%"
+  },
+  "origin": null
+ },
+ {
+  "name": "Strisselspalt",
+  "alpha_acid": {
+   "value": 4,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4.25,
+   "unit": "%"
+  },
+  "origin": "France"
+ },
+ {
+  "name": "Styrian Goldings",
+  "alpha_acid": {
+   "value": 4.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 3,
+   "unit": "%"
+  },
+  "origin": "Austria/Slovenia"
+ },
+ {
+  "name": "Summit",
+  "alpha_acid": {
+   "value": 17,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 5,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Super Galena",
+  "alpha_acid": {
+   "value": 14.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 9,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Target",
+  "alpha_acid": {
+   "value": 10.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 5,
+   "unit": "%"
+  },
+  "origin": "England"
+ },
+ {
+  "name": "Tettnang",
+  "alpha_acid": {
+   "value": 4,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 3.75,
+   "unit": "%"
+  },
+  "origin": "Germany"
+ },
+ {
+  "name": "Tillicum",
+  "alpha_acid": {
+   "value": 13,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 10,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Tradition",
+  "alpha_acid": {
+   "value": 5.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4.5,
+   "unit": "%"
+  },
+  "origin": "Germany"
+ },
+ {
+  "name": "Vanguard",
+  "alpha_acid": {
+   "value": 5.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 6,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Warrior",
+  "alpha_acid": {
+   "value": 15.5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4.8,
+   "unit": "%"
+  },
+  "origin": "US"
+ },
+ {
+  "name": "Willamette",
+  "alpha_acid": {
+   "value": 5,
+   "unit": "%"
+  },
+  "beta_acid": {
+   "value": 4,
+   "unit": "%"
+  },
+  "origin": null
+ }
+]

@@ -1,0 +1,83 @@
+import { createRootRoute, Outlet, useRouterState } from "@tanstack/react-router";
+import { useLiveQuery } from "@tanstack/react-db";
+import { recipesCollection } from "@/db";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { ChatSidebar } from "@/components/chat-sidebar";
+import { Separator } from "@/components/ui/separator";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+
+export const Route = createRootRoute({
+  component: RootComponent,
+});
+
+function RootComponent() {
+  const routerState = useRouterState();
+  const { data: recipesData } = useLiveQuery(recipesCollection);
+
+  // Extract recipeId from the route if we're on a recipe page
+  const recipeId = routerState.location.pathname.startsWith('/recipes/')
+    ? routerState.matches.find(match => match.params?.recipeId)?.params?.recipeId as string | undefined
+    : undefined;
+
+  // Find the current recipe
+  const currentRecipe = recipeId ? recipesData?.find((r) => r.id === recipeId) : undefined;
+
+  // Determine if we're on the JSON editor route
+  const isJsonEditor = routerState.location.pathname.endsWith('/json');
+
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                {currentRecipe ? (
+                  <>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink href={`/recipes/${recipeId}`}>
+                        {currentRecipe.recipe.name}
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    {isJsonEditor && (
+                      <>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                          <BreadcrumbPage>JSON Editor</BreadcrumbPage>
+                        </BreadcrumbItem>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Recipes</BreadcrumbPage>
+                  </BreadcrumbItem>
+                )}
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+          <Outlet />
+        </div>
+      </SidebarInset>
+      <ChatSidebar recipeId={recipeId} />
+    </SidebarProvider>
+  );
+}

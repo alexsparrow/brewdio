@@ -1,0 +1,6568 @@
+[
+ {
+  "name": "American Amber Ale",
+  "type": "beer",
+  "category": "American Ale",
+  "style_guide": "BJCP",
+  "style_letter": "10",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.045,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.06,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.015,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 25,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 10,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 17,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6.2,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "American Barleywine",
+  "type": "beer",
+  "category": "Strong Ale",
+  "style_guide": "BJCP",
+  "style_letter": "19",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.08,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.12,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.016,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.03,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 50,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 120,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 10,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 19,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 12,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "American Brown Ale",
+  "type": "beer",
+  "category": "American Ale",
+  "style_guide": "BJCP",
+  "style_letter": "10",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.045,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.06,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.016,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 20,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 18,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 35,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.3,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6.2,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "American IPA",
+  "type": "beer",
+  "category": "India Pale Ale",
+  "style_guide": "BJCP",
+  "style_letter": "14",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.056,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.075,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.018,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 40,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 70,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 6,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 15,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 5.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 7.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "American Pale Ale",
+  "type": "beer",
+  "category": "American Ale",
+  "style_guide": "BJCP",
+  "style_letter": "10",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.045,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.06,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.015,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 30,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 45,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 5,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 14,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6.2,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "American Stout",
+  "type": "beer",
+  "category": "Stout",
+  "style_guide": "BJCP",
+  "style_letter": "13",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.05,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.075,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.022,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 35,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 75,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 30,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 7,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "American Wheat or Rye Beer",
+  "type": "beer",
+  "category": "Light Hybrid Beer",
+  "style_guide": "BJCP",
+  "style_letter": "6",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.04,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.055,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.013,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 15,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 3,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Applewine",
+  "type": "cider",
+  "category": "Specialty Cider and Perry",
+  "style_guide": "BJCP",
+  "style_letter": "28",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.07,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.1,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 0.995,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.01,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 9,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 12,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Baltic Porter",
+  "type": "beer",
+  "category": "Porter",
+  "style_guide": "BJCP",
+  "style_letter": "12",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.06,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.09,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.016,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.024,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 20,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 17,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 5.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 9.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Belgian Blond Ale",
+  "type": "beer",
+  "category": "Belgian Strong Ale",
+  "style_guide": "BJCP",
+  "style_letter": "18",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.062,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.075,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.018,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 15,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 4,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 7,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 6,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 7.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Belgian Dark Strong Ale",
+  "type": "beer",
+  "category": "Belgian Strong Ale",
+  "style_guide": "BJCP",
+  "style_letter": "18",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.075,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.11,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.024,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 20,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 12,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 22,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 11,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Belgian Dubbel",
+  "type": "beer",
+  "category": "Belgian Strong Ale",
+  "style_guide": "BJCP",
+  "style_letter": "18",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.062,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.075,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.018,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 15,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 25,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 10,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 17,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 6.3,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 7.6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Belgian Golden Strong Ale",
+  "type": "beer",
+  "category": "Belgian Strong Ale",
+  "style_guide": "BJCP",
+  "style_letter": "18",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.07,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.095,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.005,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.016,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 22,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 35,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 3,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 7.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 10.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Belgian Pale Ale",
+  "type": "beer",
+  "category": "Belgian and French Ale",
+  "style_guide": "BJCP",
+  "style_letter": "16",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.048,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.054,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.014,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 20,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 8,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 14,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Belgian Specialty Ale",
+  "type": "beer",
+  "category": "Belgian and French Ale",
+  "style_guide": "BJCP",
+  "style_letter": "16",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 20,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Belgian Tripel",
+  "type": "beer",
+  "category": "Belgian Strong Ale",
+  "style_guide": "BJCP",
+  "style_letter": "18",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.075,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.085,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.014,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 20,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 4.5,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 7,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 7.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 9.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Berliner Weisse",
+  "type": "beer",
+  "category": "Sour Ale",
+  "style_guide": "BJCP",
+  "style_letter": "17",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.028,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.032,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.003,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.006,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 3,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 8,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 2,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 3,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 2.8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 3.8,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Bière de Garde",
+  "type": "beer",
+  "category": "Belgian and French Ale",
+  "style_guide": "BJCP",
+  "style_letter": "16",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.06,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.08,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.016,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 18,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 28,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 6,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 19,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 6,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 8.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Blonde Ale",
+  "type": "beer",
+  "category": "Light Hybrid Beer",
+  "style_guide": "BJCP",
+  "style_letter": "6",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.038,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.054,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.013,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 15,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 28,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 3,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 3.8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Bohemian Pilsener",
+  "type": "beer",
+  "category": "Pilsner",
+  "style_guide": "BJCP",
+  "style_letter": "2",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.044,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.056,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.013,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.017,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 35,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 45,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 3.5,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.2,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.4,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Braggot",
+  "type": "beer",
+  "category": "Other Mead",
+  "style_guide": "BJCP",
+  "style_letter": "26",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Brown Porter",
+  "type": "beer",
+  "category": "Porter",
+  "style_guide": "BJCP",
+  "style_letter": "12",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.04,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.052,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.014,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 18,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 35,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 20,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.4,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "California Common Beer",
+  "type": "beer",
+  "category": "Amber Hybrid Beer",
+  "style_guide": "BJCP",
+  "style_letter": "7",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.048,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.054,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.011,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.014,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 30,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 45,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 10,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 14,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Christmas/Winter Specialty Spiced Beer",
+  "type": "beer",
+  "category": "Spice/Herb/Vegetable Beer",
+  "style_guide": "BJCP",
+  "style_letter": "21",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Classic American Pilsner",
+  "type": "beer",
+  "category": "Pilsner",
+  "style_guide": "BJCP",
+  "style_letter": "2",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.044,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.06,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.015,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 25,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 3,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Classic Rauchbier",
+  "type": "beer",
+  "category": "Smoke-flavored/Wood-aged Beer",
+  "style_guide": "BJCP",
+  "style_letter": "22",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.05,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.057,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.012,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.016,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 20,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 12,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 22,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Common Cider",
+  "type": "cider",
+  "category": "Standard Cider and Perry",
+  "style_guide": "BJCP",
+  "style_letter": "27",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.045,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.065,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.02,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 8,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Common Perry",
+  "type": "cider",
+  "category": "Standard Cider and Perry",
+  "style_guide": "BJCP",
+  "style_letter": "27",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.05,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.06,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.02,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 7.2,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Cream Ale",
+  "type": "beer",
+  "category": "Light Hybrid Beer",
+  "style_guide": "BJCP",
+  "style_letter": "6",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.042,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.055,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.006,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.012,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 15,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 20,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 3,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 5,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.2,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Cyser",
+  "type": "beer",
+  "category": "Melomel (Fruit Mead)",
+  "style_guide": "BJCP",
+  "style_letter": "25",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Dark American Lager",
+  "type": "beer",
+  "category": "Dark Lager",
+  "style_guide": "BJCP",
+  "style_letter": "4",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.044,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.056,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.012,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 8,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 20,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 14,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 22,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.2,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Doppelbock",
+  "type": "beer",
+  "category": "Bock",
+  "style_guide": "BJCP",
+  "style_letter": "5",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.072,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.112,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.016,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.024,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 16,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 26,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 6,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 25,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 7,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 10,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Dortmunder Export",
+  "type": "beer",
+  "category": "Light Lager",
+  "style_guide": "BJCP",
+  "style_letter": "1",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.048,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.056,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.015,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 23,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 4,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Dry Mead",
+  "type": "beer",
+  "category": "Traditional Mead",
+  "style_guide": "BJCP",
+  "style_letter": "24",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Dry Stout",
+  "type": "beer",
+  "category": "Stout",
+  "style_guide": "BJCP",
+  "style_letter": "13",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.036,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.05,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.007,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.011,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 30,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 45,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 25,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Dunkelweizen",
+  "type": "beer",
+  "category": "German Wheat and Rye Beer",
+  "style_guide": "BJCP",
+  "style_letter": "15",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.044,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.056,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.014,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 10,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 18,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 14,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 23,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.3,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Düsseldorf Altbier",
+  "type": "beer",
+  "category": "Amber Hybrid Beer",
+  "style_guide": "BJCP",
+  "style_letter": "7",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.046,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.054,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.015,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 35,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 50,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 11,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 17,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.2,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Eisbock",
+  "type": "beer",
+  "category": "Bock",
+  "style_guide": "BJCP",
+  "style_letter": "5",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.078,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.12,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.02,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.035,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 25,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 35,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 18,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 9,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 14,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "English Barleywine",
+  "type": "beer",
+  "category": "Strong Ale",
+  "style_guide": "BJCP",
+  "style_letter": "19",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.08,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.12,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.018,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.03,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 35,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 70,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 8,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 22,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 12,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "English Cider ",
+  "type": "cider",
+  "category": "Standard Cider and Perry",
+  "style_guide": "BJCP",
+  "style_letter": "27",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.05,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.075,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 0.995,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.01,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 6,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 9,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "English IPA",
+  "type": "beer",
+  "category": "India Pale Ale",
+  "style_guide": "BJCP",
+  "style_letter": "14",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.05,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.075,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.018,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 40,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 60,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 8,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 14,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 7.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Extra Special/Strong Bitter (English Pale Ale)",
+  "type": "beer",
+  "category": "English Pale Ale",
+  "style_guide": "BJCP",
+  "style_letter": "8",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.048,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.06,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.016,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 30,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 50,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 6,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 18,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.6,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6.2,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Flanders Brown Ale/Oud Bruin",
+  "type": "beer",
+  "category": "Sour Ale",
+  "style_guide": "BJCP",
+  "style_letter": "17",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.04,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.074,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.012,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 20,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 25,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 15,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 22,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 8,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Flanders Red Ale",
+  "type": "beer",
+  "category": "Sour Ale",
+  "style_guide": "BJCP",
+  "style_letter": "17",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.048,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.057,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.002,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.012,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 10,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 25,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 10,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 16,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.6,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Foreign Extra Stout",
+  "type": "beer",
+  "category": "Stout",
+  "style_guide": "BJCP",
+  "style_letter": "13",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.056,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.075,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.018,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 30,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 70,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 30,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 5.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 8,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "French Cider",
+  "type": "cider",
+  "category": "Standard Cider and Perry",
+  "style_guide": "BJCP",
+  "style_letter": "27",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.05,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.065,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.02,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 3,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Fruit Beer",
+  "type": "beer",
+  "category": "Fruit Beer",
+  "style_guide": "BJCP",
+  "style_letter": "20",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Fruit Cider",
+  "type": "cider",
+  "category": "Specialty Cider and Perry",
+  "style_guide": "BJCP",
+  "style_letter": "28",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.045,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.07,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 0.995,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.01,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 9,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Fruit Lambic",
+  "type": "beer",
+  "category": "Sour Ale",
+  "style_guide": "BJCP",
+  "style_letter": "17",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.04,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.06,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.01,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 3,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 7,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 7,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "German Pilsner (Pils)",
+  "type": "beer",
+  "category": "Pilsner",
+  "style_guide": "BJCP",
+  "style_letter": "2",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.044,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.05,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.013,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 25,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 45,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 2,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 5,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.4,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.2,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Gueuze",
+  "type": "beer",
+  "category": "Sour Ale",
+  "style_guide": "BJCP",
+  "style_letter": "17",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.04,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.06,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.006,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 3,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 7,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 8,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Imperial IPA",
+  "type": "beer",
+  "category": "India Pale Ale",
+  "style_guide": "BJCP",
+  "style_letter": "14",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.07,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.09,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.02,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 60,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 120,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 8,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 15,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 7.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 10,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Irish Red Ale",
+  "type": "beer",
+  "category": "Scottish and Irish Ale",
+  "style_guide": "BJCP",
+  "style_letter": "9",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.044,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.06,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.014,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 17,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 28,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 9,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 18,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Kölsch",
+  "type": "beer",
+  "category": "Light Hybrid Beer",
+  "style_guide": "BJCP",
+  "style_letter": "6",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.044,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.05,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.007,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.011,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 20,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 4,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 5,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.4,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.2,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Lite American Lager",
+  "type": "beer",
+  "category": "Light Lager",
+  "style_guide": "BJCP",
+  "style_letter": "1",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.028,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.04,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 0.998,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.008,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 8,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 12,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 2,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 3,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 2.8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 4.2,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Maibock/Helles Bock",
+  "type": "beer",
+  "category": "Bock",
+  "style_guide": "BJCP",
+  "style_letter": "5",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.064,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.072,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.011,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.018,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 23,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 35,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 6,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 11,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 6.3,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 7.4,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Metheglin",
+  "type": "beer",
+  "category": "Other Mead",
+  "style_guide": "BJCP",
+  "style_letter": "26",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Mild",
+  "type": "beer",
+  "category": "English Brown Ale",
+  "style_guide": "BJCP",
+  "style_letter": "11",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.03,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.038,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.013,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 10,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 25,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 12,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 25,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 2.8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 4.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Munich Dunkel",
+  "type": "beer",
+  "category": "Dark Lager",
+  "style_guide": "BJCP",
+  "style_letter": "4",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.048,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.056,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.016,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 18,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 28,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 14,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 28,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Munich Helles",
+  "type": "beer",
+  "category": "Light Lager",
+  "style_guide": "BJCP",
+  "style_letter": "1",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.045,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.051,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.012,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 16,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 22,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 3,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 5,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.7,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.4,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "New England Cider",
+  "type": "cider",
+  "category": "Specialty Cider and Perry",
+  "style_guide": "BJCP",
+  "style_letter": "28",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.06,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.1,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 0.995,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.01,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 7,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 13,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Northern English Brown Ale",
+  "type": "beer",
+  "category": "English Brown Ale",
+  "style_guide": "BJCP",
+  "style_letter": "11",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.04,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.052,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.014,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 20,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 12,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 22,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.2,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.4,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Northern German Altbier",
+  "type": "beer",
+  "category": "Amber Hybrid Beer",
+  "style_guide": "BJCP",
+  "style_letter": "7",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.046,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.054,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.015,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 25,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 13,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 19,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.2,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Oatmeal Stout",
+  "type": "beer",
+  "category": "Stout",
+  "style_guide": "BJCP",
+  "style_letter": "13",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.048,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.065,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.018,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 25,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 22,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.2,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.9,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Oktoberfest/Märzen",
+  "type": "beer",
+  "category": "European Amber Lager",
+  "style_guide": "BJCP",
+  "style_letter": "3",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.05,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.057,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.012,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.016,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 20,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 28,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 7,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 14,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.7,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Old Ale",
+  "type": "beer",
+  "category": "Strong Ale",
+  "style_guide": "BJCP",
+  "style_letter": "19",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.06,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.09,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.015,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.022,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 30,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 60,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 10,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 22,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 6,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 9,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Open Category Mead",
+  "type": "beer",
+  "category": "Other Mead",
+  "style_guide": "BJCP",
+  "style_letter": "26",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Other Fruit Melomel",
+  "type": "beer",
+  "category": "Melomel (Fruit Mead)",
+  "style_guide": "BJCP",
+  "style_letter": "25",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Other Smoked Beer",
+  "type": "beer",
+  "category": "Smoke-flavored/Wood-aged Beer",
+  "style_guide": "BJCP",
+  "style_letter": "22",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Other Specialty Cider/Perry",
+  "type": "cider",
+  "category": "Specialty Cider and Perry",
+  "style_guide": "BJCP",
+  "style_letter": "28",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.045,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.1,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 0,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 12,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Premium American Lager",
+  "type": "beer",
+  "category": "Light Lager",
+  "style_guide": "BJCP",
+  "style_letter": "1",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.046,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.056,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.012,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 15,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 25,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 2,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.6,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Pyment",
+  "type": "beer",
+  "category": "Melomel (Fruit Mead)",
+  "style_guide": "BJCP",
+  "style_letter": "25",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Robust Porter",
+  "type": "beer",
+  "category": "Porter",
+  "style_guide": "BJCP",
+  "style_letter": "12",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.048,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.065,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.012,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.016,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 25,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 50,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 22,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 35,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Roggenbier (German Rye Beer)",
+  "type": "beer",
+  "category": "German Wheat and Rye Beer",
+  "style_guide": "BJCP",
+  "style_letter": "15",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.046,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.056,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.014,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 10,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 20,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 14,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 19,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Russian Imperial Stout",
+  "type": "beer",
+  "category": "Stout",
+  "style_guide": "BJCP",
+  "style_letter": "13",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.075,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.115,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.018,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.03,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 50,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 90,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 30,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 12,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Saison",
+  "type": "beer",
+  "category": "Belgian and French Ale",
+  "style_guide": "BJCP",
+  "style_letter": "16",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.048,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.065,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.002,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.012,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 20,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 35,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 5,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 14,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 7,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Schwarzbier (Black Beer)",
+  "type": "beer",
+  "category": "Dark Lager",
+  "style_guide": "BJCP",
+  "style_letter": "4",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.046,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.052,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.016,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 22,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 32,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 17,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.4,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.4,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Scottish Export 80/-",
+  "type": "beer",
+  "category": "Scottish and Irish Ale",
+  "style_guide": "BJCP",
+  "style_letter": "9",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.04,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.054,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.016,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 15,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 9,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 17,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 3.9,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Scottish Heavy 70/-",
+  "type": "beer",
+  "category": "Scottish and Irish Ale",
+  "style_guide": "BJCP",
+  "style_letter": "9",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.035,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.04,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.015,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 10,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 25,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 9,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 17,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 3.2,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 3.9,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Scottish Light 60/-",
+  "type": "beer",
+  "category": "Scottish and Irish Ale",
+  "style_guide": "BJCP",
+  "style_letter": "9",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.03,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.035,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.013,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 10,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 20,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 9,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 17,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 2.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 3.2,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Semi-sweet Mead",
+  "type": "beer",
+  "category": "Traditional Mead",
+  "style_guide": "BJCP",
+  "style_letter": "24",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Southern English Brown",
+  "type": "beer",
+  "category": "English Brown Ale",
+  "style_guide": "BJCP",
+  "style_letter": "11",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.033,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.042,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.011,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.014,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 12,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 20,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 19,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 35,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 2.8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 4.1,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Special/Best/Premium Bitter",
+  "type": "beer",
+  "category": "English Pale Ale",
+  "style_guide": "BJCP",
+  "style_letter": "8",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.04,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.048,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.012,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 25,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 5,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 16,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 3.8,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 4.6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Specialty Beer",
+  "type": "beer",
+  "category": "Specialty Beer",
+  "style_guide": "BJCP",
+  "style_letter": "23",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Spice, Herb, or Vegetable Beer",
+  "type": "beer",
+  "category": "Spice/Herb/Vegetable Beer",
+  "style_guide": "BJCP",
+  "style_letter": "21",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Standard American Lager",
+  "type": "beer",
+  "category": "Light Lager",
+  "style_guide": "BJCP",
+  "style_letter": "1",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.04,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.05,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.004,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.01,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 8,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 15,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 2,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 4,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.2,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.3,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Standard/Ordinary Bitter",
+  "type": "beer",
+  "category": "English Pale Ale",
+  "style_guide": "BJCP",
+  "style_letter": "8",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.032,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.04,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.007,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.011,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 25,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 35,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 4,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 14,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 3.2,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 3.8,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Straight (Unblended) Lambic",
+  "type": "beer",
+  "category": "Sour Ale",
+  "style_guide": "BJCP",
+  "style_letter": "17",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.04,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.054,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.001,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.01,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 3,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 7,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Strong Scotch Ale",
+  "type": "beer",
+  "category": "Scottish and Irish Ale",
+  "style_guide": "BJCP",
+  "style_letter": "9",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.07,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.13,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.018,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.056,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 17,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 35,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 14,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 25,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 6.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 10,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Sweet Mead",
+  "type": "beer",
+  "category": "Traditional Mead",
+  "style_guide": "BJCP",
+  "style_letter": "24",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Sweet Stout",
+  "type": "beer",
+  "category": "Stout",
+  "style_guide": "BJCP",
+  "style_letter": "13",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.044,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.06,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.012,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.024,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 20,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 30,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 40,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Traditional Bock",
+  "type": "beer",
+  "category": "Bock",
+  "style_guide": "BJCP",
+  "style_letter": "5",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.064,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.072,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.013,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.019,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 20,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 27,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 14,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 22,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 6.3,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 7.2,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Traditional Perry",
+  "type": "cider",
+  "category": "Standard Cider and Perry",
+  "style_guide": "BJCP",
+  "style_letter": "27",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.05,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.07,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.02,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 9,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Vienna Lager",
+  "type": "beer",
+  "category": "European Amber Lager",
+  "style_guide": "BJCP",
+  "style_letter": "3",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.046,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.052,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.014,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 18,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 10,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 16,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Weizen/Weissbier",
+  "type": "beer",
+  "category": "German Wheat and Rye Beer",
+  "style_guide": "BJCP",
+  "style_letter": "15",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.044,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.052,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.01,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.014,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 8,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 15,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 2,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 8,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.3,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.6,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Weizenbock",
+  "type": "beer",
+  "category": "German Wheat and Rye Beer",
+  "style_guide": "BJCP",
+  "style_letter": "15",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.064,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.09,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.015,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.022,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 15,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 30,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 12,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 25,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 6.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 8,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Witbier",
+  "type": "beer",
+  "category": "Belgian and French Ale",
+  "style_guide": "BJCP",
+  "style_letter": "16",
+  "original_gravity": {
+   "minimum": {
+    "value": 1.044,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.052,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1.008,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.012,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 10,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 20,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 2,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 4,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 4.5,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 5.5,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ },
+ {
+  "name": "Wood-Aged Beer",
+  "type": "beer",
+  "category": "Smoke-flavored/Wood-aged Beer",
+  "style_guide": "BJCP",
+  "style_letter": "22",
+  "original_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "final_gravity": {
+   "minimum": {
+    "value": 1,
+    "unit": "sg"
+   },
+   "maximum": {
+    "value": 1.2,
+    "unit": "sg"
+   }
+  },
+  "international_bitterness_units": {
+   "minimum": {
+    "value": 0,
+    "unit": "IBUs"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "IBUs"
+   }
+  },
+  "color": {
+   "minimum": {
+    "value": 0,
+    "unit": "SRM"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "SRM"
+   }
+  },
+  "alcohol_by_volume": {
+   "minimum": {
+    "value": 0,
+    "unit": "%"
+   },
+   "maximum": {
+    "value": 100,
+    "unit": "%"
+   }
+  },
+  "carbonation": {
+   "minimum": {
+    "value": 0,
+    "unit": "vols"
+   },
+   "maximum": {
+    "value": 0,
+    "unit": "vols"
+   }
+  }
+ }
+]

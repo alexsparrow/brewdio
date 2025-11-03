@@ -1,0 +1,2146 @@
+[
+ {
+  "name": "Danstar - Nottingham",
+  "producer": "Danstar",
+  "type": "ale",
+  "form": "dry",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "Danstar - Windsor Ale",
+  "producer": "Danstar",
+  "type": "ale",
+  "form": "dry",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 70
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 70
+   }
+  }
+ },
+ {
+  "name": "Safale S-04",
+  "producer": "Safale",
+  "type": "ale",
+  "form": "dry",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Safale S-05",
+  "producer": "Safale",
+  "type": "ale",
+  "form": "dry",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP001 - California Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP002 - English Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 66
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 66
+   }
+  }
+ },
+ {
+  "name": "WLP004 - Irish Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 71
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 71
+   }
+  }
+ },
+ {
+  "name": "WLP005 - British Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 70
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 70
+   }
+  }
+ },
+ {
+  "name": "WLP006 - Bedford British",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 76
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 76
+   }
+  }
+ },
+ {
+  "name": "WLP007 - Dry English Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP008 - East Coast Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 72
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 72
+   }
+  }
+ },
+ {
+  "name": "WLP009 - Australian Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 72
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 72
+   }
+  }
+ },
+ {
+  "name": "WLP011 - European Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 67
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 67
+   }
+  }
+ },
+ {
+  "name": "WLP013 - London Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 71
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 71
+   }
+  }
+ },
+ {
+  "name": "WLP022 - Essex Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 73
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 73
+   }
+  }
+ },
+ {
+  "name": "WLP023 - Burton Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 72
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 72
+   }
+  }
+ },
+ {
+  "name": "WLP028 - Edinburgh Scottish Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 72
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 72
+   }
+  }
+ },
+ {
+  "name": "WLP029 - German Ale/Kölsch Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP036 - Dusseldorf Alt Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 68
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 68
+   }
+  }
+ },
+ {
+  "name": "WLP037 - Yorkshire Square Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 70
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 70
+   }
+  }
+ },
+ {
+  "name": "WLP038 - Manchester Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 72
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 72
+   }
+  }
+ },
+ {
+  "name": "WLP039 - Nottingham Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 77
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 77
+   }
+  }
+ },
+ {
+  "name": "WLP041 - Pacific Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 67
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 67
+   }
+  }
+ },
+ {
+  "name": "WLP051 - California Ale V Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 72
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 72
+   }
+  }
+ },
+ {
+  "name": "WLP060 - American Ale Yeast Blend",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 76
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 76
+   }
+  }
+ },
+ {
+  "name": "WLP080 - Cream Ale Yeast Blend",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 77
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 77
+   }
+  }
+ },
+ {
+  "name": "WLP099 - Super High Gravity Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "WLP300 - Hefeweizen Ale Yeast",
+  "producer": "White Labs",
+  "type": "wheat",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 74
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 74
+   }
+  }
+ },
+ {
+  "name": "WLP320 - American Hefeweizen Ale Yeast",
+  "producer": "White Labs",
+  "type": "wheat",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 72
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 72
+   }
+  }
+ },
+ {
+  "name": "WLP351 - Bavarian Weizen Yeast",
+  "producer": "White Labs",
+  "type": "wheat",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP380 - Hefeweizen IV Ale Yeast ",
+  "producer": "White Labs",
+  "type": "wheat",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 76
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 76
+   }
+  }
+ },
+ {
+  "name": "WLP400 - Belgian Wit Ale Yeast",
+  "producer": "White Labs",
+  "type": "wheat",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 76
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 76
+   }
+  }
+ },
+ {
+  "name": "WLP410 - Belgian Wit II Ale Yeast",
+  "producer": "White Labs",
+  "type": "wheat",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 72
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 72
+   }
+  }
+ },
+ {
+  "name": "WLP500 - Trappist Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 77
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 77
+   }
+  }
+ },
+ {
+  "name": "WLP510 - Belgian Bastogne Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 77
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 77
+   }
+  }
+ },
+ {
+  "name": "WLP515 - Antwerp Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 76
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 76
+   }
+  }
+ },
+ {
+  "name": "WLP530 - Abbey Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 77
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 77
+   }
+  }
+ },
+ {
+  "name": "WLP540 - Abbey IV Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 78
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 78
+   }
+  }
+ },
+ {
+  "name": "WLP545 - Belgian Strong Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 81
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 81
+   }
+  }
+ },
+ {
+  "name": "WLP550 - Belgian Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 81
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 81
+   }
+  }
+ },
+ {
+  "name": "WLP565 - Belgian Saison I Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 70
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 70
+   }
+  }
+ },
+ {
+  "name": "WLP566 - Belgian Saison II Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 81
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 81
+   }
+  }
+ },
+ {
+  "name": "WLP568 - Belgian Style Saison Ale Yeast Blend",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP570 - Belgian Golden Ale Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP575 - Belgian Style Ale Yeast Blend",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 77
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 77
+   }
+  }
+ },
+ {
+  "name": "WLP700 - Flor Sherry Yeast",
+  "producer": "White Labs",
+  "type": "wine",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "WLP705 - Sake Yeast",
+  "producer": "White Labs",
+  "type": "wine",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "WLP715 - Champagne Yeast",
+  "producer": "White Labs",
+  "type": "champagne",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP718 - Avize Wine Yeast",
+  "producer": "White Labs",
+  "type": "wine",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "WLP720 - Sweet Mead/Wine Yeast",
+  "producer": "White Labs",
+  "type": "wine",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP727 - Steinberg-Geisenheim Wine Yeast",
+  "producer": "White Labs",
+  "type": "wine",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "WLP730 - Chardonnay White Wine Yeast",
+  "producer": "White Labs",
+  "type": "wine",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "WLP735 - French White Wine Yeast",
+  "producer": "White Labs",
+  "type": "wine",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "WLP740 - Merlot Red Wine Yeast",
+  "producer": "White Labs",
+  "type": "wine",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "WLP749 - Assmanshausen Wine Yeast",
+  "producer": "White Labs",
+  "type": "wine",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "WLP750 - French Red Wine Yeast",
+  "producer": "White Labs",
+  "type": "wine",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "WLP760 - Cabernet Red Wine Yeast",
+  "producer": "White Labs",
+  "type": "wine",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "WLP770 - Suremain Burgundy Wine Yeast",
+  "producer": "White Labs",
+  "type": "wine",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "WLP775 - English Cider Yeast",
+  "producer": "White Labs",
+  "type": "wine",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "WLP800 - Pilsner Lager Yeast",
+  "producer": "White Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 74
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 74
+   }
+  }
+ },
+ {
+  "name": "WLP802 - Czech Budejovice Lager Yeast",
+  "producer": "White Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 77
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 77
+   }
+  }
+ },
+ {
+  "name": "WLP810 - San Francisco Lager Yeast",
+  "producer": "White Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 67
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 67
+   }
+  }
+ },
+ {
+  "name": "WLP815 - Belgian Lager Yeast",
+  "producer": "White Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP820 - Oktoberfest/Märzen Lager Yeast",
+  "producer": "White Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 69
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 69
+   }
+  }
+ },
+ {
+  "name": "WLP830 - German Lager Yeast",
+  "producer": "White Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 76
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 76
+   }
+  }
+ },
+ {
+  "name": "WLP833 - German Bock Lager Yeast",
+  "producer": "White Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 73
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 73
+   }
+  }
+ },
+ {
+  "name": "WLP838 - Southern German Lager Yeast",
+  "producer": "White Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 72
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 72
+   }
+  }
+ },
+ {
+  "name": "WLP840 - American Lager Yeast",
+  "producer": "White Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 77
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 77
+   }
+  }
+ },
+ {
+  "name": "WLP862 - Cry Havoc ",
+  "producer": "White Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 68
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 68
+   }
+  }
+ },
+ {
+  "name": "WLP885 - Zurich Lager Yeast",
+  "producer": "White Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP920 - Old Bavarian Lager Yeast",
+  "producer": "White Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 69
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 69
+   }
+  }
+ },
+ {
+  "name": "WLP940 - Mexican Lager Yeast",
+  "producer": "White Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 74
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 74
+   }
+  }
+ },
+ {
+  "name": "Wyeast - American Ale",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - American Ale II",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 74
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 74
+   }
+  }
+ },
+ {
+  "name": "Wyeast - American Lager",
+  "producer": "Wyeast Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - American Wheat",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 76
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 76
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Bavarian Lager",
+  "producer": "Wyeast Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Bavarian Wheat",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 73
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 73
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Bavarian Wheat Blend",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Belgian Abbey II",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Belgian Ale",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 76
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 76
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Belgian Ardennes",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 74
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 74
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Belgian Lambic Blend",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Belgian Saison",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 78
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 78
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Belgian Strong Ale",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 76
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 76
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Belgian Wheat",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 74
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 74
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Belgian Witbier",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 74
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 74
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Bohemian Lager",
+  "producer": "Wyeast Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Brettanomyces bruxellensis",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Brettanomyces lambicus",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "Wyeast - British Ale",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 74
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 74
+   }
+  }
+ },
+ {
+  "name": "Wyeast - British Ale II",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Budvar",
+  "producer": "",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 73
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 73
+   }
+  }
+ },
+ {
+  "name": "Wyeast - California Lager",
+  "producer": "Wyeast Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 69
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 69
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Czech Pils",
+  "producer": "Wyeast Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 72
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 72
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Danish Lager",
+  "producer": "Wyeast Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - European Ale",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 69
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 69
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Forbidden Fruit",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 74
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 74
+   }
+  }
+ },
+ {
+  "name": "Wyeast - German Ale",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 76
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 76
+   }
+  }
+ },
+ {
+  "name": "Wyeast - German Wheat",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 73
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 73
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Irish Ale",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 73
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 73
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Kolsch",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Lactobacillus",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - London Ale",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - London Ale III",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 73
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 73
+   }
+  }
+ },
+ {
+  "name": "Wyeast - London ESB Ale",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 69
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 69
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Northwest Ale",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 69
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 69
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Octoberfest Lager Blend",
+  "producer": "Wyeast Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Pediococcus",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Pilsen Lager",
+  "producer": "Wyeast Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 73
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 73
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Ringwood Ale",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 70
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 70
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Scottish Ale",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 71
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 71
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Thames Valley Ale",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 77
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 77
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Trappist High Gravity",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 76
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 76
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Urquell",
+  "producer": "Wyeast Labs",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 74
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 74
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Weihenstephan Weizen",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "Wyeast - Whitbread Ale",
+  "producer": "Wyeast Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 70
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 70
+   }
+  }
+ },
+ {
+  "name": "WLP090 - San Diego Super Yeast",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "WLP630 - Berliner Weisse Blend",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP645 - Brettanomyces clausenii",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP650 - Brettanomyces bruxellensis",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP653 - Brettanomyces lambicus",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP655 - Belgian Sour Mix 1",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP670 - American Farmhouse Blend",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 79
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 79
+   }
+  }
+ },
+ {
+  "name": "WLP675 - Malolactic Bacteria",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "WLP677 - Lactobacillus Bacteria",
+  "producer": "White Labs",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "TeckBrew 10 - American Ale",
+  "producer": "Levteck",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "TeckBrew 07 - English Ale",
+  "producer": "Levteck",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "TeckBrew 11 - Farmhouse Saison",
+  "producer": "Levteck",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 80
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 80
+   }
+  }
+ },
+ {
+  "name": "TeckBrew 36 - German Ale",
+  "producer": "Levteck",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 68
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 68
+   }
+  }
+ },
+ {
+  "name": "TeckBrew 40 - Abbey Ale",
+  "producer": "Levteck",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 78
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 78
+   }
+  }
+ },
+ {
+  "name": "TeckBrew 68 - Weizen Ale",
+  "producer": "Levteck",
+  "type": "ale",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 75
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 75
+   }
+  }
+ },
+ {
+  "name": "TeckBrew 87 - German Lager",
+  "producer": "Levteck",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 72
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 72
+   }
+  }
+ },
+ {
+  "name": "TeckBrew 81 - American Lager",
+  "producer": "Levteck",
+  "type": "lager",
+  "form": "liquid",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 67
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 67
+   }
+  }
+ }
+]

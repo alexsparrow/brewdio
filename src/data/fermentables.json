@@ -1,0 +1,4714 @@
+[
+ {
+  "name": "Acid Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 58.7
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Amber Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 22
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Aromatic Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 26
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Barley Hulls",
+  "producer": "",
+  "type": "adjunct",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 0
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 0
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Barley, Flaked",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Barley, Raw",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 60.9
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Barley, Torrefied",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 79
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Biscuit Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 79
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 23
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Black (Patent) Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 55
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 500
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Black Barley (Roast Barley)",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 55
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 500
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - 2 Row Brewers Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80.5
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1.8
+  },
+  "moisture": {
+   "value": 4.2,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - 2 Row Carapils Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1.5
+  },
+  "moisture": {
+   "value": 6.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - 6 Row Brewers Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1.8
+  },
+  "moisture": {
+   "value": 4.7,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Aromatic Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 20
+  },
+  "moisture": {
+   "value": 2.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Ashburne Mild Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 79
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 5.3
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Black Barley",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 55
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 500
+  },
+  "moisture": {
+   "value": 6,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Black Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 55
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 500
+  },
+  "moisture": {
+   "value": 6,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Black Malted Barley Flour",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 55
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 500
+  },
+  "moisture": {
+   "value": 6,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Blackprinz Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 500
+  },
+  "moisture": {
+   "value": 6,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Bonlander Munich Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 10
+  },
+  "moisture": {
+   "value": 3.3,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Carabrown Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 79
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 55
+  },
+  "moisture": {
+   "value": 2.2,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Caracrystal Wheat Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 55
+  },
+  "moisture": {
+   "value": 4,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Carapils Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 74
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1.3
+  },
+  "moisture": {
+   "value": 6.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Chocolate Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 60
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 350
+  },
+  "moisture": {
+   "value": 6,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Dark Chocolate Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 60
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 420
+  },
+  "moisture": {
+   "value": 5.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Extra Special Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 73
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 130
+  },
+  "moisture": {
+   "value": 2.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Midnight Wheat Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 55
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 550
+  },
+  "moisture": {
+   "value": 6.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Munich Malt 10L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 10
+  },
+  "moisture": {
+   "value": 3.3,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Munich Malt 20L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 74
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 20
+  },
+  "moisture": {
+   "value": 2.7,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Pale Ale Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3.5
+  },
+  "moisture": {
+   "value": 4,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Pilsen Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80.5
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1.2
+  },
+  "moisture": {
+   "value": 4.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Roasted Barley",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 55
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 300
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Rye Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3.7
+  },
+  "moisture": {
+   "value": 4.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Smoked Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80.5
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 5
+  },
+  "moisture": {
+   "value": 6,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Special Roast Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 72
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 40
+  },
+  "moisture": {
+   "value": 2.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Victory Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 28
+  },
+  "moisture": {
+   "value": 2.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Vienna Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77.5
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3.5
+  },
+  "moisture": {
+   "value": 3.8,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Wheat Malt, Red",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.3
+  },
+  "moisture": {
+   "value": 4,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Wheat Malt, White",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 85
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.5
+  },
+  "moisture": {
+   "value": 4,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess DME - Bavarian Wheat",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess DME - Golden Light",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 4
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess DME - Maltoferm A-6001 (Black Malt Extract)",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 500
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess DME - Pilsen Light",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess DME - Sparkling Amber",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 10
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess DME - Traditional Dark",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 30
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess LME - Golden Light",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 4
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess LME - Maltoferm A-6000 (Black Malt Extract)",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 500
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess LME - Munich",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 8
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess LME - Pilsen Light",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess LME - Sparkling Amber",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 10
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess LME - Sweet Brown Rice Syrup",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess LME - Traditional Dark",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 30
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess LME - White Sorghum Syrup",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Brown Malt (British Chocolate)",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 65
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Brown Sugar, Dark",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 100
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 50
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Brown Sugar, Light",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 100
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 8
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Brumalt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 71.7
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 23
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Candi Sugar, Amber",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78.3
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 75
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Candi Sugar, Clear",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78.3
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Candi Sugar, Dark",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78.3
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 275
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Cane (Beet) Sugar",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 100
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 0
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Cara-Pils/Dextrine",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 72
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Caraamber",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 30
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Carafa",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 337
+  },
+  "moisture": {
+   "value": 4,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Carafa II",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 412
+  },
+  "moisture": {
+   "value": 4,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Carafa III",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 525
+  },
+  "moisture": {
+   "value": 4,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Carafoam",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 72
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Caramel/Crystal Malt - 10L",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 10
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Caramel/Crystal Malt - 120L",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 72
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 120
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Caramel/Crystal Malt - 20L",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 20
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Caramel/Crystal Malt - 30L",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 30
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Caramel/Crystal Malt - 40L",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 74
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 40
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Caramel/Crystal Malt - 60L",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 74
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 60
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Caramel/Crystal Malt - 80L",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 74
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 80
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Caramunich Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 71.7
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 56
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Carared",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 20
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Caravienne Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 73.9
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 22
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Carawheat (GR)",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 68
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 40
+  },
+  "moisture": {
+   "value": 6.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Chocolate Malt (UK)",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 73
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 450
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Chocolate Malt (US)",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 60
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 350
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Coopers LME - Amber",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 16.4
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Coopers LME - Dark",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 65.9
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Coopers LME - Light",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3.4
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Coopers LME - Wheat",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 4.5
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Corn Sugar (Dextrose)",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 100
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 0
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Corn Syrup",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78.3
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Corn, Flaked",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Dark Liquid Extract",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 18
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Dememera Sugar",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 100
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Dry Extract (DME) - Amber",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 13
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Dry Extract (DME) - Dark",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 18
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Dry Extract (DME) - Extra Light",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Dry Extract (DME) - Light",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 8
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Dry Extract (DME) - Wheat",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 8
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Grits",
+  "producer": "",
+  "type": "adjunct",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Honey",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Honey Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 25
+  },
+  "moisture": {
+   "value": 3.8,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Invert Sugar",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 100
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 0
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Liquid Extract (LME) - Amber",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 13
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Liquid Extract (LME) - Pale",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 8
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Liquid Extract (LME) - Pilsner",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 4
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Liquid Extract (LME) - Wheat",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 8
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Maple Syrup",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 65.2
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 35
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Melanoiden Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 20
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Mild Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 4
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Milk Sugar (Lactose)",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 76.1
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 0
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Molasses",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78.3
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 80
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Munich Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 9
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Munich Malt - 10L",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 10
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Munich Malt - 20L",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 20
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Muntons DME - Amber",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 13
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Muntons DME - Dark",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 22
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Muntons DME - Extra Dark",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 38
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Muntons DME - Extra Light",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Muntons DME - Light",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 4
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Muntons DME - Wheat",
+  "producer": "",
+  "type": "dry extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 4
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Muntons LME - Amber",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 7
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Muntons LME - Dark",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.1
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Muntons LME - Extra Light",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.8
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Muntons LME - Light",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 4
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Muntons LME - Wheat",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 4
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Oats, Flaked",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Oats, Malted",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Pale Malt (2 Row) Bel",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Pale Malt (2 Row) UK",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Pale Malt (2 Row) US",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 79
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Pale Malt (6 Row) US",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 76
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Peat Smoked Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 74
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Pilsner (2 Row) Bel",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 79
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Pilsner (2 Row) Ger",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Pilsner (2 Row) UK",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Rahr - 2 Row Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 4,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Rahr - 6 Row Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 79
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 25
+  },
+  "moisture": {
+   "value": 4.2,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Rahr - Pale Ale Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 79
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 40
+  },
+  "moisture": {
+   "value": 4.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Rahr - Premium Pilsner Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 4,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Rahr - Red Wheat Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 85
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 45
+  },
+  "moisture": {
+   "value": 4.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Rahr - White Wheat Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 85
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 45
+  },
+  "moisture": {
+   "value": 4.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Rauch Malt (Germany)",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Rice Extract Syrup",
+  "producer": "",
+  "type": "extract",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 69.6
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 7
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Rice Hulls",
+  "producer": "",
+  "type": "adjunct",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 0
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 0
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Rice, Flaked",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Roasted Barley",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 55
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 300
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Rye Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 63
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 5
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Rye, Flaked",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78.3
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Aromatic Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 82.5
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 25
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Black Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 550
+  },
+  "moisture": {
+   "value": 3,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Caramalt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 76
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 35
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Caramalt Light",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 76
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 13
+  },
+  "moisture": {
+   "value": 6.9,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Chocolate Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 73
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 400
+  },
+  "moisture": {
+   "value": 1.9,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Coffee Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 74
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 150
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Crystal Dark",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 74
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 80
+  },
+  "moisture": {
+   "value": 5.3,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Crystal Extra Dark",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 74
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 160
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Crystal Medium",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 74
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 55
+  },
+  "moisture": {
+   "value": 4.7,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Crystal Rye",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 73
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 90
+  },
+  "moisture": {
+   "value": 3.1,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Golden Naked Oats",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 73
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 10
+  },
+  "moisture": {
+   "value": 4.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Golden Promise",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Maris Otter",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3
+  },
+  "moisture": {
+   "value": 3,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Peated Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.5
+  },
+  "moisture": {
+   "value": 4.6,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Simpsons - Roasted Barley",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 550
+  },
+  "moisture": {
+   "value": 1.9,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Smoked Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 9
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Special B Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 65.2
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 160
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Special Roast",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 72
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 50
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Sugar, Table (Sucrose)",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 100
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Toasted Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 71.7
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 27
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Turbinado",
+  "producer": "",
+  "type": "sugar",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 95.7
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 10
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Victory Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 73
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 25
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Vienna Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 4
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Acidulated Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3.2
+  },
+  "moisture": {
+   "value": 7,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Bohemian Pilsner Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.1
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Carafa I",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 350
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Carafa II",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 425
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Carafa III",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 520
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Carafoam",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.4
+  },
+  "moisture": {
+   "value": 6.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Carawheat",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 49
+  },
+  "moisture": {
+   "value": 4,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Chocolate Rye",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 20
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 250
+  },
+  "moisture": {
+   "value": 4,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Chocolate Wheat",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 74
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 400
+  },
+  "moisture": {
+   "value": 4.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Dark Wheat Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 85
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 7.3
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Dehusked Carafa I",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 350
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Dehusked Carafa II",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 425
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Dehusked Carafa III",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 520
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Light Munich Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 82
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 6.9
+  },
+  "moisture": {
+   "value": 4.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Melanoiden Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 27
+  },
+  "moisture": {
+   "value": 4.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Pale Ale Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 85
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3.4
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Pale Wheat Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 85
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.4
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Pilsner Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.4
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Rye Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 85
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3.6
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Smoked Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.8
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Weyermann - Vienna Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3.9
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Wheat Malt, Bel",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Wheat Malt, Dark",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 84
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 9
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Wheat Malt, Ger",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 84
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Wheat, Flaked",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Wheat, Roasted",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 54.3
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 425
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Wheat, Torrified",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 79
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "White Wheat Malt",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 86
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 0,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - 2 Row Black Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 55
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 500
+  },
+  "moisture": {
+   "value": 6,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - 2 Row Caramel Malt 10L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 10
+  },
+  "moisture": {
+   "value": 7,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - 2 Row Caramel Malt 120L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 120
+  },
+  "moisture": {
+   "value": 3,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - 2 Row Caramel Malt 30L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 30
+  },
+  "moisture": {
+   "value": 5.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - 2 Row Caramel Malt 40L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 40
+  },
+  "moisture": {
+   "value": 5.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - 2 Row Caramel Malt 60L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 60
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - 2 Row Caramel Malt 80L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 76
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 80
+  },
+  "moisture": {
+   "value": 4.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - 2 Row Chocolate Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 60
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 350
+  },
+  "moisture": {
+   "value": 5.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Barley Flakes",
+  "producer": "Briess",
+  "type": "adjunct",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1.4
+  },
+  "moisture": {
+   "value": 9,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Brown Rice Flakes",
+  "producer": "Briess",
+  "type": "adjunct",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 60
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1
+  },
+  "moisture": {
+   "value": 7,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Caramel Malt 10L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 76
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 10
+  },
+  "moisture": {
+   "value": 7,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Caramel Malt 120L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 74
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 120
+  },
+  "moisture": {
+   "value": 3,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Caramel Malt 20L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 76
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 20
+  },
+  "moisture": {
+   "value": 6,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Caramel Malt 40L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 40
+  },
+  "moisture": {
+   "value": 5.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Caramel Malt 60L",
+  "producer": "",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 76
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 60
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Caramel Malt 80L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 80
+  },
+  "moisture": {
+   "value": 4.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Caramel Malt 90L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 90
+  },
+  "moisture": {
+   "value": 4,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Caramel Munich Malt 60L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 60
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Caramel Vienne Malt 20L",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 78
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 20
+  },
+  "moisture": {
+   "value": 4.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Goldpils Vienna Malt",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3.5
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Oat Flakes",
+  "producer": "Briess",
+  "type": "adjunct",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.5
+  },
+  "moisture": {
+   "value": 7.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Red Wheat Flakes",
+  "producer": "Briess",
+  "type": "adjunct",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 70
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2
+  },
+  "moisture": {
+   "value": 7,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Rye Flakes",
+  "producer": "Briess",
+  "type": "adjunct",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 71
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3
+  },
+  "moisture": {
+   "value": 7,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Torrified Red Wheat",
+  "producer": "Briess",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 76
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1.5
+  },
+  "moisture": {
+   "value": 8.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Briess - Yellow Corn Flakes",
+  "producer": "Briess",
+  "type": "adjunct",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 75
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 0.8
+  },
+  "moisture": {
+   "value": 8,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Ale Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81.4
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3.0456853
+  },
+  "moisture": {
+   "value": 2.7,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - American Ale Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.5380711
+  },
+  "moisture": {
+   "value": 3,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Aurora Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80.97
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 29.4416244
+  },
+  "moisture": {
+   "value": 3.3,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Biscuit Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 76
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 30.4568528
+  },
+  "moisture": {
+   "value": 2.2,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Brown Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 74
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 90.3553299
+  },
+  "moisture": {
+   "value": 3.2,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Dark Chocolate Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 71
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 659.8984772
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Dark Crystal Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 96.4467005
+  },
+  "moisture": {
+   "value": 3.2,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Gladiator Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 5.0761421
+  },
+  "moisture": {
+   "value": 4.3,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Lager Light",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80.5
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1.4263959
+  },
+  "moisture": {
+   "value": 4.18,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Light Chocolate Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 71
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 456.8527919
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Light Crystal Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 31.9796954
+  },
+  "moisture": {
+   "value": 3.8,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Malted Rye",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 87.49
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3
+  },
+  "moisture": {
+   "value": 4.59,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Manuka Smoked Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.0304569
+  },
+  "moisture": {
+   "value": 4,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Medium Crystal Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 56.3451777
+  },
+  "moisture": {
+   "value": 3.4,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Munich Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 79.93
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 7.8680203
+  },
+  "moisture": {
+   "value": 2.6,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Organic Pilsner",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 82.49
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1.5862944
+  },
+  "moisture": {
+   "value": 3.44,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Pilsner Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81.1
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1.928934
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Red Back Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 32.9949239
+  },
+  "moisture": {
+   "value": 4.7,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Roast Barley",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 71
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 736.0406091
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Roasted Wheat",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 73
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 279.1878173
+  },
+  "moisture": {
+   "value": 3.2,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Shepherds Delight Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 152.284264
+  },
+  "moisture": {
+   "value": 3.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Sour Grapes Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 27
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.0304569
+  },
+  "moisture": {
+   "value": 5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Toffee Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 74
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 5.3299492
+  },
+  "moisture": {
+   "value": 7.2,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Vienna Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 81.2
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3.4517766
+  },
+  "moisture": {
+   "value": 3.64,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Wheat Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 84.29
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 2.1319797
+  },
+  "moisture": {
+   "value": 5.18,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Harraway's Rolled Oats",
+  "producer": "Harraways / Gladfield",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 85
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1.4
+  },
+  "moisture": {
+   "value": 7.5,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Harraways Rolled Barley",
+  "producer": "Harraways / Gladfield",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 77
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 1.7
+  },
+  "moisture": {
+   "value": 9,
+   "unit": "%"
+  }
+ },
+ {
+  "name": "Gladfield - Supernova Malt",
+  "producer": "Gladfield Malt",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 79.3478261
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 58.3756345
+  },
+  "moisture": {
+   "value": 4.5,
+   "unit": "%"
+  }
+ }
+]
