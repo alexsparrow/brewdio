@@ -14,6 +14,39 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useEffect } from "react";
+import { stores, wireCalculations } from "@/lib/calculate";
+import { OG } from "@/calculations/og";
+import { FG } from "@/calculations/fg";
+import { ABV } from "@/calculations/abv";
+import { Color } from "@/calculations/color";
+import { IBU } from "@/calculations/ibu";
+
+// Wire calculations at module level (runs once when module loads)
+wireCalculations(stores, [
+  OG,
+  FG,
+  ABV,
+  Color,
+  IBU,
+  {
+    type: "dynamic",
+    dependsOn: ["recipe.ingredients.fermentable_additions", "recipe.batch_size"],
+    expr: `(fermentables, batchSize) => {
+      const colors = fermentables.map((fermentable) => fermentable.color?.value);
+      return batchSize.value + colors.filter((color) => color).length + 0.5;
+    }`,
+    id: "fermentable_colors",
+  },
+  {
+    type: "dynamic",
+    dependsOn: ["calculations.fermentable_colors", "recipe.batch_size"],
+    expr: `(fermentable_colors, batchSize) => {
+      return fermentable_colors + batchSize.value;
+    }`,
+    id: "my_var",
+  },
+]);
 
 export const Route = createRootRoute({
   component: RootComponent,
