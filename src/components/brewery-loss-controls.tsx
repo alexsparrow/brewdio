@@ -1,51 +1,67 @@
-import React from 'react';
-import { Button } from "@/components/ui/button";
+import React, { useState } from 'react';
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Pencil, Check, X } from "lucide-react";
+import type { CalculatedStage } from "@/components/brewery-visualization";
+import type { EquipmentItemType } from "@beerjson/beerjson";
+import { volumeToGallons } from "@/calculations/units";
 
-// --- Types ---
+// Export CalculatedStage type from brewery-visualization to avoid duplication
+export type { CalculatedStage };
 
-type LossType = 'flat' | 'rate';
-type TankShape = 'rect' | 'dome' | 'chimney' | 'conical' | 'keg';
-
-export interface Loss {
-  id: string;
-  label: string;
-  value: number;
-  type: LossType;
-  unit: string;
-}
-
-export interface Stage {
-  id: string;
-  label: string;
-  shape: TankShape;
-  losses: Loss[];
-}
-
-export interface CalculatedStage extends Stage {
-  shape: TankShape;
-  volumeIn: number;
-  volumeOut: number;
-  totalLoss: number;
-  isSource?: boolean;
+// Extend CalculatedStage to include equipment item and loss label
+declare module "@/components/brewery-visualization" {
+  interface CalculatedStage {
+    lossLabel?: string;
+    equipmentItem?: EquipmentItemType;
+  }
 }
 
 interface BreweryLossControlsProps {
   stage: CalculatedStage | null;
   stageIndex: number;
-  onLossChange: (stageIndex: number, lossIndex: number, value: number) => void;
-  onAddCustomLoss: (stageIndex: number) => void;
+  grainWeight: number;
+  boilTime: number;
+  onLossChange: (stageIndex: number, newLossValue: number) => void;
+  onGrainAbsorptionChange?: (stageIndex: number, newRate: number) => void;
+  onBoilRateChange?: (stageIndex: number, newRate: number) => void;
+  onNameChange: (stageIndex: number, newName: string) => void;
 }
 
 export const BreweryLossControls: React.FC<BreweryLossControlsProps> = ({
   stage,
   stageIndex,
+  grainWeight,
+  boilTime,
   onLossChange,
-  onAddCustomLoss
+  onGrainAbsorptionChange,
+  onBoilRateChange,
+  onNameChange,
 }) => {
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState("");
+
+  const handleStartEditName = () => {
+    if (stage) {
+      setEditedName(stage.label);
+      setIsEditingName(true);
+    }
+  };
+
+  const handleSaveName = () => {
+    if (editedName.trim()) {
+      onNameChange(stageIndex, editedName.trim());
+    }
+    setIsEditingName(false);
+  };
+
+  const handleCancelEditName = () => {
+    setIsEditingName(false);
+    setEditedName("");
+  };
   if (!stage || stage.isSource) {
     return (
       <Card>
@@ -58,55 +74,144 @@ export const BreweryLossControls: React.FC<BreweryLossControlsProps> = ({
     );
   }
 
+  const currentLossValue = stage.equipmentItem
+    ? volumeToGallons(stage.equipmentItem.loss)
+    : 0;
+
+  // Calculate individual loss contributions
+  const grainAbsorptionRate = stage.equipmentItem?.grain_absorption_rate
+    ? stage.equipmentItem.grain_absorption_rate.value
+    : 0;
+  const grainAbsorptionLoss = grainAbsorptionRate * grainWeight;
+
+  const boilRate = stage.equipmentItem?.boil_rate_per_hour
+    ? volumeToGallons(stage.equipmentItem.boil_rate_per_hour)
+    : 0;
+  const boilLoss = boilRate * (boilTime / 60);
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-base">{stage.label}</CardTitle>
-            <CardDescription className="text-xs">
-              Total loss: {stage.totalLoss.toFixed(2)} gal
-            </CardDescription>
+          <div className="flex-1">
+            {isEditingName ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveName();
+                    if (e.key === "Escape") handleCancelEditName();
+                  }}
+                  className="h-8 text-base font-semibold"
+                  autoFocus
+                />
+                <Button
+                  onClick={handleSaveName}
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={handleCancelEditName}
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-base">{stage.label}</CardTitle>
+                  <Button
+                    onClick={handleStartEditName}
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 w-6 p-0 opacity-50 hover:opacity-100"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                </div>
+                <CardDescription className="text-xs">
+                  Total loss: {stage.totalLoss.toFixed(2)} gal
+                </CardDescription>
+              </>
+            )}
           </div>
-          <Button
-            onClick={() => onAddCustomLoss(stageIndex)}
-            size="sm"
-            variant="outline"
-            className="h-8"
-          >
-            <Plus className="h-3 w-3 mr-1" />
-            Add Loss
-          </Button>
         </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {stage.losses.map((loss, lIndex) => (
-            <div key={loss.id} className="space-y-2">
+          {/* Grain Absorption Rate Slider */}
+          {stage.equipmentItem?.grain_absorption_rate && onGrainAbsorptionChange && (
+            <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <Label htmlFor={`loss-${stage.id}-${loss.id}`} className="text-sm">
-                  {loss.label}
+                <Label htmlFor={`grain-abs-${stage.id}`} className="text-sm">
+                  Grain Absorption
                 </Label>
                 <span className="text-sm font-mono text-muted-foreground">
-                  {loss.value.toFixed(2)} {loss.unit}
+                  {grainAbsorptionRate.toFixed(2)} l/kg = {grainAbsorptionLoss.toFixed(2)} gal
                 </span>
               </div>
               <Slider
-                id={`loss-${stage.id}-${loss.id}`}
+                id={`grain-abs-${stage.id}`}
                 min={0}
                 max={2}
                 step={0.05}
-                value={[loss.value]}
-                onValueChange={([value]) => onLossChange(stageIndex, lIndex, value)}
+                value={[grainAbsorptionRate]}
+                onValueChange={([value]) => onGrainAbsorptionChange(stageIndex, value)}
                 className="w-full"
               />
             </div>
-          ))}
-          {stage.losses.length === 0 && (
-            <div className="text-sm text-muted-foreground italic">
-              No losses configured.
+          )}
+
+          {/* Boil Rate Slider */}
+          {stage.equipmentItem?.boil_rate_per_hour && onBoilRateChange && (
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <Label htmlFor={`boil-rate-${stage.id}`} className="text-sm">
+                  Boil Off Rate
+                </Label>
+                <span className="text-sm font-mono text-muted-foreground">
+                  {boilRate.toFixed(2)} gal/hr = {boilLoss.toFixed(2)} gal
+                </span>
+              </div>
+              <Slider
+                id={`boil-rate-${stage.id}`}
+                min={0}
+                max={3}
+                step={0.1}
+                value={[boilRate]}
+                onValueChange={([value]) => onBoilRateChange(stageIndex, value)}
+                className="w-full"
+              />
             </div>
           )}
+
+          {/* Static Loss Slider */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Label htmlFor={`loss-${stage.id}`} className="text-sm">
+                {stage.lossLabel || "Loss"}
+              </Label>
+              <span className="text-sm font-mono text-muted-foreground">
+                {currentLossValue.toFixed(2)} gal
+              </span>
+            </div>
+            <Slider
+              id={`loss-${stage.id}`}
+              min={0}
+              max={2}
+              step={0.05}
+              value={[currentLossValue]}
+              onValueChange={([value]) => onLossChange(stageIndex, value)}
+              className="w-full"
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

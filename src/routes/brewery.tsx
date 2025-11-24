@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useLiveQuery } from "@tanstack/react-db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,106 +21,137 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus, Trash2 } from "lucide-react";
-import { BreweryVisualization } from "@/components/brewery-visualization";
+import { BreweryVisualization, type TankShape } from "@/components/brewery-visualization";
 import { BreweryBatchSettings } from "@/components/brewery-batch-settings";
-import { BreweryLossControls, type Stage, type CalculatedStage } from "@/components/brewery-loss-controls";
+import { BreweryLossControls, type CalculatedStage } from "@/components/brewery-loss-controls";
+import { equipmentCollection, DEFAULT_EQUIPMENT } from "@/db";
+import type { EquipmentItemType } from "@beerjson/beerjson";
+import { volumeToGallons, specificVolumeToGallonsPerKilogram } from "@/calculations/units";
 
 export const Route = createFileRoute("/brewery")({
   component: BreweryComponent,
 });
-
-interface EquipmentProfile {
-  id: string;
-  name: string;
-}
-
-// Default equipment profile
-const DEFAULT_PROFILE: EquipmentProfile = {
-  id: "default",
-  name: "Default Setup",
-};
-
-// Initial stages configuration
-const INITIAL_STAGES: Stage[] = [
-  {
-    id: "mash",
-    label: "Mash Tun",
-    shape: "dome",
-    losses: [
-      { id: "grainAbs", label: "Grain Absorption", value: 0.2, type: "rate", unit: "gal/kg" },
-      { id: "tunDead", label: "Tun Deadspace", value: 0.25, type: "flat", unit: "gal" }
-    ]
-  },
-  {
-    id: "kettle",
-    label: "Boil Kettle",
-    shape: "chimney",
-    losses: [
-      { id: "boilOff", label: "Boil Off Rate", value: 1.0, type: "rate", unit: "gal/hr" },
-      { id: "trub", label: "Trub / Hop Loss", value: 0.5, type: "flat", unit: "gal" }
-    ]
-  },
-  {
-    id: "fermenter",
-    label: "Fermenter",
-    shape: "conical",
-    losses: [
-      { id: "trub_ferm", label: "Yeast/Cake Loss", value: 0.5, type: "flat", unit: "gal" }
-    ]
-  },
-  {
-    id: "packaging",
-    label: "Kegging",
-    shape: "keg",
-    losses: []
-  }
-];
 
 interface CalculationResult {
   totalWaterNeeded: number;
   stages: CalculatedStage[];
 }
 
+/**
+ * Map BeerJSON equipment form to visualization tank shape
+ */
+function getShapeFromForm(form: EquipmentItemType["form"]): TankShape {
+  switch (form) {
+    case "HLT":
+      return "rect";
+    case "Mash Tun":
+    case "Lauter Tun":
+      return "dome";
+    case "Brew Kettle":
+      return "chimney";
+    case "Fermenter":
+    case "Aging Vessel":
+      return "conical";
+    case "Packaging Vessel":
+      return "keg";
+    default:
+      return "rect";
+  }
+}
+
+/**
+ * Get the appropriate loss label for the static loss based on equipment form
+ */
+function getLossLabel(item: EquipmentItemType): string {
+  // Labels for the static loss field
+  switch (item.form) {
+    case "Mash Tun":
+    case "Lauter Tun":
+      return "Dead Space / Other Loss";
+    case "Brew Kettle":
+      return "Other Loss";
+    case "Fermenter":
+    case "Aging Vessel":
+      return "Yeast/Cake Loss";
+    case "Packaging Vessel":
+      return "Transfer Loss";
+    default:
+      return "Loss";
+  }
+}
+
 function BreweryComponent() {
-  const [profiles, setProfiles] = useState<EquipmentProfile[]>([DEFAULT_PROFILE]);
-  const [selectedProfileId, setSelectedProfileId] = useState<string>(DEFAULT_PROFILE.id);
+  const { data: equipmentProfiles, status } = useLiveQuery(equipmentCollection);
+  const [selectedProfileId, setSelectedProfileId] = useState<string>("default");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newProfileName, setNewProfileName] = useState("");
 
   // Brewery state
   const [targetVolume, setTargetVolume] = useState<number>(5.0);
   const [boilTime, setBoilTime] = useState<number>(60);
-  const [grainWeight, setGrainWeight] = useState<number>(4.0); // Default 4kg for 5 gallon batch
+  const [grainWeight, setGrainWeight] = useState<number>(4.0);
   const [beerColor, setBeerColor] = useState<string>("#F59E0B");
-  const [stages, setStages] = useState<Stage[]>(INITIAL_STAGES);
   const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
 
-  // Calculate water needs
+  // Track pending changes
+  const [hasChanges, setHasChanges] = useState(false);
+  const [editedEquipment, setEditedEquipment] = useState<EquipmentItemType[] | null>(null);
+
+  // Get current equipment profile
+  const currentEquipment = equipmentProfiles?.find(
+    (e) => e.id === selectedProfileId
+  );
+
+  // Load equipment items into editable state when profile changes
+  useEffect(() => {
+    if (currentEquipment) {
+      setEditedEquipment(currentEquipment.equipment.equipment_items);
+      setHasChanges(false);
+    }
+  }, [currentEquipment]);
+
+  // Calculate water needs from equipment (use edited version if available)
   const calculationData = useMemo((): CalculationResult => {
+    const equipmentItems = editedEquipment || currentEquipment?.equipment.equipment_items;
+
+    if (!equipmentItems) {
+      return { totalWaterNeeded: 0, stages: [] };
+    }
+
     let currentVol = targetVolume;
     const processedStages: CalculatedStage[] = [];
 
-    [...stages].reverse().forEach(stage => {
+    // Process equipment items in reverse (from packaging back to source)
+    [...equipmentItems].reverse().forEach((item) => {
       let stageLossTotal = 0;
-      stage.losses.forEach(loss => {
-        let val = loss.value;
-        if (loss.type === 'rate') {
-          // For grain absorption, multiply by grain weight; for boil off, multiply by boil time
-          if (loss.unit.includes('kg')) {
-            val = val * grainWeight;
-          } else if (loss.unit.includes('hr')) {
-            val = val * (boilTime / 60);
-          }
-        }
-        stageLossTotal += val;
-      });
+
+      // Calculate loss based on type
+      if (item.grain_absorption_rate) {
+        // Grain absorption: rate * grain weight
+        const rateInGalPerKg = specificVolumeToGallonsPerKilogram(item.grain_absorption_rate);
+        stageLossTotal += rateInGalPerKg * grainWeight;
+      }
+
+      if (item.boil_rate_per_hour) {
+        // Boil off: rate * time
+        const rateInGalPerHr = volumeToGallons(item.boil_rate_per_hour);
+        stageLossTotal += rateInGalPerHr * (boilTime / 60);
+      }
+
+      // Add static loss
+      const staticLoss = volumeToGallons(item.loss);
+      stageLossTotal += staticLoss;
 
       const volIn = currentVol + stageLossTotal;
       processedStages.push({
-        ...stage,
+        id: item.name.toLowerCase().replace(/\s+/g, "-"),
+        label: item.name,
+        shape: getShapeFromForm(item.form),
         volumeIn: volIn,
         volumeOut: currentVol,
         totalLoss: stageLossTotal,
+        lossLabel: getLossLabel(item),
+        equipmentItem: item,
       });
       currentVol = volIn;
     });
@@ -127,85 +159,153 @@ function BreweryComponent() {
     const orderedStages = processedStages.reverse();
 
     const sourceTank: CalculatedStage = {
-      id: 'source',
-      label: 'Strike Water',
-      shape: 'rect',
-      losses: [],
+      id: "source",
+      label: "Strike Water",
+      shape: "rect",
       volumeIn: currentVol,
       volumeOut: currentVol,
       totalLoss: 0,
-      isSource: true
+      isSource: true,
+      lossLabel: "",
     };
 
     return {
       totalWaterNeeded: currentVol,
-      stages: [sourceTank, ...orderedStages]
+      stages: [sourceTank, ...orderedStages],
     };
-  }, [targetVolume, boilTime, grainWeight, stages]);
+  }, [editedEquipment, currentEquipment, targetVolume, boilTime, grainWeight]);
 
   // Find selected stage and its index
   const selectedStageIndex = selectedStageId
-    ? calculationData.stages.findIndex(s => s.id === selectedStageId)
+    ? calculationData.stages.findIndex((s) => s.id === selectedStageId)
     : -1;
-  const selectedStage = selectedStageIndex > 0
-    ? calculationData.stages[selectedStageIndex]
-    : null;
+  const selectedStage =
+    selectedStageIndex > 0 ? calculationData.stages[selectedStageIndex] : null;
 
-  const handleAddProfile = () => {
+  const handleAddProfile = async () => {
     if (!newProfileName.trim()) return;
 
-    const newProfile: EquipmentProfile = {
+    const newProfile = {
       id: `profile-${Date.now()}`,
-      name: newProfileName.trim(),
+      equipment: {
+        name: newProfileName.trim(),
+        equipment_items: DEFAULT_EQUIPMENT.equipment.equipment_items,
+      },
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     };
 
-    setProfiles((prev) => [...prev, newProfile]);
+    await equipmentCollection.insertOne(newProfile);
     setSelectedProfileId(newProfile.id);
     setNewProfileName("");
     setIsAddDialogOpen(false);
   };
 
-  const handleDeleteProfile = (profileId: string) => {
+  const handleDeleteProfile = async (profileId: string) => {
     // Prevent deleting the default profile
-    if (profileId === DEFAULT_PROFILE.id) return;
+    if (profileId === "default") return;
 
-    setProfiles((prev) => {
-      const filtered = prev.filter((p) => p.id !== profileId);
+    await equipmentCollection.deleteOne(profileId);
 
-      // If we're deleting the selected profile, switch to default
-      if (selectedProfileId === profileId) {
-        setSelectedProfileId(DEFAULT_PROFILE.id);
-      }
+    // If we're deleting the selected profile, switch to default
+    if (selectedProfileId === profileId) {
+      setSelectedProfileId("default");
+    }
+  };
 
-      return filtered;
+  const handleLossChange = (stageIndex: number, newLossValue: number) => {
+    if (!editedEquipment || stageIndex <= 0) return;
+
+    const equipmentItemIndex = stageIndex - 1;
+    const newEquipment = [...editedEquipment];
+
+    if (newEquipment[equipmentItemIndex]) {
+      newEquipment[equipmentItemIndex] = {
+        ...newEquipment[equipmentItemIndex],
+        loss: { value: newLossValue, unit: "gal" },
+      };
+
+      setEditedEquipment(newEquipment);
+      setHasChanges(true);
+    }
+  };
+
+  const handleStageNameChange = (stageIndex: number, newName: string) => {
+    if (!editedEquipment || stageIndex <= 0) return;
+
+    const equipmentItemIndex = stageIndex - 1;
+    const newEquipment = [...editedEquipment];
+
+    if (newEquipment[equipmentItemIndex]) {
+      newEquipment[equipmentItemIndex] = {
+        ...newEquipment[equipmentItemIndex],
+        name: newName,
+      };
+
+      setEditedEquipment(newEquipment);
+      setHasChanges(true);
+    }
+  };
+
+  const handleGrainAbsorptionChange = (stageIndex: number, newRate: number) => {
+    if (!editedEquipment || stageIndex <= 0) return;
+
+    const equipmentItemIndex = stageIndex - 1;
+    const newEquipment = [...editedEquipment];
+
+    if (newEquipment[equipmentItemIndex]) {
+      newEquipment[equipmentItemIndex] = {
+        ...newEquipment[equipmentItemIndex],
+        grain_absorption_rate: { value: newRate, unit: "l/kg" },
+      };
+
+      setEditedEquipment(newEquipment);
+      setHasChanges(true);
+    }
+  };
+
+  const handleBoilRateChange = (stageIndex: number, newRate: number) => {
+    if (!editedEquipment || stageIndex <= 0) return;
+
+    const equipmentItemIndex = stageIndex - 1;
+    const newEquipment = [...editedEquipment];
+
+    if (newEquipment[equipmentItemIndex]) {
+      newEquipment[equipmentItemIndex] = {
+        ...newEquipment[equipmentItemIndex],
+        boil_rate_per_hour: { value: newRate, unit: "gal" },
+      };
+
+      setEditedEquipment(newEquipment);
+      setHasChanges(true);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!editedEquipment || !currentEquipment) return;
+
+    await equipmentCollection.update(selectedProfileId, (draft) => {
+      draft.equipment.equipment_items = editedEquipment;
+      draft.updatedAt = Date.now();
     });
+
+    setHasChanges(false);
   };
 
-  const handleLossChange = (stageIndex: number, lossIndex: number, val: number) => {
-    const realIndex = stageIndex - 1;
-    if (realIndex < 0) return;
-    const newStages = [...stages];
-    newStages[realIndex].losses[lossIndex].value = val;
-    setStages(newStages);
+  const handleCancel = () => {
+    if (currentEquipment) {
+      setEditedEquipment(currentEquipment.equipment.equipment_items);
+      setHasChanges(false);
+    }
   };
 
-  const handleAddCustomLoss = (stageIndex: number) => {
-    const realIndex = stageIndex - 1;
-    if (realIndex < 0) return;
-    const newStages = [...stages];
-    newStages[realIndex].losses.push({
-      id: `custom_${Date.now()}`,
-      label: "Custom Loss",
-      value: 0.1,
-      type: "flat",
-      unit: "gal"
-    });
-    setStages(newStages);
-  };
+  if (status === "pending") {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header with Equipment Profile Selector */}
+      {/* Header with Equipment Profile Selector and Save/Cancel */}
       <div className="flex items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-bold">Brewery</h1>
@@ -214,16 +314,24 @@ function BreweryComponent() {
           </p>
         </div>
 
-        {/* Equipment Profile Selector - Right Side */}
+        {/* Equipment Profile Selector and Actions - Right Side */}
         <div className="flex items-center gap-3">
+          {hasChanges && (
+            <>
+              <Button onClick={handleCancel} variant="outline">
+                Cancel
+              </Button>
+              <Button onClick={handleSave}>Save Changes</Button>
+            </>
+          )}
           <Select value={selectedProfileId} onValueChange={setSelectedProfileId}>
             <SelectTrigger className="w-[240px]">
-              <SelectValue />
+              <SelectValue placeholder="Select equipment profile" />
             </SelectTrigger>
             <SelectContent>
-              {profiles.map((profile) => (
+              {equipmentProfiles?.map((profile) => (
                 <SelectItem key={profile.id} value={profile.id}>
-                  {profile.name}
+                  {profile.equipment.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -270,7 +378,7 @@ function BreweryComponent() {
             </DialogContent>
           </Dialog>
 
-          {selectedProfileId !== DEFAULT_PROFILE.id && (
+          {selectedProfileId !== "default" && (
             <Button
               variant="destructive"
               size="icon"
@@ -311,8 +419,12 @@ function BreweryComponent() {
         <BreweryLossControls
           stage={selectedStage}
           stageIndex={selectedStageIndex}
+          grainWeight={grainWeight}
+          boilTime={boilTime}
           onLossChange={handleLossChange}
-          onAddCustomLoss={handleAddCustomLoss}
+          onGrainAbsorptionChange={handleGrainAbsorptionChange}
+          onBoilRateChange={handleBoilRateChange}
+          onNameChange={handleStageNameChange}
         />
       </div>
     </div>

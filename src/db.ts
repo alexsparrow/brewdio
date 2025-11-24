@@ -1,7 +1,7 @@
 import { createCollection } from "@tanstack/react-db";
 import { dexieCollectionOptions } from "tanstack-dexie-db-collection";
 import { z } from "zod";
-import type { RecipeType, VolumeUnitType, MassUnitType, TemperatureUnitType } from "@beerjson/beerjson";
+import type { RecipeType, VolumeUnitType, MassUnitType, TemperatureUnitType, EquipmentType } from "@beerjson/beerjson";
 
 const todoSchema = z.object({
   id: z.string(),
@@ -65,4 +65,60 @@ export const DEFAULT_SETTINGS: SettingsDocument = {
   defaultTemperatureUnit: "F",
   openaiApiKey: "",
   defaultAuthor: "Brewdio User",
+};
+
+// Equipment schema that wraps BeerJSON EquipmentType with database fields
+const equipmentSchema = z.object({
+  id: z.string(),
+  equipment: z.any() as z.ZodType<EquipmentType>, // BeerJSON equipment
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+
+export type EquipmentDocument = z.infer<typeof equipmentSchema>;
+
+export const equipmentCollection = createCollection(
+  dexieCollectionOptions({
+    id: "equipment",
+    schema: equipmentSchema,
+    getKey: (item) => item.id,
+  })
+);
+
+// Default equipment profile matching current brewery structure
+export const DEFAULT_EQUIPMENT: EquipmentDocument = {
+  id: "default",
+  equipment: {
+    name: "Default Setup",
+    equipment_items: [
+      {
+        name: "Mash Tun",
+        form: "Mash Tun",
+        maximum_volume: { value: 20, unit: "gal" },
+        loss: { value: 0.25, unit: "gal" },
+        grain_absorption_rate: { value: 0.96, unit: "l/kg" },
+      },
+      {
+        name: "Boil Kettle",
+        form: "Brew Kettle",
+        maximum_volume: { value: 15, unit: "gal" },
+        loss: { value: 0.5, unit: "gal" },
+        boil_rate_per_hour: { value: 1.0, unit: "gal" },
+      },
+      {
+        name: "Fermenter",
+        form: "Fermenter",
+        maximum_volume: { value: 10, unit: "gal" },
+        loss: { value: 0.5, unit: "gal" },
+      },
+      {
+        name: "Kegging",
+        form: "Packaging Vessel",
+        maximum_volume: { value: 5, unit: "gal" },
+        loss: { value: 0, unit: "gal" },
+      },
+    ],
+  },
+  createdAt: Date.now(),
+  updatedAt: Date.now(),
 };

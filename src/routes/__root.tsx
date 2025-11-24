@@ -1,6 +1,6 @@
 import { createRootRoute, Outlet, useRouterState } from "@tanstack/react-router";
 import { useLiveQuery } from "@tanstack/react-db";
-import { recipesCollection } from "@/db";
+import { recipesCollection, equipmentCollection, DEFAULT_EQUIPMENT } from "@/db";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChatSidebar } from "@/components/chat-sidebar";
@@ -55,6 +55,27 @@ export const Route = createRootRoute({
 function RootComponent() {
   const routerState = useRouterState();
   const { data: recipesData } = useLiveQuery(recipesCollection);
+  const { data: equipmentData, status: equipmentStatus } = useLiveQuery(equipmentCollection);
+
+  // Initialize default equipment if none exists
+  useEffect(() => {
+    console.log("Equipment initialization check:", {
+      status: equipmentStatus,
+      dataLength: equipmentData?.length,
+      data: equipmentData,
+      defaultEquipment: DEFAULT_EQUIPMENT
+    });
+
+    if (equipmentStatus === "ready" && equipmentData) {
+      const defaultExists = equipmentData.some(e => e.id === "default");
+      console.log("Default exists?", defaultExists);
+
+      if (!defaultExists) {
+        console.log("Inserting default equipment...");
+        equipmentCollection.insert(DEFAULT_EQUIPMENT);
+      }
+    }
+  }, [equipmentStatus, equipmentData]);
 
   // Extract recipeId from the route if we're on a recipe page
   const recipeId = routerState.location.pathname.startsWith('/recipes/')

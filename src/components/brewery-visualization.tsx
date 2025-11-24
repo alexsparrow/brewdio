@@ -2,7 +2,7 @@ import React from 'react';
 
 // --- Types ---
 
-type TankShape = 'rect' | 'dome' | 'chimney' | 'conical' | 'keg';
+export type TankShape = 'rect' | 'dome' | 'chimney' | 'conical' | 'keg';
 
 export interface CalculatedStage {
   id: string;

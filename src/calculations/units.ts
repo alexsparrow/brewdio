@@ -444,6 +444,15 @@ export function specificVolumeToGalPerLb(
   return specificVolumeToLPerKg(specificVolume) / 8.34540;
 }
 
+/**
+ * Convert any SpecificVolumeType to gal/kg (gallons per kilogram)
+ */
+export function specificVolumeToGallonsPerKilogram(
+  specificVolume: SpecificVolumeType
+): number {
+  return specificVolumeToLPerKg(specificVolume) * 0.264172;
+}
+
 // ============================================================================
 // ACIDITY CONVERSIONS
 // ============================================================================
