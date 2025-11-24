@@ -6,6 +6,7 @@ import {
   Leaf,
   FlaskConical,
   Code,
+  Beaker,
 } from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useLiveQuery } from "@tanstack/react-db";
@@ -33,6 +34,11 @@ const staticNavItems = [
     title: "Home",
     url: "/",
     icon: Home,
+  },
+  {
+    title: "Brewery",
+    url: "/brewery",
+    icon: Beaker,
   },
   {
     title: "Settings",

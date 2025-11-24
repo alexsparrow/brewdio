@@ -78,7 +78,6 @@ import('/@fs/Users/alex/projects/brewdio/src/db.ts').then(async ({ recipesCollec
     }
     draft.updatedAt = Date.now();
   });
-  console.log('Recipe fixed!');
   window.location.reload();
 });
 ```

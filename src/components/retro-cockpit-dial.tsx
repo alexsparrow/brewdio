@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useMemo } from "react";
+import { OlFarve } from "@/calculations/olfarve";
 
 // --- Types & Interfaces ---
 
@@ -41,6 +42,8 @@ const polarToCartesian = (
   };
 };
 
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
 const describeArc = (
   x: number,
   y: number,
@@ -56,13 +59,22 @@ const describeArc = (
 
   // Ensure consistent arc direction calculation
   const diff = endAngle - startAngle;
-  
-  const largeArcFlag = diff <= 180 ? '0' : '1';
+
+  const largeArcFlag = diff <= 180 ? "0" : "1";
 
   return [
-    'M', start.x, start.y,
-    'A', radius, radius, 0, largeArcFlag, 0, end.x, end.y
-  ].join(' ');
+    "M",
+    start.x,
+    start.y,
+    "A",
+    radius,
+    radius,
+    0,
+    largeArcFlag,
+    0,
+    end.x,
+    end.y,
+  ].join(" ");
 };
 
 // --- Component ---
@@ -79,7 +91,7 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
   targetMin = null,
   targetMax = null,
   width = 300,
-  showSrmGradient = false
+  showSrmGradient = false,
 }) => {
   // Gauge Geometry Configuration
   const cx = 150;
@@ -90,16 +102,27 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
   const totalAngle = endAngle - startAngle;
 
   // Generate unique IDs for filters to avoid conflicts with multiple dials
-  const filterId = React.useMemo(() => `dial-${label.toLowerCase().replace(/[^a-z]/g, '')}`, [label]);
+  const filterId = React.useMemo(
+    () => `dial-${label.toLowerCase().replace(/[^a-z]/g, "")}`,
+    [label]
+  );
+
+  const arcPoint = (angle: number, radius: number) =>
+    polarToCartesian(cx, cy, radius, angle);
 
   // 1. Calculate Needle Angle
   const clampedValue = Math.min(Math.max(value, min), max);
   const ratio = (clampedValue - min) / (max - min);
-  const currentAngle = startAngle + (ratio * totalAngle);
+  const currentAngle = startAngle + ratio * totalAngle;
 
   // 2. Determine if value is within target range
   const isInRange = useMemo(() => {
-    if (targetMin === null || targetMax === null || targetMin === undefined || targetMax === undefined) {
+    if (
+      targetMin === null ||
+      targetMax === null ||
+      targetMin === undefined ||
+      targetMax === undefined
+    ) {
       return true; // Default to in range if no range specified
     }
     // Handle potentially swapped min/max inputs gracefully
@@ -110,7 +133,12 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
 
   // 3. Calculate Target Range Arc
   const rangeArcData = useMemo(() => {
-    if (targetMin === null || targetMax === null || targetMin === undefined || targetMax === undefined) {
+    if (
+      targetMin === null ||
+      targetMax === null ||
+      targetMin === undefined ||
+      targetMax === undefined
+    ) {
       return null;
     }
 
@@ -128,15 +156,15 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
     const minRatio = (tMin - min) / (max - min);
     const maxRatio = (tMax - min) / (max - min);
 
-    const arcStart = startAngle + (minRatio * totalAngle);
-    const arcEnd = startAngle + (maxRatio * totalAngle);
+    const arcStart = startAngle + minRatio * totalAngle;
+    const arcEnd = startAngle + maxRatio * totalAngle;
 
     return {
       path: describeArc(cx, cy, radius - 10, arcStart, arcEnd),
       startAngle: arcStart,
       endAngle: arcEnd,
       minValue: tMin,
-      maxValue: tMax
+      maxValue: tMax,
     };
   }, [targetMin, targetMax, min, max, startAngle, totalAngle, cx, cy, radius]);
 
@@ -145,11 +173,16 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
     const tickCount = 11;
     return Array.from({ length: tickCount }).map((_, i) => {
       const tickRatio = i / (tickCount - 1);
-      const angle = startAngle + (tickRatio * totalAngle);
+      const angle = startAngle + tickRatio * totalAngle;
       const isMajor = i % 5 === 0;
 
       const outer = polarToCartesian(cx, cy, radius, angle);
-      const inner = polarToCartesian(cx, cy, radius - (isMajor ? 15 : 8), angle);
+      const inner = polarToCartesian(
+        cx,
+        cy,
+        radius - (isMajor ? 15 : 8),
+        angle
+      );
 
       return (
         <line
@@ -168,11 +201,22 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
   }, [startAngle, totalAngle, cx, cy, radius]);
 
   return (
-    <div style={{ width: width, display: 'inline-block', position: 'relative' }}>
-      <svg viewBox="0 0 300 260" style={{ width: '100%', height: 'auto', background: 'transparent' }}>
+    <div
+      style={{ width: width, display: "inline-block", position: "relative" }}
+    >
+      <svg
+        viewBox="0 0 300 260"
+        style={{ width: "100%", height: "auto", background: "transparent" }}
+      >
         <defs>
           {/* Glow filter for needle */}
-          <filter id={`${filterId}-needleGlow`} x="-50%" y="-50%" width="200%" height="200%">
+          <filter
+            id={`${filterId}-needleGlow`}
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+          >
             <feGaussianBlur stdDeviation="3" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
@@ -181,7 +225,13 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
           </filter>
 
           {/* Glow filter for target range */}
-          <filter id={`${filterId}-rangeGlow`} x="-20%" y="-20%" width="140%" height="140%">
+          <filter
+            id={`${filterId}-rangeGlow`}
+            x="-20%"
+            y="-20%"
+            width="140%"
+            height="140%"
+          >
             <feGaussianBlur stdDeviation="4" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
@@ -190,16 +240,56 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
           </filter>
 
           {/* SRM Color Gradient for target range */}
-          {showSrmGradient && rangeArcData && (
-            <linearGradient id={`${filterId}-srmGradient`} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor={srmToHex(rangeArcData.minValue)} />
-              <stop offset="25%" stopColor={srmToHex(rangeArcData.minValue + (rangeArcData.maxValue - rangeArcData.minValue) * 0.25)} />
-              <stop offset="50%" stopColor={srmToHex(rangeArcData.minValue + (rangeArcData.maxValue - rangeArcData.minValue) * 0.5)} />
-              <stop offset="75%" stopColor={srmToHex(rangeArcData.minValue + (rangeArcData.maxValue - rangeArcData.minValue) * 0.75)} />
-              <stop offset="100%" stopColor={srmToHex(rangeArcData.maxValue)} />
-            </linearGradient>
-          )}
         </defs>
+
+        {showSrmGradient &&
+          rangeArcData &&
+          (() => {
+            const segments = 20;
+            const paths = [];
+            for (let i = 0; i < segments; i++) {
+              const t1 = i / segments;
+              const t2 = (i + 1) / segments;
+
+              const angle1 = lerp(
+                rangeArcData.startAngle,
+                rangeArcData.endAngle,
+                t1
+              );
+              const angle2 = lerp(
+                rangeArcData.startAngle,
+                rangeArcData.endAngle,
+                t2
+              );
+
+              const value1 = lerp(
+                rangeArcData.minValue,
+                rangeArcData.maxValue,
+                t1
+              );
+
+              const smallPath = describeArc(
+                cx,
+                cy,
+                radius - 10,
+                angle1,
+                angle2
+              );
+
+              paths.push(
+                <path
+                  key={i}
+                  d={smallPath}
+                  fill="none"
+                  stroke={OlFarve.rgbToHex(OlFarve.srmToSRGB(value1))}
+                  strokeWidth="12"
+                  strokeLinecap="butt"
+                  strokeOpacity="0.9"
+                />
+              );
+            }
+            return paths;
+          })()}
 
         {/* Track */}
         <path
@@ -221,7 +311,9 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
           <path
             d={rangeArcData.path}
             fill="none"
-            stroke={showSrmGradient ? `url(#${filterId}-srmGradient)` : "#10b981"}
+            stroke={
+              showSrmGradient ? `url(#${filterId}-srmGradient)` : "#10b981"
+            }
             strokeWidth="12"
             strokeOpacity={showSrmGradient ? "0.8" : "0.6"}
             strokeLinecap="butt"
@@ -230,14 +322,22 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
         )}
 
         {/* Labels */}
-        <text x={cx} y={cy + 60} textAnchor="middle" className="fill-gray-500 dark:fill-gray-400" fontSize="14" fontFamily="monospace" letterSpacing="2px">
+        <text
+          x={cx}
+          y={cy + 60}
+          textAnchor="middle"
+          className="fill-gray-500 dark:fill-gray-400"
+          fontSize="14"
+          fontFamily="monospace"
+          letterSpacing="2px"
+        >
           {label}
         </text>
         <text
           x={cx}
           y={cy + 90}
           textAnchor="middle"
-          className={`${isInRange ? 'fill-gray-900 dark:fill-white' : 'fill-red-600 dark:fill-red-500'} glow-text`}
+          className={`${isInRange ? "fill-gray-900 dark:fill-white" : "fill-red-600 dark:fill-red-500"} glow-text`}
           fontSize="32"
           fontFamily="monospace"
           fontWeight="bold"
@@ -245,15 +345,33 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
           {label === "ABV" ? `${Math.round(value)}%` : Math.round(value)}
         </text>
 
-        <text x={cx - 90} y={cy + 80} textAnchor="middle" className="fill-gray-600 dark:fill-gray-500" fontSize="12" fontFamily="monospace">{min}</text>
-        <text x={cx + 90} y={cy + 80} textAnchor="middle" className="fill-gray-600 dark:fill-gray-500" fontSize="12" fontFamily="monospace">{max}</text>
+        <text
+          x={cx - 90}
+          y={cy + 80}
+          textAnchor="middle"
+          className="fill-gray-600 dark:fill-gray-500"
+          fontSize="12"
+          fontFamily="monospace"
+        >
+          {min}
+        </text>
+        <text
+          x={cx + 90}
+          y={cy + 80}
+          textAnchor="middle"
+          className="fill-gray-600 dark:fill-gray-500"
+          fontSize="12"
+          fontFamily="monospace"
+        >
+          {max}
+        </text>
 
         {/* Needle Group */}
         <g
           style={{
-            transition: 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            transition: "transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)",
             transformOrigin: `${cx}px ${cy}px`,
-            transform: `rotate(${currentAngle}deg)`
+            transform: `rotate(${currentAngle}deg)`,
           }}
         >
           {/* Contrasting Shadow for visibility in both modes */}
@@ -289,7 +407,7 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
             className="stroke-gray-600 dark:stroke-gray-300"
             strokeWidth="2"
             strokeLinecap="round"
-            style={{ transform: 'translateX(-1px)' }}
+            style={{ transform: "translateX(-1px)" }}
           />
 
           {/* Central Hub - Outer Ring */}
@@ -323,33 +441,4 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
       </svg>
     </div>
   );
-};
-
-// --- SRM Color Utility ---
-
-/**
- * Approximate conversion of SRM value to Hex Color.
- * Useful for passing directly to valueColor prop for color dials.
- */
-export const srmToHex = (srm: number): string => {
-  const srmColors: Record<number, string> = {
-    1: "#FFE699", 2: "#FFD878", 3: "#FFCA5A", 4: "#FFBF42",
-    5: "#FBB123", 6: "#F8A600", 7: "#F39C00", 8: "#EA8F00",
-    9: "#E58500", 10: "#DE7C00", 11: "#D77200", 12: "#CF6900",
-    13: "#CB6200", 14: "#C35900", 15: "#BB5100", 16: "#B54C00",
-    17: "#B04500", 18: "#A63E00", 19: "#A13700", 20: "#9B3200",
-    21: "#952D00", 22: "#8E2900", 23: "#882300", 24: "#821E00",
-    25: "#7B1A00", 26: "#771900", 27: "#701400", 28: "#6A0E00",
-    29: "#660D00", 30: "#5E0B00", 35: "#530900", 40: "#4C0500"
-  };
-
-  const rounded = Math.round(srm);
-  if (rounded < 1) return "#FFE699";
-  if (rounded > 40) return "#000000";
-
-  // If exact match found
-  if (srmColors[rounded]) return srmColors[rounded];
-
-  // Fallback for gaps (simple nearest neighbor or default)
-  return "#FBB123";
 };

@@ -10,12 +10,13 @@ import { EditableNotes } from "@/components/editable-notes";
 import { Button } from "@/components/ui/button";
 import { Trash2, Pencil } from "lucide-react";
 import { useEffect, useMemo } from "react";
-import * as React from "react";
 import { useCalculation } from "@/hooks/use-calculation";
 import { stores } from "@/lib/calculate";
-import { RetroCockpitDial, srmToHex } from "@/components/retro-cockpit-dial";
+import { RetroCockpitDial } from "@/components/retro-cockpit-dial";
 import { GravitySightGlass } from "@/components/gravity-sight-glass";
 import { Screw } from "@/components/screw";
+import { OlFarve } from "@/calculations/olfarve";
+import WaterCalculator from "@/components/water-calculator";
 
 export const Route = createFileRoute("/recipes/$recipeId")({
   component: RecipeDetailComponent,
@@ -52,7 +53,7 @@ function RecipeDetailComponent() {
       og: getRange(style.original_gravity),
       fg: getRange(style.final_gravity),
       ibu: getRange(style.international_bitterness_units),
-      color: getRange(style.color), // This is in EBC
+      color: getRange(style.color), // This is in SRM
       abv: getRange(style.alcohol_by_volume)
     };
   }, [recipe?.recipe?.style]);
@@ -159,6 +160,8 @@ function RecipeDetailComponent() {
     });
   };
 
+  const liquidColor = color ? OlFarve.rgbToHex(OlFarve.srmToSRGB(color)) : "#FBB123";
+
   return (
     <div className="flex flex-col gap-6">
       <RecipeHeader recipe={recipe} redirectOnDelete={true} />
@@ -180,23 +183,25 @@ function RecipeDetailComponent() {
           <div className="md:col-span-3 flex justify-around bg-white/50 dark:bg-gray-950/30 p-3 rounded-lg border border-gray-300 dark:border-gray-800">
             <GravitySightGlass
               label="OG"
-              value={og ?? 1.000}
-              liquidColor={color !== undefined ? srmToHex(color / 1.97) : "#FBB123"} // Convert EBC to SRM
+              value={og ?? 1.0}
+              liquidColor={liquidColor}
               percentage={0} // Calculated internally now
-              min={1.000}
-              max={1.100}
-              targetMin={styleRanges?.og?.min ?? 1.040}
-              targetMax={styleRanges?.og?.max ?? 1.070}
+              min={1.0}
+              max={1.1}
+              targetMin={styleRanges?.og?.min ?? 1.04}
+              targetMax={styleRanges?.og?.max ?? 1.07}
             />
             {/* Arrow indicating change */}
-            <div className="self-center text-gray-600 dark:text-gray-500 text-2xl">→</div>
+            <div className="self-center text-gray-600 dark:text-gray-500 text-2xl">
+              →
+            </div>
             <GravitySightGlass
               label="FG"
-              value={fg ?? 1.000}
-              liquidColor={color !== undefined ? srmToHex(color / 1.97) : "#FBB123"} // Convert EBC to SRM
+              value={fg ?? 1.0}
+              liquidColor={liquidColor}
               percentage={0} // Calculated internally now
-              min={1.000}
-              max={1.040}
+              min={1.0}
+              max={1.04}
               targetMin={styleRanges?.fg?.min ?? 1.008}
               targetMax={styleRanges?.fg?.max ?? 1.016}
             />
@@ -220,11 +225,11 @@ function RecipeDetailComponent() {
             <div className="bg-white/50 dark:bg-gray-950/30 p-2 rounded-lg border border-gray-300 dark:border-gray-800 flex items-center justify-center">
               <RetroCockpitDial
                 label="SRM"
-                value={color !== undefined ? color / 1.97 : 0} // Convert EBC to SRM
+                value={color !== undefined ? color : 0} // Convert EBC to SRM
                 min={0}
                 max={40}
-                targetMin={styleRanges?.color ? (styleRanges.color.min / 1.97) : 4}
-                targetMax={styleRanges?.color ? (styleRanges.color.max / 1.97) : 20}
+                targetMin={styleRanges?.color ? styleRanges.color.min : 4}
+                targetMax={styleRanges?.color ? styleRanges.color.max : 20}
                 showSrmGradient={true}
               />
             </div>
@@ -254,21 +259,21 @@ function RecipeDetailComponent() {
             <InlineEditableWithUnit
               value={beerRecipe.batch_size.value}
               unit={beerRecipe.batch_size.unit}
-              availableUnits={['gal', 'l', 'ml']}
+              availableUnits={["gal", "l", "ml"]}
               onSave={handleBatchSizeUpdate}
               label="Batch Size"
             />
             <InlineEditableWithUnit
               value={beerRecipe.boil_size.value}
               unit={beerRecipe.boil_size.unit}
-              availableUnits={['gal', 'l', 'ml']}
+              availableUnits={["gal", "l", "ml"]}
               onSave={handleBoilSizeUpdate}
               label="Boil Size"
             />
             <InlineEditableWithUnit
               value={beerRecipe.boil_time.value}
               unit={beerRecipe.boil_time.unit}
-              availableUnits={['min', 'hr']}
+              availableUnits={["min", "hr"]}
               onSave={handleBoilTimeUpdate}
               label="Boil Time"
             />
@@ -276,7 +281,7 @@ function RecipeDetailComponent() {
               <InlineEditableWithUnit
                 value={beerRecipe.efficiency.brewhouse}
                 unit="%"
-                availableUnits={['%']}
+                availableUnits={["%"]}
                 onSave={handleEfficiencyUpdate}
                 label="Brewhouse Efficiency"
               />
@@ -287,7 +292,7 @@ function RecipeDetailComponent() {
         <div className="border rounded-lg p-4">
           <h2 className="text-xl font-semibold mb-3">Notes</h2>
           <EditableNotes
-            value={beerRecipe.notes || ''}
+            value={beerRecipe.notes || ""}
             onSave={handleNotesUpdate}
             placeholder="Add brewing notes, recipe history, tasting notes, etc..."
           />
@@ -306,8 +311,13 @@ function RecipeDetailComponent() {
         ) : (
           <div className="space-y-2">
             {beerRecipe.ingredients.fermentable_additions?.map((ferm, idx) => (
-              <div key={idx} className="flex justify-between items-center text-sm border-b pb-2 last:border-0">
-                <span className="font-medium">{ferm.name || "Unnamed fermentable"}</span>
+              <div
+                key={idx}
+                className="flex justify-between items-center text-sm border-b pb-2 last:border-0"
+              >
+                <span className="font-medium">
+                  {ferm.name || "Unnamed fermentable"}
+                </span>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">
                     {ferm.amount.value} {ferm.amount.unit}
@@ -352,9 +362,14 @@ function RecipeDetailComponent() {
         ) : (
           <div className="space-y-2">
             {beerRecipe.ingredients.hop_additions?.map((hop, idx) => (
-              <div key={idx} className="flex justify-between items-center text-sm border-b pb-2 last:border-0">
+              <div
+                key={idx}
+                className="flex justify-between items-center text-sm border-b pb-2 last:border-0"
+              >
                 <div>
-                  <span className="font-medium">{hop.name || "Unnamed hop"}</span>
+                  <span className="font-medium">
+                    {hop.name || "Unnamed hop"}
+                  </span>
                   {hop.timing?.time && (
                     <span className="text-muted-foreground ml-2">
                       @ {hop.timing.time.value} {hop.timing.time.unit}
@@ -407,8 +422,13 @@ function RecipeDetailComponent() {
         ) : (
           <div className="space-y-2">
             {beerRecipe.ingredients.culture_additions?.map((culture, idx) => (
-              <div key={idx} className="flex justify-between items-center text-sm border-b pb-2 last:border-0">
-                <span className="font-medium">{culture.name || "Unnamed culture"}</span>
+              <div
+                key={idx}
+                className="flex justify-between items-center text-sm border-b pb-2 last:border-0"
+              >
+                <span className="font-medium">
+                  {culture.name || "Unnamed culture"}
+                </span>
                 <div className="flex items-center gap-2">
                   {culture.amount && (
                     <span className="text-muted-foreground">

@@ -6,6 +6,10 @@ import type {
   MassType,
 } from "@beerjson/beerjson";
 import type { Calculation, StaticCalculation } from "./types";
+import {
+  massToPounds,
+  volumeToGallons,
+} from "./units";
 
 /**
  * Convert yield to Points Per Gallon (PPG)
@@ -21,41 +25,6 @@ function yieldToPPG(yield_: YieldType): number {
 }
 
 /**
- * Convert amount to pounds
- */
-function amountToLb(amount: MassType | VolumeType): number {
-  switch (amount.unit) {
-    case "kg":
-      return amount.value * 2.20462;
-    case "g":
-      return (amount.value / 1000) * 2.20462;
-    case "lb":
-    case "lbs":
-      return amount.value;
-    case "oz":
-      return amount.value / 16;
-    default:
-      throw Error(`Unrecognised unit: ${amount.unit}`);
-  }
-}
-
-/**
- * Convert volume to gallons
- */
-function volumeToGallons(volume: VolumeType): number {
-  switch (volume.unit) {
-    case "gal":
-      return volume.value;
-    case "l":
-      return volume.value * 0.264172;
-    case "ml":
-      return (volume.value / 1000) * 0.264172;
-    default:
-      throw Error(`Unrecognised volume unit: ${volume.unit}`);
-  }
-}
-
-/**
  * Calculate gravity units for a fermentable
  */
 function gravityUnit(fermentable: FermentableAdditionType): number {
@@ -67,7 +36,7 @@ function gravityUnit(fermentable: FermentableAdditionType): number {
   }
 
   const yieldPPG = yieldToPPG(yieldData);
-  const amountLb = amountToLb(fermentable.amount);
+  const amountLb = massToPounds(fermentable.amount as MassType);
   return yieldPPG * amountLb;
 }
 

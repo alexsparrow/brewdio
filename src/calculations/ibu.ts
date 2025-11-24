@@ -2,53 +2,13 @@ import type {
   HopAdditionType,
   VolumeType,
   MassType,
-  TimeType,
 } from "@beerjson/beerjson";
 import type { Calculation, StaticCalculation } from "./types";
-
-/**
- * Convert amount to ounces
- */
-function amountInOunces(amount: VolumeType | MassType): number {
-  switch (amount.unit) {
-    case "kg":
-      return 35.274 * amount.value;
-    case "g":
-      return (35.275 * amount.value) / 1000;
-    default:
-      throw Error(`Don't know how to convert: ${amount.unit}`);
-  }
-}
-
-/**
- * Convert time to minutes
- */
-function timeInMinutes(time: TimeType): number {
-  switch (time.unit) {
-    case "min":
-      return time.value;
-    case "hr":
-      return time.value * 60;
-    default:
-      throw Error(`Don't know how to convert: ${time.unit}`);
-  }
-}
-
-/**
- * Convert volume to gallons
- */
-function volumeToGallons(volume: VolumeType): number {
-  switch (volume.unit) {
-    case "gal":
-      return volume.value;
-    case "l":
-      return volume.value * 0.264172;
-    case "ml":
-      return (volume.value / 1000) * 0.264172;
-    default:
-      throw Error(`Unrecognised volume unit: ${volume.unit}`);
-  }
-}
+import {
+  massToOunces,
+  timeToMinutes,
+  volumeToGallons,
+} from "./units";
 
 /**
  * Calculate milligrams per liter of added alpha acids
@@ -59,7 +19,7 @@ function mgplAddedAlphaAcids(
 ): number {
   const alphaAcid = hop.alpha_acid?.value || 0;
   return (
-    ((alphaAcid / 100) * amountInOunces(hop.amount) * 7490) /
+    ((alphaAcid / 100) * massToOunces(hop.amount as MassType) * 7490) /
     volumeToGallons(batchSize)
   );
 }
@@ -71,7 +31,7 @@ function boilTimeFactor(hop: HopAdditionType): number {
   if (!hop.timing?.time) {
     return 0;
   }
-  return (1 - Math.exp(-0.04 * timeInMinutes(hop.timing.time))) / 4.15;
+  return (1 - Math.exp(-0.04 * timeToMinutes(hop.timing.time))) / 4.15;
 }
 
 /**

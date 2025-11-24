@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as BreweryRouteImport } from './routes/brewery'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RecipesRecipeIdRouteImport } from './routes/recipes.$recipeId'
 import { Route as RecipesRecipeIdJsonRouteImport } from './routes/recipes.$recipeId_.json'
@@ -17,6 +18,11 @@ import { Route as RecipesRecipeIdJsonRouteImport } from './routes/recipes.$recip
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BreweryRoute = BreweryRouteImport.update({
+  id: '/brewery',
+  path: '/brewery',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,12 +43,14 @@ const RecipesRecipeIdJsonRoute = RecipesRecipeIdJsonRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/brewery': typeof BreweryRoute
   '/settings': typeof SettingsRoute
   '/recipes/$recipeId': typeof RecipesRecipeIdRoute
   '/recipes/$recipeId/json': typeof RecipesRecipeIdJsonRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/brewery': typeof BreweryRoute
   '/settings': typeof SettingsRoute
   '/recipes/$recipeId': typeof RecipesRecipeIdRoute
   '/recipes/$recipeId/json': typeof RecipesRecipeIdJsonRoute
@@ -50,6 +58,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/brewery': typeof BreweryRoute
   '/settings': typeof SettingsRoute
   '/recipes/$recipeId': typeof RecipesRecipeIdRoute
   '/recipes/$recipeId_/json': typeof RecipesRecipeIdJsonRoute
@@ -58,14 +67,21 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/brewery'
     | '/settings'
     | '/recipes/$recipeId'
     | '/recipes/$recipeId/json'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/settings' | '/recipes/$recipeId' | '/recipes/$recipeId/json'
+  to:
+    | '/'
+    | '/brewery'
+    | '/settings'
+    | '/recipes/$recipeId'
+    | '/recipes/$recipeId/json'
   id:
     | '__root__'
     | '/'
+    | '/brewery'
     | '/settings'
     | '/recipes/$recipeId'
     | '/recipes/$recipeId_/json'
@@ -73,6 +89,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BreweryRoute: typeof BreweryRoute
   SettingsRoute: typeof SettingsRoute
   RecipesRecipeIdRoute: typeof RecipesRecipeIdRoute
   RecipesRecipeIdJsonRoute: typeof RecipesRecipeIdJsonRoute
@@ -85,6 +102,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/brewery': {
+      id: '/brewery'
+      path: '/brewery'
+      fullPath: '/brewery'
+      preLoaderRoute: typeof BreweryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -113,6 +137,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BreweryRoute: BreweryRoute,
   SettingsRoute: SettingsRoute,
   RecipesRecipeIdRoute: RecipesRecipeIdRoute,
   RecipesRecipeIdJsonRoute: RecipesRecipeIdJsonRoute,

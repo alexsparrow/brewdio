@@ -85,8 +85,6 @@ export function ChatSidebar({ recipeId }: ChatSidebarProps = {}) {
     messages: [systemMessage],
   });
 
-  console.log(messages);
-
   return (
     <>
       {/* Toggle Button */}

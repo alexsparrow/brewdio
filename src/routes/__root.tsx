@@ -78,13 +78,13 @@ function RootComponent() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/">Home</BreadcrumbLink>
+                  <BreadcrumbLink to="/">Home</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 {currentRecipe ? (
                   <>
                     <BreadcrumbItem>
-                      <BreadcrumbLink href={`/recipes/${recipeId}`}>
+                      <BreadcrumbLink to={`/recipes/${recipeId}`}>
                         {currentRecipe.recipe.name}
                       </BreadcrumbLink>
                     </BreadcrumbItem>
