@@ -3,7 +3,7 @@ import { useForm } from "@tanstack/react-form";
 import { useLiveQuery } from "@tanstack/react-db";
 import { settingsCollection } from "@/db";
 import { useRecipeEdit } from "@/contexts/recipe-edit-context";
-import type { HopAdditionType, MassUnitType } from "@beerjson/beerjson";
+import type { HopAdditionType, MassUnitType, UseType } from "@beerjson/beerjson";
 import {
   Dialog,
   DialogContent,
@@ -50,7 +50,9 @@ export function AddHopDialog({
       hopName: existingHop?.name || "",
       amount: existingHop?.amount.value.toString() || "1.0",
       unit: (existingHop?.amount.unit || settings?.defaultMassUnit || "oz") as MassUnitType,
+      use: (existingHop?.timing?.use || "add_to_boil") as UseType,
       time: existingHop?.timing?.time?.value.toString() || "60",
+      duration: existingHop?.timing?.duration?.value.toString() || "",
     },
     onSubmit: async ({ value }) => {
       // Find the selected hop from the hops data
@@ -60,7 +62,8 @@ export function AddHopDialog({
         return;
       }
 
-      // Create the hop addition
+      // Create the hop addition with timing based on use type
+      const isBoil = value.use === "add_to_boil";
       const hopAddition: HopAdditionType = {
         name: selectedHop.name,
         origin: selectedHop.origin,
@@ -71,11 +74,24 @@ export function AddHopDialog({
           unit: value.unit,
         },
         timing: {
-          use: "boil",
-          time: {
+          use: value.use,
+          // For boil: time is boil duration in minutes
+          // For fermentation: time is when to add (days into fermentation)
+          time: isBoil ? {
             value: parseFloat(value.time),
             unit: "min",
+          } : {
+            value: parseFloat(value.time),
+            unit: "day",
           },
+          // Duration only applies to fermentation (how long it stays)
+          // Only include if a value is provided (empty string means unlimited)
+          ...(!isBoil && value.duration && {
+            duration: {
+              value: parseFloat(value.duration),
+              unit: "day",
+            }
+          }),
         },
       };
 
@@ -119,7 +135,7 @@ export function AddHopDialog({
           <DialogDescription>
             {isEditing
               ? "Update the hop details."
-              : "Select a hop variety and specify the amount and boil time to add to your recipe."}
+              : "Select a hop variety and specify when and how to add it to your recipe."}
           </DialogDescription>
         </DialogHeader>
         <form
@@ -156,6 +172,41 @@ export function AddHopDialog({
                     {field.state.meta.errors.join(", ")}
                   </p>
                 )}
+              </div>
+            )}
+          </form.Field>
+
+          <form.Field name="use">
+            {(field) => (
+              <div className="space-y-2">
+                <Label htmlFor={field.name}>Addition Type</Label>
+                <Select
+                  value={field.state.value}
+                  onValueChange={(newValue) => {
+                    field.handleChange(newValue);
+
+                    // Reset time field to sensible defaults when switching types
+                    const currentTime = form.getFieldValue("time");
+                    const timeNum = currentTime ? parseFloat(currentTime) : 0;
+
+                    // If switching to fermentation and time is a typical boil value, reset to 3 days
+                    if (newValue === "add_to_fermentation" && timeNum >= 30) {
+                      form.setFieldValue("time", "3");
+                    }
+                    // If switching to boil and time is a typical fermentation value, reset to 60 min
+                    else if (newValue === "add_to_boil" && timeNum <= 10) {
+                      form.setFieldValue("time", "60");
+                    }
+                  }}
+                >
+                  <SelectTrigger id={field.name}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="add_to_boil">Boil</SelectItem>
+                    <SelectItem value="add_to_fermentation">Fermentation (Dry Hop)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             )}
           </form.Field>
@@ -219,39 +270,98 @@ export function AddHopDialog({
             </form.Field>
           </div>
 
-          <form.Field
-            name="time"
-            validators={{
-              onChange: ({ value }) => {
-                const num = parseFloat(value);
-                if (isNaN(num) || num < 0) {
-                  return "Time must be a non-negative number";
-                }
-                return undefined;
-              },
+          <form.Subscribe selector={(state) => state.values.use}>
+            {(useType) => {
+              const isBoil = useType === "add_to_boil";
+              return (
+                <>
+                  <form.Field
+                    name="time"
+                    validators={{
+                      onChange: ({ value }) => {
+                        const num = parseFloat(value);
+                        if (isNaN(num) || num < 0) {
+                          return "Time must be a non-negative number";
+                        }
+                        return undefined;
+                      },
+                    }}
+                  >
+                    {(field) => (
+                      <div className="space-y-2">
+                        <Label htmlFor={field.name}>
+                          {isBoil ? "Boil Time (minutes)" : "Add After (days)"}
+                        </Label>
+                        <Input
+                          id={field.name}
+                          type="number"
+                          step={isBoil ? "1" : "0.5"}
+                          min="0"
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          placeholder={isBoil ? "60" : "3"}
+                        />
+                        {!isBoil && (
+                          <p className="text-xs text-muted-foreground">
+                            Days into fermentation before adding
+                          </p>
+                        )}
+                        {field.state.meta.errors && (
+                          <p className="text-sm text-destructive">
+                            {field.state.meta.errors.join(", ")}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </form.Field>
+
+                  {!isBoil && (
+                    <form.Field
+                      name="duration"
+                      validators={{
+                        onChange: ({ value }) => {
+                          // Allow empty string (unlimited duration)
+                          if (value === "") {
+                            return undefined;
+                          }
+                          const num = parseFloat(value);
+                          if (isNaN(num) || num <= 0) {
+                            return "Duration must be a positive number or empty for unlimited";
+                          }
+                          return undefined;
+                        },
+                      }}
+                    >
+                      {(field) => (
+                        <div className="space-y-2">
+                          <Label htmlFor={field.name}>Duration (days) - Optional</Label>
+                          <Input
+                            id={field.name}
+                            type="number"
+                            step="0.5"
+                            min="0.5"
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            placeholder="Leave empty for unlimited"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            How long to leave hops in fermenter (empty = unlimited)
+                          </p>
+                          {field.state.meta.errors && (
+                            <p className="text-sm text-destructive">
+                              {field.state.meta.errors.join(", ")}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </form.Field>
+                  )}
+                </>
+              );
             }}
-          >
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Boil Time (minutes)</Label>
-                <Input
-                  id={field.name}
-                  type="number"
-                  step="1"
-                  min="0"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="60"
-                />
-                {field.state.meta.errors && (
-                  <p className="text-sm text-destructive">
-                    {field.state.meta.errors.join(", ")}
-                  </p>
-                )}
-              </div>
-            )}
-          </form.Field>
+          </form.Subscribe>
 
           <div className="flex justify-end gap-3 pt-4">
             <Button

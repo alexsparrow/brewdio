@@ -434,9 +434,16 @@ function BatchOverviewComponent() {
                       <span className="font-medium">
                         {hop.name || "Unnamed hop"}
                       </span>
-                      {hop.timing?.time && (
+                      {hop.timing && (
                         <span className="text-muted-foreground ml-2">
-                          @ {hop.timing.time.value} {hop.timing.time.unit}
+                          {hop.timing.use === "add_to_boil" && "Boil"}
+                          {hop.timing.use === "add_to_fermentation" && "Dry Hop"}
+                          {hop.timing.time && (
+                            <> @ {hop.timing.time.value} {hop.timing.time.unit}</>
+                          )}
+                          {hop.timing.duration && (
+                            <> ({hop.timing.duration.value} {hop.timing.duration.unit})</>
+                          )}
                         </span>
                       )}
                     </div>

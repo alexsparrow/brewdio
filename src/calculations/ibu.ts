@@ -51,15 +51,24 @@ const ibuCalculation: Calculation<number> = {
   ) => {
     const hopAdditions = hops || [];
 
-    if (hopAdditions.length === 0) {
+    // Filter to only include boil hop additions
+    // Dry hops and other fermentation/packaging additions don't contribute to IBU
+    const boilHops = hopAdditions.filter(
+      (hop) =>
+        !hop.timing?.use ||
+        hop.timing.use === "add_to_boil" ||
+        hop.timing.use === "boil" // Legacy value for backward compatibility
+    );
+
+    if (boilHops.length === 0) {
       return 0;
     }
 
     // Bigness factor based on original gravity
     const bignessFactor = 1.65 * Math.pow(0.000125, og - 1);
 
-    // Calculate IBU for each hop addition
-    const ibus = hopAdditions.map((hop) => {
+    // Calculate IBU for each boil hop addition
+    const ibus = boilHops.map((hop) => {
       const btf = boilTimeFactor(hop);
       const mgpl = mgplAddedAlphaAcids(hop, batchSize);
       const hopIbu = bignessFactor * btf * mgpl;
