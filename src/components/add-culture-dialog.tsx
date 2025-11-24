@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
-import { recipesCollection, type RecipeDocument } from "@/db";
+import { useRecipeEdit } from "@/contexts/recipe-edit-context";
 import type { CultureAdditionType, UnitUnitType } from "@beerjson/beerjson";
 import {
   Dialog,
@@ -25,8 +25,6 @@ import { Plus } from "lucide-react";
 import cultures from "@/data/cultures.json";
 
 interface AddCultureDialogProps {
-  recipeId: string;
-  recipe: RecipeDocument;
   existingCulture?: CultureAdditionType;
   index?: number;
   trigger?: React.ReactNode;
@@ -35,13 +33,12 @@ interface AddCultureDialogProps {
 const unitTypes: UnitUnitType[] = ["1", "unit", "each", "dimensionless", "pkg"];
 
 export function AddCultureDialog({
-  recipeId,
-  recipe,
   existingCulture,
   index,
   trigger,
 }: AddCultureDialogProps) {
   const [open, setOpen] = useState(false);
+  const { id: recipeId, collection } = useRecipeEdit();
   const isEditing = existingCulture !== undefined && index !== undefined;
 
   const form = useForm({
@@ -72,7 +69,7 @@ export function AddCultureDialog({
       };
 
       // Update in the database
-      await recipesCollection.update(recipeId, (draft) => {
+      await collection.update(recipeId, (draft) => {
         if (isEditing && index !== undefined) {
           // Edit existing culture
           draft.recipe.ingredients.culture_additions =

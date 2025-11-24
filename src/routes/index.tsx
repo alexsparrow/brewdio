@@ -1,66 +1,133 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useLiveQuery } from "@tanstack/react-db";
-import { recipesCollection } from "@/db";
+import { recipesCollection, batchesCollection } from "@/db";
 import { CreateRecipeDialog } from "@/components/create-recipe-dialog";
 import { DeleteRecipeDialog } from "@/components/delete-recipe-dialog";
+import { Calendar, Beaker } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
 function HomeComponent() {
-  const { data: recipes, status } = useLiveQuery(recipesCollection);
+  const { data: recipes, status: recipesStatus } = useLiveQuery(recipesCollection);
+  const { data: batches, status: batchesStatus } = useLiveQuery(batchesCollection);
+
+  // Sort batches by brew date (most recent first)
+  const sortedBatches = batches ? [...batches].sort((a, b) => b.brewDate - a.brewDate) : [];
+  const recentBatches = sortedBatches.slice(0, 6); // Show 6 most recent
+
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Recipes</h1>
-        <CreateRecipeDialog />
+    <div className="flex flex-col gap-8">
+      {/* Recipes Section */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold">Recipes</h1>
+          <CreateRecipeDialog />
+        </div>
+
+        {recipesStatus === "loading" && <div>Loading recipes...</div>}
+
+        {recipesStatus === "ready" && recipes.length === 0 && (
+          <div className="text-muted-foreground text-center py-12">
+            No recipes yet. Create your first recipe to get started!
+          </div>
+        )}
+
+        {recipesStatus === "ready" && recipes.length > 0 && (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {recipes.map((recipeDoc) => (
+              <div key={recipeDoc.id} className="border rounded-lg p-4 hover:bg-accent transition-colors">
+                <Link
+                  to="/recipes/$recipeId"
+                  params={{ recipeId: recipeDoc.id }}
+                  className="block"
+                >
+                  <h2 className="text-xl font-semibold mb-2">
+                    {recipeDoc.recipe.name}
+                  </h2>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <div>Type: {recipeDoc.recipe.type}</div>
+                    <div>
+                      Batch Size: {recipeDoc.recipe.batch_size.value}{" "}
+                      {recipeDoc.recipe.batch_size.unit}
+                    </div>
+                    {recipeDoc.recipe.style && (
+                      <div>Style: {recipeDoc.recipe.style.name}</div>
+                    )}
+                  </div>
+                </Link>
+                <div className="mt-3 pt-3 border-t" onClick={(e) => e.stopPropagation()}>
+                  <DeleteRecipeDialog
+                    recipeId={recipeDoc.id}
+                    recipeName={recipeDoc.recipe.name}
+                    variant="outline"
+                    size="sm"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {status === "loading" && <div>Loading recipes...</div>}
-
-      {status === "ready" && recipes.length === 0 && (
-        <div className="text-muted-foreground text-center py-12">
-          No recipes yet. Create your first recipe to get started!
+      {/* Batches Section */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <Beaker className="h-6 w-6" />
+            Recent Batches
+          </h2>
         </div>
-      )}
 
-      {status === "ready" && recipes.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {recipes.map((recipeDoc) => (
-            <div key={recipeDoc.id} className="border rounded-lg p-4 hover:bg-accent transition-colors">
+        {batchesStatus === "loading" && <div>Loading batches...</div>}
+
+        {batchesStatus === "ready" && batches.length === 0 && (
+          <div className="text-muted-foreground text-center py-8 border rounded-lg">
+            No batches yet. Click "Brew" on a recipe to start your first batch!
+          </div>
+        )}
+
+        {batchesStatus === "ready" && batches.length > 0 && (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {recentBatches.map((batch) => (
               <Link
-                to="/recipes/$recipeId"
-                params={{ recipeId: recipeDoc.id }}
-                className="block"
+                key={batch.id}
+                to="/batches/$batchId/overview"
+                params={{ batchId: batch.id }}
+                className="block border rounded-lg p-4 hover:bg-accent transition-colors"
               >
-                <h2 className="text-xl font-semibold mb-2">
-                  {recipeDoc.recipe.name}
-                </h2>
+                <div className="flex items-start justify-between mb-2">
+                  <h3 className="text-lg font-semibold">{batch.name}</h3>
+                  <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                </div>
                 <div className="text-sm text-muted-foreground space-y-1">
-                  <div>Type: {recipeDoc.recipe.type}</div>
+                  <div>Recipe: {batch.recipe.name}</div>
+                  <div>Brewed: {formatDate(batch.brewDate)}</div>
                   <div>
-                    Batch Size: {recipeDoc.recipe.batch_size.value}{" "}
-                    {recipeDoc.recipe.batch_size.unit}
+                    {batch.recipe.batch_size.value} {batch.recipe.batch_size.unit}
+                    {batch.recipe.style && ` • ${batch.recipe.style.name}`}
                   </div>
-                  {recipeDoc.recipe.style && (
-                    <div>Style: {recipeDoc.recipe.style.name}</div>
-                  )}
                 </div>
               </Link>
-              <div className="mt-3 pt-3 border-t" onClick={(e) => e.stopPropagation()}>
-                <DeleteRecipeDialog
-                  recipeId={recipeDoc.id}
-                  recipeName={recipeDoc.recipe.name}
-                  variant="outline"
-                  size="sm"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+
+        {batchesStatus === "ready" && batches.length > 6 && (
+          <div className="text-center text-sm text-muted-foreground">
+            Showing 6 most recent batches
+          </div>
+        )}
+      </div>
     </div>
   );
 }

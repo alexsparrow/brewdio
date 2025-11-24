@@ -1,6 +1,6 @@
 import { createRootRoute, Outlet, useRouterState } from "@tanstack/react-router";
 import { useLiveQuery } from "@tanstack/react-db";
-import { recipesCollection, equipmentCollection, DEFAULT_EQUIPMENT } from "@/db";
+import { recipesCollection, batchesCollection, equipmentCollection, DEFAULT_EQUIPMENT } from "@/db";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChatSidebar } from "@/components/chat-sidebar";
@@ -55,6 +55,7 @@ export const Route = createRootRoute({
 function RootComponent() {
   const routerState = useRouterState();
   const { data: recipesData } = useLiveQuery(recipesCollection);
+  const { data: batchesData } = useLiveQuery(batchesCollection);
   const { data: equipmentData, status: equipmentStatus } = useLiveQuery(equipmentCollection);
 
   // Initialize default equipment if none exists
@@ -82,8 +83,14 @@ function RootComponent() {
     ? routerState.matches.find(match => match.params?.recipeId)?.params?.recipeId as string | undefined
     : undefined;
 
-  // Find the current recipe
+  // Extract batchId from the route if we're on a batch page
+  const batchId = routerState.location.pathname.startsWith('/batches/')
+    ? routerState.matches.find(match => match.params?.batchId)?.params?.batchId as string | undefined
+    : undefined;
+
+  // Find the current recipe or batch
   const currentRecipe = recipeId ? recipesData?.find((r) => r.id === recipeId) : undefined;
+  const currentBatch = batchId ? batchesData?.find((b) => b.id === batchId) : undefined;
 
   // Determine if we're on the JSON editor route
   const isJsonEditor = routerState.location.pathname.endsWith('/json');
@@ -102,7 +109,19 @@ function RootComponent() {
                   <BreadcrumbLink to="/">Home</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
-                {currentRecipe ? (
+                {currentBatch ? (
+                  <>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink to={`/recipes/${currentBatch.recipeId}`}>
+                        {currentBatch.recipe.name}
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>{currentBatch.name}</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </>
+                ) : currentRecipe ? (
                   <>
                     <BreadcrumbItem>
                       <BreadcrumbLink to={`/recipes/${recipeId}`}>

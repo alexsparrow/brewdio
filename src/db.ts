@@ -1,7 +1,7 @@
 import { createCollection } from "@tanstack/react-db";
 import { dexieCollectionOptions } from "tanstack-dexie-db-collection";
 import { z } from "zod";
-import type { RecipeType, VolumeUnitType, MassUnitType, TemperatureUnitType, EquipmentType } from "@beerjson/beerjson";
+import type { RecipeType, VolumeUnitType, MassUnitType, TemperatureUnitType, EquipmentType, BrewType } from "@beerjson/beerjson";
 
 const todoSchema = z.object({
   id: z.string(),
@@ -122,3 +122,27 @@ export const DEFAULT_EQUIPMENT: EquipmentDocument = {
   createdAt: Date.now(),
   updatedAt: Date.now(),
 };
+
+// Batch schema that includes recipe, equipment, and brew-specific data
+const batchSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  recipeId: z.string(), // Reference to original recipe
+  equipmentId: z.string(), // Reference to equipment profile used
+  recipe: z.any() as z.ZodType<RecipeType>, // Snapshot of recipe at brew time
+  equipment: z.any() as z.ZodType<EquipmentType>, // Snapshot of equipment at brew time
+  brewDate: z.number(), // Timestamp of brew start
+  notes: z.string().optional(), // Batch-specific notes (separate from recipe notes)
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+
+export type BatchDocument = z.infer<typeof batchSchema>;
+
+export const batchesCollection = createCollection(
+  dexieCollectionOptions({
+    id: "batches",
+    schema: batchSchema,
+    getKey: (item) => item.id,
+  })
+);

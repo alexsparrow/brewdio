@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useLiveQuery } from "@tanstack/react-db";
-import { recipesCollection, settingsCollection, type RecipeDocument } from "@/db";
+import { settingsCollection } from "@/db";
+import { useRecipeEdit } from "@/contexts/recipe-edit-context";
 import type { HopAdditionType, MassUnitType } from "@beerjson/beerjson";
 import {
   Dialog,
@@ -26,8 +27,6 @@ import { Plus } from "lucide-react";
 import hops from "@/data/hops.json";
 
 interface AddHopDialogProps {
-  recipeId: string;
-  recipe: RecipeDocument;
   existingHop?: HopAdditionType;
   index?: number;
   trigger?: React.ReactNode;
@@ -36,13 +35,12 @@ interface AddHopDialogProps {
 const massUnits: MassUnitType[] = ["mg", "g", "kg", "lb", "oz"];
 
 export function AddHopDialog({
-  recipeId,
-  recipe,
   existingHop,
   index,
   trigger,
 }: AddHopDialogProps) {
   const [open, setOpen] = useState(false);
+  const { id: recipeId, collection } = useRecipeEdit();
   const { data: settingsData } = useLiveQuery(settingsCollection);
   const settings = settingsData?.find((s) => s.id === "user-settings");
   const isEditing = existingHop !== undefined && index !== undefined;
@@ -82,7 +80,7 @@ export function AddHopDialog({
       };
 
       // Update in the database
-      await recipesCollection.update(recipeId, (draft) => {
+      await collection.update(recipeId, (draft) => {
         if (isEditing && index !== undefined) {
           // Edit existing hop
           draft.recipe.ingredients.hop_additions =

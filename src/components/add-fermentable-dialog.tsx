@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useLiveQuery } from "@tanstack/react-db";
-import { recipesCollection, settingsCollection, type RecipeDocument } from "@/db";
+import { settingsCollection } from "@/db";
+import { useRecipeEdit } from "@/contexts/recipe-edit-context";
 import type { FermentableAdditionType, FermentableType, MassUnitType } from "@beerjson/beerjson";
 import {
   Dialog,
@@ -26,8 +27,6 @@ import { Plus } from "lucide-react";
 import fermentables from "@/data/fermentables.json";
 
 interface AddFermentableDialogProps {
-  recipeId: string;
-  recipe: RecipeDocument;
   existingFermentable?: FermentableAdditionType;
   index?: number;
   trigger?: React.ReactNode;
@@ -36,13 +35,12 @@ interface AddFermentableDialogProps {
 const massUnits: MassUnitType[] = ["mg", "g", "kg", "lb", "oz"];
 
 export function AddFermentableDialog({
-  recipeId,
-  recipe,
   existingFermentable,
   index,
   trigger,
 }: AddFermentableDialogProps) {
   const [open, setOpen] = useState(false);
+  const { id: recipeId, collection } = useRecipeEdit();
   const { data: settingsData } = useLiveQuery(settingsCollection);
   const settings = settingsData?.find((s) => s.id === "user-settings");
   const isEditing = existingFermentable !== undefined && index !== undefined;
@@ -75,7 +73,7 @@ export function AddFermentableDialog({
       };
 
       // Update in the database
-      await recipesCollection.update(recipeId, (draft) => {
+      await collection.update(recipeId, (draft) => {
         if (isEditing && index !== undefined) {
           // Edit existing fermentable
           draft.recipe.ingredients.fermentable_additions =
