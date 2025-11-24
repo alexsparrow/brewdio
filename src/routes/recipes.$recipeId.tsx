@@ -17,10 +17,33 @@ import { GravitySightGlass } from "@/components/gravity-sight-glass";
 import { Screw } from "@/components/screw";
 import { OlFarve } from "@/calculations/olfarve";
 import WaterCalculator from "@/components/water-calculator";
+import { GrainIcon, HopIcon, YeastIcon } from "@/components/ingredient-icons";
+import { colorToSrm } from "@/calculations/units";
+import type { FermentableAdditionType } from "@beerjson/beerjson";
 
 export const Route = createFileRoute("/recipes/$recipeId")({
   component: RecipeDetailComponent,
 });
+
+/**
+ * Get hex color for a fermentable based on its SRM value
+ */
+function getFermentableColorHex(fermentable: FermentableAdditionType): string | undefined {
+  // Check both fermentable.type.color and fermentable.color
+  const colorData = (fermentable.type as any)?.color || (fermentable as any).color;
+
+  if (!colorData) {
+    return undefined;
+  }
+
+  try {
+    const srm = colorToSrm(colorData);
+    const rgb = OlFarve.srmToSRGB(srm);
+    return OlFarve.rgbToHex(rgb);
+  } catch {
+    return undefined;
+  }
+}
 
 function RecipeDetailComponent() {
   const { recipeId } = Route.useParams();
@@ -315,9 +338,15 @@ function RecipeDetailComponent() {
                 key={idx}
                 className="flex justify-between items-center text-sm border-b pb-2 last:border-0"
               >
-                <span className="font-medium">
-                  {ferm.name || "Unnamed fermentable"}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <GrainIcon
+                    className="h-6 w-6 flex-shrink-0"
+                    srmColor={getFermentableColorHex(ferm)}
+                  />
+                  <span className="font-medium">
+                    {ferm.name || "Unnamed fermentable"}
+                  </span>
+                </div>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">
                     {ferm.amount.value} {ferm.amount.unit}
@@ -366,15 +395,18 @@ function RecipeDetailComponent() {
                 key={idx}
                 className="flex justify-between items-center text-sm border-b pb-2 last:border-0"
               >
-                <div>
-                  <span className="font-medium">
-                    {hop.name || "Unnamed hop"}
-                  </span>
-                  {hop.timing?.time && (
-                    <span className="text-muted-foreground ml-2">
-                      @ {hop.timing.time.value} {hop.timing.time.unit}
+                <div className="flex items-center gap-1.5">
+                  <HopIcon className="h-6 w-6 flex-shrink-0" />
+                  <div>
+                    <span className="font-medium">
+                      {hop.name || "Unnamed hop"}
                     </span>
-                  )}
+                    {hop.timing?.time && (
+                      <span className="text-muted-foreground ml-2">
+                        @ {hop.timing.time.value} {hop.timing.time.unit}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">
@@ -426,9 +458,12 @@ function RecipeDetailComponent() {
                 key={idx}
                 className="flex justify-between items-center text-sm border-b pb-2 last:border-0"
               >
-                <span className="font-medium">
-                  {culture.name || "Unnamed culture"}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <YeastIcon className="h-6 w-6 flex-shrink-0" />
+                  <span className="font-medium">
+                    {culture.name || "Unnamed culture"}
+                  </span>
+                </div>
                 <div className="flex items-center gap-2">
                   {culture.amount && (
                     <span className="text-muted-foreground">
