@@ -1,6 +1,6 @@
 import { createRootRoute, Outlet, useRouterState } from "@tanstack/react-router";
 import { useLiveQuery } from "@tanstack/react-db";
-import { recipesCollection, batchesCollection, equipmentCollection, DEFAULT_EQUIPMENT } from "@/db";
+import { recipesCollection, batchesCollection, equipmentCollection, DEFAULT_EQUIPMENT, mashProfilesCollection, createDefaultMashProfile, settingsCollection } from "@/db";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChatSidebar } from "@/components/chat-sidebar";
@@ -57,6 +57,8 @@ function RootComponent() {
   const { data: recipesData } = useLiveQuery(recipesCollection);
   const { data: batchesData } = useLiveQuery(batchesCollection);
   const { data: equipmentData, status: equipmentStatus } = useLiveQuery(equipmentCollection);
+  const { data: mashProfiles, status: mashProfilesStatus } = useLiveQuery(mashProfilesCollection);
+  const { data: settings } = useLiveQuery(settingsCollection);
 
   // Initialize default equipment if none exists
   useEffect(() => {
@@ -77,6 +79,23 @@ function RootComponent() {
       }
     }
   }, [equipmentStatus, equipmentData]);
+
+  // Initialize default mash profile if none exists
+  useEffect(() => {
+    if (mashProfilesStatus === "ready" && mashProfiles && settings) {
+      const defaultExists = mashProfiles.some(
+        (m) => m.id === "default-single-infusion"
+      );
+
+      if (!defaultExists) {
+        console.log("Inserting default mash profile...");
+        const userSettings = settings.find((s) => s.id === "user-settings");
+        const temperatureUnit = userSettings?.defaultTemperatureUnit || "F";
+        const defaultMashProfile = createDefaultMashProfile(temperatureUnit);
+        mashProfilesCollection.insert(defaultMashProfile);
+      }
+    }
+  }, [mashProfilesStatus, mashProfiles, settings]);
 
   // Extract recipeId from the route if we're on a recipe page
   const recipeId = routerState.location.pathname.startsWith('/recipes/')

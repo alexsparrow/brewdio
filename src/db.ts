@@ -1,7 +1,7 @@
 import { createCollection } from "@tanstack/react-db";
 import { dexieCollectionOptions } from "tanstack-dexie-db-collection";
 import { z } from "zod";
-import type { RecipeType, VolumeUnitType, MassUnitType, TemperatureUnitType, EquipmentType, BrewType } from "@beerjson/beerjson";
+import type { RecipeType, VolumeUnitType, MassUnitType, TemperatureUnitType, EquipmentType, BrewType, MashProcedureType } from "@beerjson/beerjson";
 
 const todoSchema = z.object({
   id: z.string(),
@@ -122,6 +122,70 @@ export const DEFAULT_EQUIPMENT: EquipmentDocument = {
   createdAt: Date.now(),
   updatedAt: Date.now(),
 };
+
+// Mash Profile schema that wraps BeerJSON MashProcedureType with database fields
+const mashProfileSchema = z.object({
+  id: z.string(),
+  mashProfile: z.any() as z.ZodType<MashProcedureType>,
+  createdAt: z.number(),
+  updatedAt: z.number(),
+});
+
+export type MashProfileDocument = z.infer<typeof mashProfileSchema>;
+
+export const mashProfilesCollection = createCollection(
+  dexieCollectionOptions({
+    id: "mash-profiles",
+    schema: mashProfileSchema,
+    getKey: (item) => item.id,
+  })
+);
+
+/**
+ * Create a default mash profile with the specified temperature unit
+ */
+export function createDefaultMashProfile(temperatureUnit: "C" | "F" = "F"): MashProfileDocument {
+  const isCelsius = temperatureUnit === "C";
+
+  return {
+    id: "default-single-infusion",
+    mashProfile: {
+      name: "Single Infusion",
+      grain_temperature: {
+        value: isCelsius ? 20 : 68,
+        unit: temperatureUnit
+      },
+      notes: "Standard single infusion mash for most beer styles",
+      mash_steps: [
+        {
+          name: "Saccharification",
+          type: "infusion",
+          step_temperature: {
+            value: isCelsius ? 67 : 152,
+            unit: temperatureUnit
+          },
+          step_time: { value: 60, unit: "min" },
+          description: "Convert starches to fermentable sugars",
+        },
+        {
+          name: "Mash Out",
+          type: "temperature",
+          step_temperature: {
+            value: isCelsius ? 76 : 168,
+            unit: temperatureUnit
+          },
+          step_time: { value: 10, unit: "min" },
+          description: "Stop enzyme activity and improve lautering",
+        },
+      ],
+    },
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+}
+
+// Default mash profile - Single Infusion (Fahrenheit)
+export const DEFAULT_MASH_PROFILE = createDefaultMashProfile("F");
 
 // Batch schema that includes recipe, equipment, and brew-specific data
 const batchSchema = z.object({

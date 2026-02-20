@@ -10,6 +10,7 @@ import {
   Droplets,
   FileText,
   GitBranch,
+  Flame,
 } from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useLiveQuery } from "@tanstack/react-db";
@@ -56,6 +57,11 @@ const recipeContextNav = [
     title: "Fermentables",
     url: "#fermentables",
     icon: Wheat,
+  },
+  {
+    title: "Mash",
+    url: "#mash",
+    icon: Flame,
   },
   {
     title: "Hops",

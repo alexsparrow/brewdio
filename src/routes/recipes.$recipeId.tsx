@@ -6,6 +6,7 @@ import { AddFermentableDialog } from "@/components/add-fermentable-dialog";
 import { AddHopDialog } from "@/components/add-hop-dialog";
 import { AddCultureDialog } from "@/components/add-culture-dialog";
 import { RecipeHeader } from "@/components/recipe-header";
+import { RecipeMashSection } from "@/components/recipe-mash-section";
 import { InlineEditableWithUnit } from "@/components/inline-editable";
 import { EditableNotes } from "@/components/editable-notes";
 import { Button } from "@/components/ui/button";
@@ -384,6 +385,10 @@ function RecipeDetailComponent() {
             ))}
           </div>
         )}
+      </div>
+
+      <div id="mash" className="border rounded-lg p-4 scroll-mt-20">
+        <RecipeMashSection />
       </div>
 
       <div id="hops" className="border rounded-lg p-4 scroll-mt-20">

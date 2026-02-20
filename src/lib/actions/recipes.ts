@@ -1,4 +1,4 @@
-import { recipesCollection, type RecipeDocument } from '@/db';
+import { recipesCollection, type RecipeDocument, mashProfilesCollection, createDefaultMashProfile, settingsCollection } from '@/db';
 import type { RecipeType, StyleType } from '@beerjson/beerjson';
 import styles from '@/data/styles.json';
 
@@ -26,6 +26,25 @@ export async function createRecipe(params: CreateRecipeParams): Promise<string> 
 
   if (!selectedStyle) {
     throw new Error(`Style "${styleName}" not found`);
+  }
+
+  // Fetch user settings to get temperature preference
+  const userSettings = await settingsCollection
+    .getAll()
+    .then((settings) => settings.find((s) => s.id === "user-settings"));
+
+  const temperatureUnit = userSettings?.defaultTemperatureUnit || "F";
+
+  // Fetch default mash profile or create one with user's temperature unit
+  let defaultMash = await mashProfilesCollection
+    .getAll()
+    .then((profiles) =>
+      profiles.find((p) => p.id === "default-single-infusion")
+    );
+
+  // If no default exists yet, create one
+  if (!defaultMash) {
+    defaultMash = createDefaultMashProfile(temperatureUnit);
   }
 
   // Create a basic BeerJSON recipe
@@ -57,6 +76,7 @@ export async function createRecipe(params: CreateRecipeParams): Promise<string> 
       hop_additions: [],
       culture_additions: [],
     },
+    mash: defaultMash ? structuredClone(defaultMash.mashProfile) : undefined,
   };
 
   const recipeId = crypto.randomUUID();
