@@ -14,6 +14,14 @@ pub fn reconcile_to_automerge<T: autosurgeon::Reconcile>(doc: &T, existing: Opti
         None => AutoCommit::new(),
     };
     reconcile(&mut am_doc, doc).expect("Failed to reconcile document");
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as i64;
+    am_doc.commit_with(automerge::transaction::CommitOptions {
+        message: None,
+        time: Some(now),
+    });
     am_doc.save()
 }
 
@@ -315,21 +323,21 @@ fn diff_recipe(prev: &RecipeDocument, curr: &RecipeDocument) -> String {
         diffs.push("Changed batch size".to_string());
     }
 
-    diff_ingredient_counts(
-        prev.recipe.ingredients.fermentable_additions.len(),
-        curr.recipe.ingredients.fermentable_additions.len(),
+    diff_ingredients(
+        &prev.recipe.ingredients.fermentable_additions,
+        &curr.recipe.ingredients.fermentable_additions,
         "fermentable",
         &mut diffs,
     );
-    diff_ingredient_counts(
-        prev.recipe.ingredients.hop_additions.len(),
-        curr.recipe.ingredients.hop_additions.len(),
+    diff_ingredients(
+        &prev.recipe.ingredients.hop_additions,
+        &curr.recipe.ingredients.hop_additions,
         "hop",
         &mut diffs,
     );
-    diff_ingredient_counts(
-        prev.recipe.ingredients.culture_additions.len(),
-        curr.recipe.ingredients.culture_additions.len(),
+    diff_ingredients(
+        &prev.recipe.ingredients.culture_additions,
+        &curr.recipe.ingredients.culture_additions,
         "culture",
         &mut diffs,
     );
@@ -375,21 +383,21 @@ fn diff_batch(prev: &BatchDocument, curr: &BatchDocument) -> String {
         diffs.push("Updated notes".to_string());
     }
 
-    diff_ingredient_counts(
-        prev.data.recipe.ingredients.fermentable_additions.len(),
-        curr.data.recipe.ingredients.fermentable_additions.len(),
+    diff_ingredients(
+        &prev.data.recipe.ingredients.fermentable_additions,
+        &curr.data.recipe.ingredients.fermentable_additions,
         "fermentable",
         &mut diffs,
     );
-    diff_ingredient_counts(
-        prev.data.recipe.ingredients.hop_additions.len(),
-        curr.data.recipe.ingredients.hop_additions.len(),
+    diff_ingredients(
+        &prev.data.recipe.ingredients.hop_additions,
+        &curr.data.recipe.ingredients.hop_additions,
         "hop",
         &mut diffs,
     );
-    diff_ingredient_counts(
-        prev.data.recipe.ingredients.culture_additions.len(),
-        curr.data.recipe.ingredients.culture_additions.len(),
+    diff_ingredients(
+        &prev.data.recipe.ingredients.culture_additions,
+        &curr.data.recipe.ingredients.culture_additions,
         "culture",
         &mut diffs,
     );
@@ -401,15 +409,33 @@ fn diff_batch(prev: &BatchDocument, curr: &BatchDocument) -> String {
     }
 }
 
-fn diff_ingredient_counts(prev: usize, curr: usize, kind: &str, diffs: &mut Vec<String>) {
-    if curr > prev {
-        let n = curr - prev;
+fn diff_ingredients<T: Serialize>(prev: &[T], curr: &[T], kind: &str, diffs: &mut Vec<String>) {
+    let prev_len = prev.len();
+    let curr_len = curr.len();
+
+    if curr_len > prev_len {
+        let n = curr_len - prev_len;
         let plural = if n == 1 { "" } else { "s" };
         diffs.push(format!("Added {} {}{}", n, kind, plural));
-    } else if curr < prev {
-        let n = prev - curr;
+    } else if curr_len < prev_len {
+        let n = prev_len - curr_len;
         let plural = if n == 1 { "" } else { "s" };
         diffs.push(format!("Removed {} {}{}", n, kind, plural));
+    }
+
+    // Check overlapping items for modifications (compare via JSON)
+    let check_len = prev_len.min(curr_len);
+    let mut modified = 0;
+    for i in 0..check_len {
+        let prev_json = serde_json::to_string(&prev[i]).unwrap_or_default();
+        let curr_json = serde_json::to_string(&curr[i]).unwrap_or_default();
+        if prev_json != curr_json {
+            modified += 1;
+        }
+    }
+    if modified > 0 {
+        let plural = if modified == 1 { "" } else { "s" };
+        diffs.push(format!("Updated {} {}{}", modified, kind, plural));
     }
 }
 
