@@ -1,6 +1,6 @@
-import { recipesCollection, type RecipeDocument, mashProfilesCollection, createDefaultMashProfile, settingsCollection } from '@/db';
-import type { RecipeType, StyleType } from '@beerjson/beerjson';
-import styles from '@/data/styles.json';
+import { createRecipeImperative, updateRecipeImperative, deleteRecipeImperative } from '@/lib/db/recipes';
+import type { RecipeType, StyleType } from 'brewdio-wasm';
+import { get_styles, get_mash_profiles } from 'brewdio-wasm';
 
 export interface CreateRecipeParams {
   name: string;
@@ -22,30 +22,15 @@ export async function createRecipe(params: CreateRecipeParams): Promise<string> 
   const { name, batchSize, batchSizeUnit = 'gal', styleName, author = 'Brewdio User' } = params;
 
   // Find the selected style from the styles data
-  const selectedStyle = styles.find((s) => s.name === styleName);
+  const selectedStyle = get_styles().find((s) => s.name === styleName);
 
   if (!selectedStyle) {
     throw new Error(`Style "${styleName}" not found`);
   }
 
-  // Fetch user settings to get temperature preference
-  const userSettings = await settingsCollection
-    .getAll()
-    .then((settings) => settings.find((s) => s.id === "user-settings"));
-
-  const temperatureUnit = userSettings?.defaultTemperatureUnit || "F";
-
-  // Fetch default mash profile or create one with user's temperature unit
-  let defaultMash = await mashProfilesCollection
-    .getAll()
-    .then((profiles) =>
-      profiles.find((p) => p.id === "default-single-infusion")
-    );
-
-  // If no default exists yet, create one
-  if (!defaultMash) {
-    defaultMash = createDefaultMashProfile(temperatureUnit);
-  }
+  // Use default mash profile from static data
+  const mashProfiles = get_mash_profiles();
+  const defaultMash = mashProfiles[0]; // "Single Infusion (F)"
 
   // Create a basic BeerJSON recipe
   const newRecipe: RecipeType = {
@@ -56,19 +41,21 @@ export async function createRecipe(params: CreateRecipeParams): Promise<string> 
       value: batchSize,
       unit: batchSizeUnit,
     },
-    boil_size: {
-      value: batchSize * 1.3, // Default 30% boil-off
-      unit: batchSizeUnit,
-    },
-    boil_time: {
-      value: 60,
-      unit: 'min',
+    boil: {
+      boil_time: {
+        value: 60,
+        unit: 'min',
+      },
+      pre_boil_size: {
+        value: batchSize * 1.3, // Default 30% boil-off
+        unit: batchSizeUnit,
+      },
     },
     efficiency: {
-      brewhouse: 72,
-      conversion: 100,
-      lauter: 95,
-      mash: 95,
+      brewhouse: { value: 72, unit: "%" },
+      conversion: { value: 100, unit: "%" },
+      lauter: { value: 95, unit: "%" },
+      mash: { value: 95, unit: "%" },
     },
     style: selectedStyle as StyleType,
     ingredients: {
@@ -76,18 +63,10 @@ export async function createRecipe(params: CreateRecipeParams): Promise<string> 
       hop_additions: [],
       culture_additions: [],
     },
-    mash: defaultMash ? structuredClone(defaultMash.mashProfile) : undefined,
+    mash: defaultMash ? structuredClone(defaultMash) : undefined,
   };
 
-  const recipeId = crypto.randomUUID();
-  const recipeDoc: RecipeDocument = {
-    id: recipeId,
-    recipe: newRecipe,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  };
-
-  await recipesCollection.insert(recipeDoc);
+  const recipeId = createRecipeImperative(name, newRecipe);
 
   return recipeId;
 }
@@ -126,22 +105,19 @@ export async function updateRecipe(params: UpdateRecipeParams): Promise<void> {
   // Validate the recipe structure before updating
   validateRecipeStructure(recipe);
 
-  await recipesCollection.update(recipeId, (draft) => {
-    draft.recipe = recipe;
-    draft.updatedAt = Date.now();
-  });
+  updateRecipeImperative(recipeId, recipe.name, recipe);
 }
 
 /**
  * Delete a recipe by ID
  */
 export async function deleteRecipe(recipeId: string): Promise<void> {
-  await recipesCollection.delete(recipeId);
+  deleteRecipeImperative(recipeId);
 }
 
 /**
  * Get all available beer styles
  */
 export function getAvailableStyles(): Array<{ name: string; category: string }> {
-  return styles.map((s) => ({ name: s.name, category: s.category }));
+  return get_styles().map((s) => ({ name: s.name, category: s.category }));
 }

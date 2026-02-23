@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useLiveQuery } from "@tanstack/react-db";
-import { batchesCollection, settingsCollection } from "@/db";
+import { useBatch, updateBatchImperative, batchKeys } from "@/lib/db/batches";
+import { useSettings } from "@/lib/db/settings";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
 import Editor from "@monaco-editor/react";
 import { Button } from "@/components/ui/button";
@@ -23,18 +24,16 @@ export const Route = createFileRoute("/batches/$batchId_/json")({
 
 function BatchJsonEditorComponent() {
   const { batchId } = Route.useParams();
-  const { data: batches, status } = useLiveQuery(batchesCollection);
-  const { data: settingsData } = useLiveQuery(settingsCollection);
+  const { data: batch, status } = useBatch(batchId);
+  const { data: settings } = useSettings();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const vimModeRef = useRef<any>(null);
   const [isValid, setIsValid] = useState(true);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const batch = batches?.find((b) => b.id === batchId);
-  const settings = settingsData?.find((s) => s.id === "user-settings");
-
-  if (status === "loading") {
+  if (status === "pending") {
     return <div>Loading batch...</div>;
   }
 
@@ -145,10 +144,17 @@ function BatchJsonEditorComponent() {
       const parsedRecipe = JSON.parse(value);
 
       // Update the batch's recipe in the database
-      await batchesCollection.update(batchId, (draft) => {
-        draft.recipe = parsedRecipe;
-        draft.updatedAt = Date.now();
+      updateBatchImperative(batchId, batch!.name, {
+        equipmentId: batch!.equipmentId,
+        recipe: parsedRecipe,
+        equipment: batch!.equipment,
+        brewDate: batch!.brewDate,
+        notes: batch!.notes,
+        createdAt: batch!.createdAt,
+        updatedAt: Date.now(),
       });
+      queryClient.invalidateQueries({ queryKey: batchKeys.all });
+      queryClient.invalidateQueries({ queryKey: batchKeys.detail(batchId) });
 
       setHasChanges(false);
 

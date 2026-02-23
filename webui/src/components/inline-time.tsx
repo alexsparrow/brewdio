@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { TimeType } from "@beerjson/beerjson";
+import type { TimeType } from "brewdio-wasm";
 
 interface InlineTimeProps {
   label: string;

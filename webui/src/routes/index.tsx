@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useLiveQuery } from "@tanstack/react-db";
-import { recipesCollection, batchesCollection } from "@/db";
+import { useBatches } from "@/lib/db/batches";
+import { useRecipes } from "@/lib/db/recipes";
 import { CreateRecipeDialog } from "@/components/create-recipe-dialog";
 import { DeleteRecipeDialog } from "@/components/delete-recipe-dialog";
 import { Calendar, Beaker } from "lucide-react";
@@ -10,8 +10,8 @@ export const Route = createFileRoute("/")({
 });
 
 function HomeComponent() {
-  const { data: recipes, status: recipesStatus } = useLiveQuery(recipesCollection);
-  const { data: batches, status: batchesStatus } = useLiveQuery(batchesCollection);
+  const { data: recipes, status: recipesStatus } = useRecipes();
+  const { data: batches, status: batchesStatus } = useBatches();
 
   // Sort batches by brew date (most recent first)
   const sortedBatches = batches ? [...batches].sort((a, b) => b.brewDate - a.brewDate) : [];
@@ -34,15 +34,15 @@ function HomeComponent() {
           <CreateRecipeDialog />
         </div>
 
-        {recipesStatus === "loading" && <div>Loading recipes...</div>}
+        {recipesStatus === "pending" && <div>Loading recipes...</div>}
 
-        {recipesStatus === "ready" && recipes.length === 0 && (
+        {recipesStatus === "success" && recipes.length === 0 && (
           <div className="text-muted-foreground text-center py-12">
             No recipes yet. Create your first recipe to get started!
           </div>
         )}
 
-        {recipesStatus === "ready" && recipes.length > 0 && (
+        {recipesStatus === "success" && recipes.length > 0 && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {recipes.map((recipeDoc) => (
               <div key={recipeDoc.id} className="border rounded-lg p-4 hover:bg-accent transition-colors">
@@ -88,15 +88,15 @@ function HomeComponent() {
           </h2>
         </div>
 
-        {batchesStatus === "loading" && <div>Loading batches...</div>}
+        {batchesStatus === "pending" && <div>Loading batches...</div>}
 
-        {batchesStatus === "ready" && batches.length === 0 && (
+        {batchesStatus === "success" && batches.length === 0 && (
           <div className="text-muted-foreground text-center py-8 border rounded-lg">
             No batches yet. Click "Brew" on a recipe to start your first batch!
           </div>
         )}
 
-        {batchesStatus === "ready" && batches.length > 0 && (
+        {batchesStatus === "success" && batches.length > 0 && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {recentBatches.map((batch) => (
               <Link
@@ -122,7 +122,7 @@ function HomeComponent() {
           </div>
         )}
 
-        {batchesStatus === "ready" && batches.length > 6 && (
+        {batchesStatus === "success" && batches.length > 6 && (
           <div className="text-center text-sm text-muted-foreground">
             Showing 6 most recent batches
           </div>

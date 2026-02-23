@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import Layout from "./app/layout";
 import { stores, wireCalculations } from "./lib/calculate";
-import { OG } from "./calculations/og";
+import { OG } from "./lib/calculations";
 
 function App() {
   useEffect(() => {

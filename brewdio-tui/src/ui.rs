@@ -7,7 +7,6 @@ use ratatui::{
 };
 
 use crate::app::{App, Screen, Tab};
-use crate::styles::BEER_STYLES;
 
 pub fn draw(frame: &mut Frame, app: &App) {
     match &app.screen {
@@ -88,8 +87,8 @@ fn draw_recipe_edit(frame: &mut Frame, app: &App) {
     // Help bar
     let help_text = if app.editing_name {
         " Type to edit, [Enter] confirm, [Esc] cancel"
-    } else if app.editing_style {
-        " [↑/↓] select, [Enter] confirm, [Esc] cancel"
+    } else if app.style_selector.is_some() {
+        " Type to search, [↑/↓] navigate, [Enter] confirm, [Esc] cancel"
     } else {
         " [n]ame  [s]tyle  [1-5] tabs  [Esc] back"
     };
@@ -127,12 +126,14 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
     frame.render_widget(Paragraph::new(name_line), rows[0]);
 
     // Style row
-    if app.editing_style {
-        let style_name = &BEER_STYLES[app.style_index].name;
+    if let Some(ref selector) = app.style_selector {
+        let display = selector
+            .selected_label()
+            .unwrap_or("(no match)");
         let style_line = Line::from(vec![
             Span::styled(" Style: ", Style::default().fg(Color::DarkGray)),
             Span::styled(
-                format!("< {} >", style_name),
+                format!("< {} >", display),
                 Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD),
             ),
         ]);
@@ -173,8 +174,8 @@ fn draw_tabs(frame: &mut Frame, app: &App, area: Rect) {
 }
 
 fn draw_tab_content(frame: &mut Frame, app: &App, area: Rect) {
-    if app.editing_style {
-        draw_style_selector(frame, app, area);
+    if let Some(ref selector) = app.style_selector {
+        selector.draw(frame, area);
         return;
     }
 
@@ -188,32 +189,4 @@ fn draw_tab_content(frame: &mut Frame, app: &App, area: Rect) {
             .title(format!(" {} ", app.active_tab.label())),
     );
     frame.render_widget(content, area);
-}
-
-fn draw_style_selector(frame: &mut Frame, app: &App, area: Rect) {
-    let items: Vec<ListItem> = BEER_STYLES
-        .iter()
-        .enumerate()
-        .map(|(i, s)| {
-            let prefix = if i == app.style_index { " ► " } else { "   " };
-            let style = if i == app.style_index {
-                Style::default()
-                    .fg(Color::Yellow)
-                    .add_modifier(Modifier::BOLD)
-            } else {
-                Style::default()
-            };
-            ListItem::new(Line::from(Span::styled(
-                format!("{}{} ({})", prefix, s.name, s.category),
-                style,
-            )))
-        })
-        .collect();
-
-    let list = List::new(items).block(
-        Block::default()
-            .borders(Borders::ALL)
-            .title(" Select Style "),
-    );
-    frame.render_widget(list, area);
 }

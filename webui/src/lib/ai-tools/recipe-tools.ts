@@ -1,9 +1,9 @@
 import type { ToolSet } from 'ai';
 import z from 'zod';
-import type { RecipeType } from '@beerjson/beerjson';
+import type { RecipeType } from 'brewdio-wasm';
 import { updateRecipe } from '@/lib/actions/recipes';
 import { withToolLogging } from './logger';
-import type { RecipeDocument } from '@/db';
+import type { RecipeDocument } from '@/lib/db/recipes';
 
 /**
  * Create recipe-context AI tools that operate on a specific recipe.

@@ -1,0 +1,88 @@
+use std::fmt;
+
+/// Shared migration SQL used by both native and WASM backends.
+pub const MIGRATION_SQL: &str = r#"
+CREATE TABLE IF NOT EXISTS recipe (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    recipe TEXT NOT NULL,
+    am_data BLOB NOT NULL,
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    is_dirty BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE IF NOT EXISTS sync_state (
+    recipe_id TEXT NOT NULL,
+    peer_id TEXT NOT NULL DEFAULT 'server',
+    state BLOB NOT NULL,
+    PRIMARY KEY (recipe_id, peer_id),
+    FOREIGN KEY (recipe_id) REFERENCES recipe(id)
+);
+
+CREATE TABLE IF NOT EXISTS batch (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    recipe_id TEXT NOT NULL,
+    data TEXT NOT NULL,
+    am_data BLOB NOT NULL DEFAULT X'',
+    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+    is_dirty BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE IF NOT EXISTS settings (
+    id TEXT PRIMARY KEY NOT NULL DEFAULT 'default',
+    data TEXT NOT NULL,
+    am_data BLOB NOT NULL DEFAULT X'',
+    is_dirty BOOLEAN NOT NULL DEFAULT TRUE
+);
+"#;
+
+/// Parameter value for binding to SQL statements.
+pub enum Value<'a> {
+    Text(&'a str),
+    Blob(&'a [u8]),
+    Int(i32),
+    Bool(bool),
+}
+
+/// Trait for reading column values from a result row.
+pub trait Row {
+    fn get_text(&self, idx: usize) -> String;
+    fn get_blob(&self, idx: usize) -> Vec<u8>;
+    fn get_bool(&self, idx: usize) -> bool;
+}
+
+/// Unified database error type.
+#[derive(Debug)]
+pub struct DbError(pub String);
+
+impl fmt::Display for DbError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl std::error::Error for DbError {}
+
+#[cfg(feature = "native")]
+impl From<rusqlite::Error> for DbError {
+    fn from(e: rusqlite::Error) -> Self {
+        DbError(e.to_string())
+    }
+}
+
+/// Abstraction over SQLite connection backends.
+pub trait Connection {
+    fn execute(&self, sql: &str, params: &[Value]) -> Result<(), DbError>;
+    fn execute_batch(&self, sql: &str) -> Result<(), DbError>;
+    fn query_map<T, F>(&self, sql: &str, params: &[Value], f: F) -> Result<Vec<T>, DbError>
+    where
+        F: FnMut(&dyn Row) -> T;
+    fn query_one<T, F>(&self, sql: &str, params: &[Value], f: F) -> Result<Option<T>, DbError>
+    where
+        F: FnMut(&dyn Row) -> T,
+    {
+        let mut results = self.query_map(sql, params, f)?;
+        Ok(results.pop())
+    }
+}

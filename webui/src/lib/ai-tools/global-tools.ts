@@ -1,8 +1,6 @@
 import type { ToolSet } from 'ai';
 import z from 'zod';
-import fermentables from '@/data/fermentables.json';
-import hops from '@/data/hops.json';
-import cultures from '@/data/cultures.json';
+import { get_fermentables, get_hops, get_cultures } from 'brewdio-wasm';
 import { createRecipe, getAvailableStyles } from '@/lib/actions/recipes';
 import { withToolLogging } from './logger';
 
@@ -20,7 +18,7 @@ export const globalTools: ToolSet = {
       return withToolLogging(
         { toolName: 'searchFermentables', input: { search } },
         async () => {
-          const result = fermentables.filter((f) =>
+          const result = get_fermentables().filter((f) =>
             f.name.toLowerCase().includes(search.toLowerCase())
           );
           return result;
@@ -38,7 +36,7 @@ export const globalTools: ToolSet = {
       return withToolLogging(
         { toolName: 'searchHops', input: { search } },
         async () => {
-          const result = hops.filter((h) =>
+          const result = get_hops().filter((h) =>
             h.name.toLowerCase().includes(search.toLowerCase())
           );
           return result;
@@ -56,7 +54,7 @@ export const globalTools: ToolSet = {
       return withToolLogging(
         { toolName: 'searchCultures', input: { search } },
         async () => {
-          const result = cultures.filter((c) =>
+          const result = get_cultures().filter((c) =>
             c.name.toLowerCase().includes(search.toLowerCase()) ||
             (c.producer && c.producer.toLowerCase().includes(search.toLowerCase()))
           );

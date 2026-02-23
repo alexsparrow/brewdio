@@ -13,8 +13,8 @@ import {
   Flame,
 } from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { useLiveQuery } from "@tanstack/react-db";
-import { recipesCollection, batchesCollection } from "@/db";
+import { useBatches } from "@/lib/db/batches";
+import { useRecipes } from "@/lib/db/recipes";
 
 import { NavMain } from "@/components/nav-main";
 import {
@@ -170,8 +170,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouterState();
   const isRecipeView = router.location.pathname.startsWith("/recipes/");
   const isBatchView = router.location.pathname.startsWith("/batches/");
-  const { data: recipesData } = useLiveQuery(recipesCollection);
-  const { data: batchesData } = useLiveQuery(batchesCollection);
+  const { data: recipesData } = useRecipes();
+  const { data: batchesData } = useBatches();
 
   // Extract recipe ID from pathname
   const recipeId = React.useMemo(() => {

@@ -1,6 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import initWasm, { RecipeDb, init_persistent_storage } from "brewdio-wasm";
+import { initRecipeDb, registerChangeCallback } from "@/lib/db/recipes";
 import "./index.css";
 
 // Import the generated route tree
@@ -16,8 +19,32 @@ declare module "@tanstack/react-router" {
   }
 }
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <RouterProvider router={router} />
-  </StrictMode>
-);
+const queryClient = new QueryClient();
+
+// Initialize WASM module, install persistent VFS, then open the database.
+async function init() {
+  // Ensure WASM binary is loaded and initialized.
+  await initWasm();
+
+  try {
+    await init_persistent_storage();
+    console.log("[brewdio] Persistent storage initialized (IndexedDB VFS)");
+  } catch (e) {
+    console.warn("[brewdio] Failed to initialize persistent storage, falling back to in-memory:", e);
+  }
+
+  // Open a named database — persists to IndexedDB if VFS was installed successfully.
+  const db = RecipeDb.open("brewdio.db");
+  initRecipeDb(db);
+  registerChangeCallback(queryClient);
+
+  createRoot(document.getElementById("root")!).render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </StrictMode>
+  );
+}
+
+init();

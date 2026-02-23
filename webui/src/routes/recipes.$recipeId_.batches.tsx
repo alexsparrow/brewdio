@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useLiveQuery } from "@tanstack/react-db";
-import { recipesCollection, batchesCollection } from "@/db";
+import { useBatches } from "@/lib/db/batches";
+import { useRecipe } from "@/lib/db/recipes";
 import { Button } from "@/components/ui/button";
 import { Beaker, Calendar, ExternalLink } from "lucide-react";
 import { DeleteBatchDialog } from "@/components/delete-batch-dialog";
@@ -11,10 +11,8 @@ export const Route = createFileRoute("/recipes/$recipeId_/batches")({
 
 function RecipeBatchesComponent() {
   const { recipeId } = Route.useParams();
-  const { data: recipes } = useLiveQuery(recipesCollection);
-  const { data: batches } = useLiveQuery(batchesCollection);
-
-  const recipe = recipes?.find((r) => r.id === recipeId);
+  const { data: recipe } = useRecipe(recipeId);
+  const { data: batches } = useBatches();
   const recipeBatches = batches?.filter((b) => b.recipeId === recipeId) || [];
 
   // Sort batches by brew date (most recent first)

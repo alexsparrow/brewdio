@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { useLiveQuery } from "@tanstack/react-db";
-import { batchesCollection, equipmentCollection, DEFAULT_EQUIPMENT } from "@/db";
-import type { RecipeDocument } from "@/db";
+import { useBatches, createBatchImperative, batchKeys } from "@/lib/db/batches";
+import { useQueryClient } from "@tanstack/react-query";
+import type { RecipeDocument } from "@/lib/db/recipes";
+import { get_equipment } from "brewdio-wasm";
 import {
   Dialog,
   DialogContent,
@@ -23,8 +24,12 @@ interface BrewBatchDialogProps {
 
 export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
   const navigate = useNavigate();
-  const { data: batches } = useLiveQuery(batchesCollection);
-  const { data: equipmentProfiles } = useLiveQuery(equipmentCollection);
+  const { data: batches } = useBatches();
+  const queryClient = useQueryClient();
+
+  // Static equipment data
+  const equipmentProfiles = get_equipment();
+  const defaultEquipment = equipmentProfiles[0];
 
   const [open, setOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -35,13 +40,7 @@ export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
   const defaultBatchName = `${recipe.recipe.name} Batch ${batchNumber}`;
 
   const [batchName, setBatchName] = useState(defaultBatchName);
-
-  // Get default equipment or use first available
-  const defaultEquipment = equipmentProfiles?.find(e => e.id === "default")
-    || equipmentProfiles?.[0]
-    || DEFAULT_EQUIPMENT;
-
-  const [selectedEquipmentId, setSelectedEquipmentId] = useState(defaultEquipment.id);
+  const [selectedEquipmentName, setSelectedEquipmentName] = useState(defaultEquipment?.name || "Default Setup");
 
   // Reset form when dialog opens
   const handleOpenChange = (newOpen: boolean) => {
@@ -51,7 +50,7 @@ export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
       const currentBatches = batches?.filter(b => b.recipeId === recipe.id) || [];
       const newBatchNumber = currentBatches.length + 1;
       setBatchName(`${recipe.recipe.name} Batch ${newBatchNumber}`);
-      setSelectedEquipmentId(defaultEquipment.id);
+      setSelectedEquipmentName(defaultEquipment?.name || "Default Setup");
     }
   };
 
@@ -59,23 +58,24 @@ export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
     setIsCreating(true);
     try {
       // Get selected equipment
-      const equipment = equipmentProfiles?.find(e => e.id === selectedEquipmentId) || defaultEquipment;
+      const equipment = equipmentProfiles.find(e => e.name === selectedEquipmentName) || defaultEquipment;
 
-      const batch = {
-        id: `batch-${Date.now()}`,
-        name: batchName.trim() || defaultBatchName,
-        recipeId: recipe.id,
-        equipmentId: equipment.id,
-        recipe: structuredClone(recipe.recipe), // Deep copy of recipe
-        equipment: structuredClone(equipment.equipment), // Deep copy of equipment
-        brewDate: Date.now(),
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-      };
+      const batchId = createBatchImperative(
+        batchName.trim() || defaultBatchName,
+        recipe.id,
+        {
+          equipmentId: equipment?.name || "default",
+          recipe: structuredClone(recipe.recipe),
+          equipment: structuredClone(equipment),
+          brewDate: Date.now(),
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        },
+      );
 
-      await batchesCollection.insert(batch);
+      queryClient.invalidateQueries({ queryKey: batchKeys.all });
       setOpen(false);
-      navigate({ to: `/batches/${batch.id}/overview` });
+      navigate({ to: `/batches/${batchId}/overview` });
     } catch (error) {
       console.error("Failed to create batch:", error);
     } finally {
@@ -117,14 +117,14 @@ export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
             <Label htmlFor="equipment-profile">Equipment Profile</Label>
             <select
               id="equipment-profile"
-              value={selectedEquipmentId}
-              onChange={(e) => setSelectedEquipmentId(e.target.value)}
+              value={selectedEquipmentName}
+              onChange={(e) => setSelectedEquipmentName(e.target.value)}
               disabled={isCreating}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             >
-              {equipmentProfiles?.map((profile) => (
-                <option key={profile.id} value={profile.id}>
-                  {profile.equipment.name}
+              {equipmentProfiles.map((profile) => (
+                <option key={profile.name} value={profile.name}>
+                  {profile.name}
                 </option>
               ))}
             </select>

@@ -434,7 +434,7 @@
  {
   "name": "WLP300 - Hefeweizen Ale Yeast",
   "producer": "White Labs",
-  "type": "wheat",
+  "type": "ale",
   "form": "liquid",
   "attenuation_range": {
    "minimum": {
@@ -450,7 +450,7 @@
  {
   "name": "WLP320 - American Hefeweizen Ale Yeast",
   "producer": "White Labs",
-  "type": "wheat",
+  "type": "ale",
   "form": "liquid",
   "attenuation_range": {
    "minimum": {
@@ -466,7 +466,7 @@
  {
   "name": "WLP351 - Bavarian Weizen Yeast",
   "producer": "White Labs",
-  "type": "wheat",
+  "type": "ale",
   "form": "liquid",
   "attenuation_range": {
    "minimum": {
@@ -482,7 +482,7 @@
  {
   "name": "WLP380 - Hefeweizen IV Ale Yeast ",
   "producer": "White Labs",
-  "type": "wheat",
+  "type": "ale",
   "form": "liquid",
   "attenuation_range": {
    "minimum": {
@@ -498,7 +498,7 @@
  {
   "name": "WLP400 - Belgian Wit Ale Yeast",
   "producer": "White Labs",
-  "type": "wheat",
+  "type": "ale",
   "form": "liquid",
   "attenuation_range": {
    "minimum": {
@@ -514,7 +514,7 @@
  {
   "name": "WLP410 - Belgian Wit II Ale Yeast",
   "producer": "White Labs",
-  "type": "wheat",
+  "type": "ale",
   "form": "liquid",
   "attenuation_range": {
    "minimum": {

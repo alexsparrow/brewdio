@@ -29,14 +29,14 @@
  */
 
 import { Store, Derived } from "@tanstack/store";
-import type { FermentableType, RecipeType } from "@beerjson/beerjson";
+import type { FermentableType, RecipeType } from "brewdio-wasm";
 import type { Path } from "@clickbar/dot-diver";
 import type {
   CalcDef,
   DynamicCalculation,
   StaticCalculation,
   RuntimeState as CalcRuntimeState,
-} from "../calculations/types";
+} from "./calculations-types";
 
 interface RuntimeState {
   recipe: RecipeType;

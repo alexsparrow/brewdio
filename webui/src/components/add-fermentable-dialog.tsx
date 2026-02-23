@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
-import { useLiveQuery } from "@tanstack/react-db";
-import { settingsCollection } from "@/db";
+import { useSettings } from "@/lib/db/settings";
 import { useRecipeEdit } from "@/contexts/recipe-edit-context";
-import type { FermentableAdditionType, FermentableType, MassUnitType } from "@beerjson/beerjson";
+import type { FermentableAdditionType, FermentableType, MassUnitType } from "brewdio-wasm";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
 import { Plus } from "lucide-react";
-import fermentables from "@/data/fermentables.json";
+import { get_fermentables } from "brewdio-wasm";
 
 interface AddFermentableDialogProps {
   existingFermentable?: FermentableAdditionType;
@@ -40,9 +39,8 @@ export function AddFermentableDialog({
   trigger,
 }: AddFermentableDialogProps) {
   const [open, setOpen] = useState(false);
-  const { id: recipeId, collection } = useRecipeEdit();
-  const { data: settingsData } = useLiveQuery(settingsCollection);
-  const settings = settingsData?.find((s) => s.id === "user-settings");
+  const { update } = useRecipeEdit();
+  const { data: settings } = useSettings();
   const isEditing = existingFermentable !== undefined && index !== undefined;
 
   const form = useForm({
@@ -53,7 +51,7 @@ export function AddFermentableDialog({
     },
     onSubmit: async ({ value }) => {
       // Find the selected fermentable from the fermentables data
-      const selectedFermentable = fermentables.find((f) => f.name === value.fermentableName);
+      const selectedFermentable = get_fermentables().find((f) => f.name === value.fermentableName);
 
       if (!selectedFermentable) {
         return;
@@ -73,7 +71,7 @@ export function AddFermentableDialog({
       };
 
       // Update in the database
-      await collection.update(recipeId, (draft) => {
+      update((draft) => {
         if (isEditing && index !== undefined) {
           // Edit existing fermentable
           draft.recipe.ingredients.fermentable_additions =
@@ -87,7 +85,6 @@ export function AddFermentableDialog({
             fermentableAddition,
           ];
         }
-        draft.updatedAt = Date.now();
       });
 
       // Reset form and close dialog
@@ -134,7 +131,7 @@ export function AddFermentableDialog({
               <div className="space-y-2">
                 <Label htmlFor={field.name}>Fermentable</Label>
                 <Combobox
-                  options={fermentables.map((f) => ({
+                  options={get_fermentables().map((f) => ({
                     value: f.name,
                     label: `${f.name} (${f.type})`,
                   }))}

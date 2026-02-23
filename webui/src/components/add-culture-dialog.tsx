@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useRecipeEdit } from "@/contexts/recipe-edit-context";
-import type { CultureAdditionType, UnitUnitType } from "@beerjson/beerjson";
+import type { CultureAdditionType, UnitUnitType } from "brewdio-wasm";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
 import { Plus } from "lucide-react";
-import cultures from "@/data/cultures.json";
+import { get_cultures } from "brewdio-wasm";
 
 interface AddCultureDialogProps {
   existingCulture?: CultureAdditionType;
@@ -38,7 +38,7 @@ export function AddCultureDialog({
   trigger,
 }: AddCultureDialogProps) {
   const [open, setOpen] = useState(false);
-  const { id: recipeId, collection } = useRecipeEdit();
+  const { update } = useRecipeEdit();
   const isEditing = existingCulture !== undefined && index !== undefined;
 
   const form = useForm({
@@ -49,7 +49,7 @@ export function AddCultureDialog({
     },
     onSubmit: async ({ value }) => {
       // Find the selected culture from the cultures data
-      const selectedCulture = cultures.find((c) => c.name === value.cultureName);
+      const selectedCulture = get_cultures().find((c) => c.name === value.cultureName);
 
       if (!selectedCulture) {
         return;
@@ -69,7 +69,7 @@ export function AddCultureDialog({
       };
 
       // Update in the database
-      await collection.update(recipeId, (draft) => {
+      update((draft) => {
         if (isEditing && index !== undefined) {
           // Edit existing culture
           draft.recipe.ingredients.culture_additions =
@@ -83,7 +83,6 @@ export function AddCultureDialog({
             cultureAddition,
           ];
         }
-        draft.updatedAt = Date.now();
       });
 
       // Reset form and close dialog
@@ -130,7 +129,7 @@ export function AddCultureDialog({
               <div className="space-y-2">
                 <Label htmlFor={field.name}>Yeast Culture</Label>
                 <Combobox
-                  options={cultures.map((c) => ({
+                  options={get_cultures().map((c) => ({
                     value: c.name,
                     label: `${c.name} (${c.type})`,
                   }))}

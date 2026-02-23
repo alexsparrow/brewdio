@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { WaterFlowVisualization } from './water-flow-visualization';
 import { calculateWaterVolumes, equipmentToStages } from '@/lib/water-calculations';
-import type { BatchDocument } from '@/db';
+import type { BatchDocument } from '@/lib/db/batches';
 
 interface BatchWaterCalculatorProps {
   batch: BatchDocument;
@@ -12,7 +12,7 @@ export function BatchWaterCalculator({ batch, beerColor = "#F59E0B" }: BatchWate
   const data = useMemo(() => {
     // Extract batch parameters
     const targetVolume = batch.recipe.batch_size.value; // in gallons
-    const boilTime = batch.recipe.boil_time.value; // in minutes
+    const boilTime = batch.recipe.boil?.boil_time?.value ?? 60; // in minutes
 
     // Calculate total grain weight from fermentables
     const grainWeight = batch.recipe.ingredients?.fermentable_additions?.reduce(
@@ -52,7 +52,7 @@ export function BatchWaterCalculator({ batch, beerColor = "#F59E0B" }: BatchWate
         </div>
         <p className="text-xs text-muted-foreground mt-1">
           Based on {batch.recipe.batch_size.value} {batch.recipe.batch_size.unit} batch size
-          and {batch.recipe.boil_time.value} {batch.recipe.boil_time.unit} boil time
+          and {batch.recipe.boil?.boil_time?.value ?? 60} {batch.recipe.boil?.boil_time?.unit ?? "min"} boil time
         </p>
       </div>
 

@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { TemperatureType } from "@beerjson/beerjson";
+import type { TemperatureType } from "brewdio-wasm";
 
 interface InlineTemperatureProps {
   label: string;

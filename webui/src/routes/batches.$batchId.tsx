@@ -1,6 +1,6 @@
 import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
-import { useLiveQuery } from "@tanstack/react-db";
-import { batchesCollection } from "@/db";
+import { useBatch, updateBatchImperative, batchKeys } from "@/lib/db/batches";
+import { useQueryClient } from "@tanstack/react-query";
 import { RecipeEditProvider } from "@/contexts/recipe-edit-context";
 import { AddFermentableDialog } from "@/components/add-fermentable-dialog";
 import { AddHopDialog } from "@/components/add-hop-dialog";
@@ -15,10 +15,9 @@ import { stores } from "@/lib/calculate";
 import { RetroCockpitDial } from "@/components/retro-cockpit-dial";
 import { GravitySightGlass } from "@/components/gravity-sight-glass";
 import { Screw } from "@/components/screw";
-import { OlFarve } from "@/calculations/olfarve";
+import { srm_to_srgb, rgb_to_hex, color_to_srm } from "brewdio-wasm";
 import { GrainIcon, HopIcon, YeastIcon } from "@/components/ingredient-icons";
-import { colorToSrm } from "@/calculations/units";
-import type { FermentableAdditionType } from "@beerjson/beerjson";
+import type { FermentableAdditionType } from "brewdio-wasm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const Route = createFileRoute("/batches/$batchId")({
@@ -37,9 +36,9 @@ function getFermentableColorHex(fermentable: FermentableAdditionType): string | 
   }
 
   try {
-    const srm = colorToSrm(colorData);
-    const rgb = OlFarve.srmToSRGB(srm);
-    return OlFarve.rgbToHex(rgb);
+    const srm = color_to_srm(colorData);
+    const rgb = srm_to_srgb(srm) as [number, number, number];
+    return rgb_to_hex(rgb[0], rgb[1], rgb[2]);
   } catch {
     return undefined;
   }
@@ -47,15 +46,33 @@ function getFermentableColorHex(fermentable: FermentableAdditionType): string | 
 
 function BatchDetailComponent() {
   const { batchId } = Route.useParams();
-  const { data: batches, status } = useLiveQuery(batchesCollection);
+  const { data: batch, status } = useBatch(batchId);
+  const queryClient = useQueryClient();
   const router = useRouter();
 
-  const batch = batches?.find((b) => b.id === batchId);
   const og = useCalculation<number>("og");
   const fg = useCalculation<number>("fg");
   const abv = useCalculation<number>("abv");
   const color = useCalculation<number>("color");
   const ibu = useCalculation<number>("ibu");
+
+  // Helper to update the batch via WASM and invalidate queries
+  const updateBatch = (updater: (b: typeof batch) => Partial<typeof batch>) => {
+    if (!batch) return;
+    const updates = updater(batch);
+    const updated = { ...batch, ...updates, updatedAt: Date.now() };
+    updateBatchImperative(batchId, updated.name, {
+      equipmentId: updated.equipmentId,
+      recipe: updated.recipe,
+      equipment: updated.equipment,
+      brewDate: updated.brewDate,
+      notes: updated.notes,
+      createdAt: updated.createdAt,
+      updatedAt: updated.updatedAt,
+    });
+    queryClient.invalidateQueries({ queryKey: batchKeys.all });
+    queryClient.invalidateQueries({ queryKey: batchKeys.detail(batchId) });
+  };
 
   // Extract style ranges if available - must be before any conditional returns
   const styleRanges = useMemo(() => {
@@ -81,28 +98,28 @@ function BatchDetailComponent() {
     };
   }, [batch?.recipe?.style]);
 
-  const handleRemoveFermentable = async (index: number) => {
-    await batchesCollection.update(batchId, (draft) => {
-      draft.recipe.ingredients.fermentable_additions =
-        draft.recipe.ingredients.fermentable_additions?.filter((_, idx) => idx !== index) || [];
-      draft.updatedAt = Date.now();
-    });
+  const handleRemoveFermentable = (index: number) => {
+    if (!batch) return;
+    const recipe = structuredClone(batch.recipe);
+    recipe.ingredients.fermentable_additions =
+      recipe.ingredients.fermentable_additions?.filter((_, idx) => idx !== index) || [];
+    updateBatch(() => ({ recipe }));
   };
 
-  const handleRemoveHop = async (index: number) => {
-    await batchesCollection.update(batchId, (draft) => {
-      draft.recipe.ingredients.hop_additions =
-        draft.recipe.ingredients.hop_additions?.filter((_, idx) => idx !== index) || [];
-      draft.updatedAt = Date.now();
-    });
+  const handleRemoveHop = (index: number) => {
+    if (!batch) return;
+    const recipe = structuredClone(batch.recipe);
+    recipe.ingredients.hop_additions =
+      recipe.ingredients.hop_additions?.filter((_, idx) => idx !== index) || [];
+    updateBatch(() => ({ recipe }));
   };
 
-  const handleRemoveCulture = async (index: number) => {
-    await batchesCollection.update(batchId, (draft) => {
-      draft.recipe.ingredients.culture_additions =
-        draft.recipe.ingredients.culture_additions?.filter((_, idx) => idx !== index) || [];
-      draft.updatedAt = Date.now();
-    });
+  const handleRemoveCulture = (index: number) => {
+    if (!batch) return;
+    const recipe = structuredClone(batch.recipe);
+    recipe.ingredients.culture_additions =
+      recipe.ingredients.culture_additions?.filter((_, idx) => idx !== index) || [];
+    updateBatch(() => ({ recipe }));
   };
 
   // Handle hash navigation for scrolling to sections
@@ -128,7 +145,7 @@ function BatchDetailComponent() {
     }
   }, [batch]);
 
-  if (status === "loading") {
+  if (status === "pending") {
     return <div>Loading batch...</div>;
   }
 
@@ -138,52 +155,48 @@ function BatchDetailComponent() {
 
   const { recipe: beerRecipe } = batch;
 
-  const handleBatchSizeUpdate = async (newValue: number, newUnit: string) => {
-    await batchesCollection.update(batchId, (draft) => {
-      draft.recipe.batch_size = { value: newValue, unit: newUnit };
-      draft.updatedAt = Date.now();
-    });
+  const handleBatchSizeUpdate = (newValue: number, newUnit: string) => {
+    const recipe = structuredClone(batch.recipe);
+    recipe.batch_size = { value: newValue, unit: newUnit };
+    updateBatch(() => ({ recipe }));
   };
 
-  const handleBoilSizeUpdate = async (newValue: number, newUnit: string) => {
-    await batchesCollection.update(batchId, (draft) => {
-      draft.recipe.boil_size = { value: newValue, unit: newUnit };
-      draft.updatedAt = Date.now();
-    });
+  const handleBoilSizeUpdate = (newValue: number, newUnit: string) => {
+    const recipe = structuredClone(batch.recipe);
+    if (!recipe.boil) recipe.boil = { boil_time: { value: 60, unit: "min" } };
+    recipe.boil.pre_boil_size = { value: newValue, unit: newUnit };
+    updateBatch(() => ({ recipe }));
   };
 
-  const handleBoilTimeUpdate = async (newValue: number, newUnit: string) => {
-    await batchesCollection.update(batchId, (draft) => {
-      draft.recipe.boil_time = { value: newValue, unit: newUnit };
-      draft.updatedAt = Date.now();
-    });
+  const handleBoilTimeUpdate = (newValue: number, newUnit: string) => {
+    const recipe = structuredClone(batch.recipe);
+    if (!recipe.boil) recipe.boil = { boil_time: { value: 60, unit: "min" } };
+    recipe.boil.boil_time = { value: newValue, unit: newUnit };
+    updateBatch(() => ({ recipe }));
   };
 
-  const handleEfficiencyUpdate = async (newValue: number, unit: string) => {
-    // Unit is always '%' for efficiency, but we accept it for consistency
-    await batchesCollection.update(batchId, (draft) => {
-      if (!draft.recipe.efficiency) {
-        draft.recipe.efficiency = {
-          brewhouse: newValue,
-          conversion: 100,
-          lauter: 95,
-          mash: 95,
-        };
-      } else {
-        draft.recipe.efficiency.brewhouse = newValue;
-      }
-      draft.updatedAt = Date.now();
-    });
+  const handleEfficiencyUpdate = (newValue: number, unit: string) => {
+    const recipe = structuredClone(batch.recipe);
+    if (!recipe.efficiency) {
+      recipe.efficiency = {
+        brewhouse: { value: newValue, unit: "%" },
+        conversion: { value: 100, unit: "%" },
+        lauter: { value: 95, unit: "%" },
+        mash: { value: 95, unit: "%" },
+      };
+    } else {
+      recipe.efficiency.brewhouse = { value: newValue, unit: "%" };
+    }
+    updateBatch(() => ({ recipe }));
   };
 
-  const handleNotesUpdate = async (newNotes: string) => {
-    await batchesCollection.update(batchId, (draft) => {
-      draft.recipe.notes = newNotes;
-      draft.updatedAt = Date.now();
-    });
+  const handleNotesUpdate = (newNotes: string) => {
+    const recipe = structuredClone(batch.recipe);
+    recipe.notes = newNotes;
+    updateBatch(() => ({ recipe }));
   };
 
-  const liquidColor = color ? OlFarve.rgbToHex(OlFarve.srmToSRGB(color)) : "#FBB123";
+  const liquidColor = color ? (() => { const rgb = srm_to_srgb(color) as [number, number, number]; return rgb_to_hex(rgb[0], rgb[1], rgb[2]); })() : "#FBB123";
 
   // Format brew date
   const brewDate = new Date(batch.brewDate);
@@ -193,18 +206,14 @@ function BatchDetailComponent() {
     day: 'numeric'
   });
 
-  const handleNameUpdate = async (newName: string) => {
-    await batchesCollection.update(batchId, (draft) => {
-      draft.name = newName;
-      draft.updatedAt = Date.now();
-    });
+  const handleNameUpdate = (newName: string) => {
+    updateBatch(() => ({ name: newName }));
   };
 
   return (
     <RecipeEditProvider
       id={batchId}
       document={batch}
-      collection={batchesCollection}
       type="batch"
     >
       <div className="flex flex-col gap-6">
@@ -346,23 +355,27 @@ function BatchDetailComponent() {
               onSave={handleBatchSizeUpdate}
               label="Batch Size"
             />
-            <InlineEditableWithUnit
-              value={beerRecipe.boil_size.value}
-              unit={beerRecipe.boil_size.unit}
-              availableUnits={["gal", "l", "ml"]}
-              onSave={handleBoilSizeUpdate}
-              label="Boil Size"
-            />
-            <InlineEditableWithUnit
-              value={beerRecipe.boil_time.value}
-              unit={beerRecipe.boil_time.unit}
-              availableUnits={["min", "hr"]}
-              onSave={handleBoilTimeUpdate}
-              label="Boil Time"
-            />
+            {beerRecipe.boil?.pre_boil_size && (
+              <InlineEditableWithUnit
+                value={beerRecipe.boil.pre_boil_size.value}
+                unit={beerRecipe.boil.pre_boil_size.unit}
+                availableUnits={["gal", "l", "ml"]}
+                onSave={handleBoilSizeUpdate}
+                label="Boil Size"
+              />
+            )}
+            {beerRecipe.boil?.boil_time && (
+              <InlineEditableWithUnit
+                value={beerRecipe.boil.boil_time.value}
+                unit={beerRecipe.boil.boil_time.unit}
+                availableUnits={["min", "hr"]}
+                onSave={handleBoilTimeUpdate}
+                label="Boil Time"
+              />
+            )}
             {beerRecipe.efficiency && (
               <InlineEditableWithUnit
-                value={beerRecipe.efficiency.brewhouse}
+                value={beerRecipe.efficiency.brewhouse.value}
                 unit="%"
                 availableUnits={["%"]}
                 onSave={handleEfficiencyUpdate}

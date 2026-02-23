@@ -2,9 +2,10 @@ import { InlineEditable } from '@/components/inline-editable';
 import { EditableStyleSelector } from '@/components/editable-style-selector';
 import { DeleteRecipeDialog } from '@/components/delete-recipe-dialog';
 import { BrewBatchDialog } from '@/components/brew-batch-dialog';
-import { recipesCollection } from '@/db';
-import type { RecipeDocument } from '@/db';
-import styles from '@/data/styles.json';
+import type { RecipeDocument } from '@/lib/db/recipes';
+import { getRecipeDb, recipeKeys } from '@/lib/db/recipes';
+import { useQueryClient } from '@tanstack/react-query';
+import { get_styles } from 'brewdio-wasm';
 
 interface RecipeHeaderProps {
   recipe: RecipeDocument;
@@ -19,23 +20,29 @@ export function RecipeHeader({
   redirectOnDelete = false,
   showBrew = true,
 }: RecipeHeaderProps) {
+  const queryClient = useQueryClient();
+
   const handleNameUpdate = async (newName: string) => {
-    await recipesCollection.update(recipe.id, (draft) => {
-      draft.recipe.name = newName;
-      draft.updatedAt = Date.now();
-    });
+    const db = getRecipeDb();
+    const updated = structuredClone(recipe.recipe);
+    updated.name = newName;
+    db.update_recipe(recipe.id, newName, updated as any);
+    queryClient.invalidateQueries({ queryKey: recipeKeys.all });
+    queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipe.id) });
   };
 
   const handleStyleUpdate = async (newStyleName: string) => {
-    const selectedStyle = styles.find((s) => s.name === newStyleName);
+    const selectedStyle = get_styles().find((s) => s.name === newStyleName);
     if (!selectedStyle) {
       throw new Error(`Style "${newStyleName}" not found`);
     }
 
-    await recipesCollection.update(recipe.id, (draft) => {
-      draft.recipe.style = selectedStyle as any;
-      draft.updatedAt = Date.now();
-    });
+    const db = getRecipeDb();
+    const updated = structuredClone(recipe.recipe);
+    updated.style = selectedStyle as any;
+    db.update_recipe(recipe.id, updated.name, updated as any);
+    queryClient.invalidateQueries({ queryKey: recipeKeys.all });
+    queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipe.id) });
   };
 
   return (

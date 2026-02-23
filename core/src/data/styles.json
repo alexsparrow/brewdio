@@ -4,7 +4,6 @@
   "type": "beer",
   "category": "American Ale",
   "style_guide": "BJCP",
-  "style_letter": "10",
   "original_gravity": {
    "minimum": {
     "value": 1.045,
@@ -64,14 +63,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 10
  },
  {
   "name": "American Barleywine",
   "type": "beer",
   "category": "Strong Ale",
   "style_guide": "BJCP",
-  "style_letter": "19",
   "original_gravity": {
    "minimum": {
     "value": 1.08,
@@ -131,14 +130,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 19
  },
  {
   "name": "American Brown Ale",
   "type": "beer",
   "category": "American Ale",
   "style_guide": "BJCP",
-  "style_letter": "10",
   "original_gravity": {
    "minimum": {
     "value": 1.045,
@@ -198,14 +197,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 10
  },
  {
   "name": "American IPA",
   "type": "beer",
   "category": "India Pale Ale",
   "style_guide": "BJCP",
-  "style_letter": "14",
   "original_gravity": {
    "minimum": {
     "value": 1.056,
@@ -265,14 +264,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 14
  },
  {
   "name": "American Pale Ale",
   "type": "beer",
   "category": "American Ale",
   "style_guide": "BJCP",
-  "style_letter": "10",
   "original_gravity": {
    "minimum": {
     "value": 1.045,
@@ -332,14 +331,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 10
  },
  {
   "name": "American Stout",
   "type": "beer",
   "category": "Stout",
   "style_guide": "BJCP",
-  "style_letter": "13",
   "original_gravity": {
    "minimum": {
     "value": 1.05,
@@ -399,14 +398,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 13
  },
  {
   "name": "American Wheat or Rye Beer",
   "type": "beer",
   "category": "Light Hybrid Beer",
   "style_guide": "BJCP",
-  "style_letter": "6",
   "original_gravity": {
    "minimum": {
     "value": 1.04,
@@ -466,14 +465,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 6
  },
  {
   "name": "Applewine",
   "type": "cider",
   "category": "Specialty Cider and Perry",
   "style_guide": "BJCP",
-  "style_letter": "28",
   "original_gravity": {
    "minimum": {
     "value": 1.07,
@@ -533,14 +532,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 28
  },
  {
   "name": "Baltic Porter",
   "type": "beer",
   "category": "Porter",
   "style_guide": "BJCP",
-  "style_letter": "12",
   "original_gravity": {
    "minimum": {
     "value": 1.06,
@@ -600,14 +599,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 12
  },
  {
   "name": "Belgian Blond Ale",
   "type": "beer",
   "category": "Belgian Strong Ale",
   "style_guide": "BJCP",
-  "style_letter": "18",
   "original_gravity": {
    "minimum": {
     "value": 1.062,
@@ -667,14 +666,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 18
  },
  {
   "name": "Belgian Dark Strong Ale",
   "type": "beer",
   "category": "Belgian Strong Ale",
   "style_guide": "BJCP",
-  "style_letter": "18",
   "original_gravity": {
    "minimum": {
     "value": 1.075,
@@ -734,14 +733,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 18
  },
  {
   "name": "Belgian Dubbel",
   "type": "beer",
   "category": "Belgian Strong Ale",
   "style_guide": "BJCP",
-  "style_letter": "18",
   "original_gravity": {
    "minimum": {
     "value": 1.062,
@@ -801,14 +800,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 18
  },
  {
   "name": "Belgian Golden Strong Ale",
   "type": "beer",
   "category": "Belgian Strong Ale",
   "style_guide": "BJCP",
-  "style_letter": "18",
   "original_gravity": {
    "minimum": {
     "value": 1.07,
@@ -868,14 +867,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 18
  },
  {
   "name": "Belgian Pale Ale",
   "type": "beer",
   "category": "Belgian and French Ale",
   "style_guide": "BJCP",
-  "style_letter": "16",
   "original_gravity": {
    "minimum": {
     "value": 1.048,
@@ -935,14 +934,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 16
  },
  {
   "name": "Belgian Specialty Ale",
   "type": "beer",
   "category": "Belgian and French Ale",
   "style_guide": "BJCP",
-  "style_letter": "16",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -1002,14 +1001,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 16
  },
  {
   "name": "Belgian Tripel",
   "type": "beer",
   "category": "Belgian Strong Ale",
   "style_guide": "BJCP",
-  "style_letter": "18",
   "original_gravity": {
    "minimum": {
     "value": 1.075,
@@ -1069,14 +1068,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 18
  },
  {
   "name": "Berliner Weisse",
   "type": "beer",
   "category": "Sour Ale",
   "style_guide": "BJCP",
-  "style_letter": "17",
   "original_gravity": {
    "minimum": {
     "value": 1.028,
@@ -1136,14 +1135,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 17
  },
  {
   "name": "Bière de Garde",
   "type": "beer",
   "category": "Belgian and French Ale",
   "style_guide": "BJCP",
-  "style_letter": "16",
   "original_gravity": {
    "minimum": {
     "value": 1.06,
@@ -1203,14 +1202,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 16
  },
  {
   "name": "Blonde Ale",
   "type": "beer",
   "category": "Light Hybrid Beer",
   "style_guide": "BJCP",
-  "style_letter": "6",
   "original_gravity": {
    "minimum": {
     "value": 1.038,
@@ -1270,14 +1269,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 6
  },
  {
   "name": "Bohemian Pilsener",
   "type": "beer",
   "category": "Pilsner",
   "style_guide": "BJCP",
-  "style_letter": "2",
   "original_gravity": {
    "minimum": {
     "value": 1.044,
@@ -1337,14 +1336,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 2
  },
  {
   "name": "Braggot",
   "type": "beer",
   "category": "Other Mead",
   "style_guide": "BJCP",
-  "style_letter": "26",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -1404,14 +1403,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 26
  },
  {
   "name": "Brown Porter",
   "type": "beer",
   "category": "Porter",
   "style_guide": "BJCP",
-  "style_letter": "12",
   "original_gravity": {
    "minimum": {
     "value": 1.04,
@@ -1471,14 +1470,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 12
  },
  {
   "name": "California Common Beer",
   "type": "beer",
   "category": "Amber Hybrid Beer",
   "style_guide": "BJCP",
-  "style_letter": "7",
   "original_gravity": {
    "minimum": {
     "value": 1.048,
@@ -1538,14 +1537,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 7
  },
  {
   "name": "Christmas/Winter Specialty Spiced Beer",
   "type": "beer",
   "category": "Spice/Herb/Vegetable Beer",
   "style_guide": "BJCP",
-  "style_letter": "21",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -1605,14 +1604,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 21
  },
  {
   "name": "Classic American Pilsner",
   "type": "beer",
   "category": "Pilsner",
   "style_guide": "BJCP",
-  "style_letter": "2",
   "original_gravity": {
    "minimum": {
     "value": 1.044,
@@ -1672,14 +1671,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 2
  },
  {
   "name": "Classic Rauchbier",
   "type": "beer",
   "category": "Smoke-flavored/Wood-aged Beer",
   "style_guide": "BJCP",
-  "style_letter": "22",
   "original_gravity": {
    "minimum": {
     "value": 1.05,
@@ -1739,14 +1738,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 22
  },
  {
   "name": "Common Cider",
   "type": "cider",
   "category": "Standard Cider and Perry",
   "style_guide": "BJCP",
-  "style_letter": "27",
   "original_gravity": {
    "minimum": {
     "value": 1.045,
@@ -1806,14 +1805,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 27
  },
  {
   "name": "Common Perry",
   "type": "cider",
   "category": "Standard Cider and Perry",
   "style_guide": "BJCP",
-  "style_letter": "27",
   "original_gravity": {
    "minimum": {
     "value": 1.05,
@@ -1873,14 +1872,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 27
  },
  {
   "name": "Cream Ale",
   "type": "beer",
   "category": "Light Hybrid Beer",
   "style_guide": "BJCP",
-  "style_letter": "6",
   "original_gravity": {
    "minimum": {
     "value": 1.042,
@@ -1940,14 +1939,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 6
  },
  {
   "name": "Cyser",
   "type": "beer",
   "category": "Melomel (Fruit Mead)",
   "style_guide": "BJCP",
-  "style_letter": "25",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -2007,14 +2006,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 25
  },
  {
   "name": "Dark American Lager",
   "type": "beer",
   "category": "Dark Lager",
   "style_guide": "BJCP",
-  "style_letter": "4",
   "original_gravity": {
    "minimum": {
     "value": 1.044,
@@ -2074,14 +2073,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 4
  },
  {
   "name": "Doppelbock",
   "type": "beer",
   "category": "Bock",
   "style_guide": "BJCP",
-  "style_letter": "5",
   "original_gravity": {
    "minimum": {
     "value": 1.072,
@@ -2141,14 +2140,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 5
  },
  {
   "name": "Dortmunder Export",
   "type": "beer",
   "category": "Light Lager",
   "style_guide": "BJCP",
-  "style_letter": "1",
   "original_gravity": {
    "minimum": {
     "value": 1.048,
@@ -2208,14 +2207,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 1
  },
  {
   "name": "Dry Mead",
   "type": "beer",
   "category": "Traditional Mead",
   "style_guide": "BJCP",
-  "style_letter": "24",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -2275,14 +2274,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 24
  },
  {
   "name": "Dry Stout",
   "type": "beer",
   "category": "Stout",
   "style_guide": "BJCP",
-  "style_letter": "13",
   "original_gravity": {
    "minimum": {
     "value": 1.036,
@@ -2342,14 +2341,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 13
  },
  {
   "name": "Dunkelweizen",
   "type": "beer",
   "category": "German Wheat and Rye Beer",
   "style_guide": "BJCP",
-  "style_letter": "15",
   "original_gravity": {
    "minimum": {
     "value": 1.044,
@@ -2409,14 +2408,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 15
  },
  {
   "name": "Düsseldorf Altbier",
   "type": "beer",
   "category": "Amber Hybrid Beer",
   "style_guide": "BJCP",
-  "style_letter": "7",
   "original_gravity": {
    "minimum": {
     "value": 1.046,
@@ -2476,14 +2475,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 7
  },
  {
   "name": "Eisbock",
   "type": "beer",
   "category": "Bock",
   "style_guide": "BJCP",
-  "style_letter": "5",
   "original_gravity": {
    "minimum": {
     "value": 1.078,
@@ -2543,14 +2542,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 5
  },
  {
   "name": "English Barleywine",
   "type": "beer",
   "category": "Strong Ale",
   "style_guide": "BJCP",
-  "style_letter": "19",
   "original_gravity": {
    "minimum": {
     "value": 1.08,
@@ -2610,14 +2609,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 19
  },
  {
   "name": "English Cider ",
   "type": "cider",
   "category": "Standard Cider and Perry",
   "style_guide": "BJCP",
-  "style_letter": "27",
   "original_gravity": {
    "minimum": {
     "value": 1.05,
@@ -2677,14 +2676,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 27
  },
  {
   "name": "English IPA",
   "type": "beer",
   "category": "India Pale Ale",
   "style_guide": "BJCP",
-  "style_letter": "14",
   "original_gravity": {
    "minimum": {
     "value": 1.05,
@@ -2744,14 +2743,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 14
  },
  {
   "name": "Extra Special/Strong Bitter (English Pale Ale)",
   "type": "beer",
   "category": "English Pale Ale",
   "style_guide": "BJCP",
-  "style_letter": "8",
   "original_gravity": {
    "minimum": {
     "value": 1.048,
@@ -2811,14 +2810,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 8
  },
  {
   "name": "Flanders Brown Ale/Oud Bruin",
   "type": "beer",
   "category": "Sour Ale",
   "style_guide": "BJCP",
-  "style_letter": "17",
   "original_gravity": {
    "minimum": {
     "value": 1.04,
@@ -2878,14 +2877,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 17
  },
  {
   "name": "Flanders Red Ale",
   "type": "beer",
   "category": "Sour Ale",
   "style_guide": "BJCP",
-  "style_letter": "17",
   "original_gravity": {
    "minimum": {
     "value": 1.048,
@@ -2945,14 +2944,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 17
  },
  {
   "name": "Foreign Extra Stout",
   "type": "beer",
   "category": "Stout",
   "style_guide": "BJCP",
-  "style_letter": "13",
   "original_gravity": {
    "minimum": {
     "value": 1.056,
@@ -3012,14 +3011,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 13
  },
  {
   "name": "French Cider",
   "type": "cider",
   "category": "Standard Cider and Perry",
   "style_guide": "BJCP",
-  "style_letter": "27",
   "original_gravity": {
    "minimum": {
     "value": 1.05,
@@ -3079,14 +3078,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 27
  },
  {
   "name": "Fruit Beer",
   "type": "beer",
   "category": "Fruit Beer",
   "style_guide": "BJCP",
-  "style_letter": "20",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -3146,14 +3145,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 20
  },
  {
   "name": "Fruit Cider",
   "type": "cider",
   "category": "Specialty Cider and Perry",
   "style_guide": "BJCP",
-  "style_letter": "28",
   "original_gravity": {
    "minimum": {
     "value": 1.045,
@@ -3213,14 +3212,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 28
  },
  {
   "name": "Fruit Lambic",
   "type": "beer",
   "category": "Sour Ale",
   "style_guide": "BJCP",
-  "style_letter": "17",
   "original_gravity": {
    "minimum": {
     "value": 1.04,
@@ -3280,14 +3279,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 17
  },
  {
   "name": "German Pilsner (Pils)",
   "type": "beer",
   "category": "Pilsner",
   "style_guide": "BJCP",
-  "style_letter": "2",
   "original_gravity": {
    "minimum": {
     "value": 1.044,
@@ -3347,14 +3346,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 2
  },
  {
   "name": "Gueuze",
   "type": "beer",
   "category": "Sour Ale",
   "style_guide": "BJCP",
-  "style_letter": "17",
   "original_gravity": {
    "minimum": {
     "value": 1.04,
@@ -3414,14 +3413,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 17
  },
  {
   "name": "Imperial IPA",
   "type": "beer",
   "category": "India Pale Ale",
   "style_guide": "BJCP",
-  "style_letter": "14",
   "original_gravity": {
    "minimum": {
     "value": 1.07,
@@ -3481,14 +3480,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 14
  },
  {
   "name": "Irish Red Ale",
   "type": "beer",
   "category": "Scottish and Irish Ale",
   "style_guide": "BJCP",
-  "style_letter": "9",
   "original_gravity": {
    "minimum": {
     "value": 1.044,
@@ -3548,14 +3547,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 9
  },
  {
   "name": "Kölsch",
   "type": "beer",
   "category": "Light Hybrid Beer",
   "style_guide": "BJCP",
-  "style_letter": "6",
   "original_gravity": {
    "minimum": {
     "value": 1.044,
@@ -3615,14 +3614,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 6
  },
  {
   "name": "Lite American Lager",
   "type": "beer",
   "category": "Light Lager",
   "style_guide": "BJCP",
-  "style_letter": "1",
   "original_gravity": {
    "minimum": {
     "value": 1.028,
@@ -3682,14 +3681,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 1
  },
  {
   "name": "Maibock/Helles Bock",
   "type": "beer",
   "category": "Bock",
   "style_guide": "BJCP",
-  "style_letter": "5",
   "original_gravity": {
    "minimum": {
     "value": 1.064,
@@ -3749,14 +3748,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 5
  },
  {
   "name": "Metheglin",
   "type": "beer",
   "category": "Other Mead",
   "style_guide": "BJCP",
-  "style_letter": "26",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -3816,14 +3815,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 26
  },
  {
   "name": "Mild",
   "type": "beer",
   "category": "English Brown Ale",
   "style_guide": "BJCP",
-  "style_letter": "11",
   "original_gravity": {
    "minimum": {
     "value": 1.03,
@@ -3883,14 +3882,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 11
  },
  {
   "name": "Munich Dunkel",
   "type": "beer",
   "category": "Dark Lager",
   "style_guide": "BJCP",
-  "style_letter": "4",
   "original_gravity": {
    "minimum": {
     "value": 1.048,
@@ -3950,14 +3949,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 4
  },
  {
   "name": "Munich Helles",
   "type": "beer",
   "category": "Light Lager",
   "style_guide": "BJCP",
-  "style_letter": "1",
   "original_gravity": {
    "minimum": {
     "value": 1.045,
@@ -4017,14 +4016,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 1
  },
  {
   "name": "New England Cider",
   "type": "cider",
   "category": "Specialty Cider and Perry",
   "style_guide": "BJCP",
-  "style_letter": "28",
   "original_gravity": {
    "minimum": {
     "value": 1.06,
@@ -4084,14 +4083,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 28
  },
  {
   "name": "Northern English Brown Ale",
   "type": "beer",
   "category": "English Brown Ale",
   "style_guide": "BJCP",
-  "style_letter": "11",
   "original_gravity": {
    "minimum": {
     "value": 1.04,
@@ -4151,14 +4150,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 11
  },
  {
   "name": "Northern German Altbier",
   "type": "beer",
   "category": "Amber Hybrid Beer",
   "style_guide": "BJCP",
-  "style_letter": "7",
   "original_gravity": {
    "minimum": {
     "value": 1.046,
@@ -4218,14 +4217,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 7
  },
  {
   "name": "Oatmeal Stout",
   "type": "beer",
   "category": "Stout",
   "style_guide": "BJCP",
-  "style_letter": "13",
   "original_gravity": {
    "minimum": {
     "value": 1.048,
@@ -4285,14 +4284,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 13
  },
  {
   "name": "Oktoberfest/Märzen",
   "type": "beer",
   "category": "European Amber Lager",
   "style_guide": "BJCP",
-  "style_letter": "3",
   "original_gravity": {
    "minimum": {
     "value": 1.05,
@@ -4352,14 +4351,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 3
  },
  {
   "name": "Old Ale",
   "type": "beer",
   "category": "Strong Ale",
   "style_guide": "BJCP",
-  "style_letter": "19",
   "original_gravity": {
    "minimum": {
     "value": 1.06,
@@ -4419,14 +4418,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 19
  },
  {
   "name": "Open Category Mead",
   "type": "beer",
   "category": "Other Mead",
   "style_guide": "BJCP",
-  "style_letter": "26",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -4486,14 +4485,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 26
  },
  {
   "name": "Other Fruit Melomel",
   "type": "beer",
   "category": "Melomel (Fruit Mead)",
   "style_guide": "BJCP",
-  "style_letter": "25",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -4553,14 +4552,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 25
  },
  {
   "name": "Other Smoked Beer",
   "type": "beer",
   "category": "Smoke-flavored/Wood-aged Beer",
   "style_guide": "BJCP",
-  "style_letter": "22",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -4620,14 +4619,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 22
  },
  {
   "name": "Other Specialty Cider/Perry",
   "type": "cider",
   "category": "Specialty Cider and Perry",
   "style_guide": "BJCP",
-  "style_letter": "28",
   "original_gravity": {
    "minimum": {
     "value": 1.045,
@@ -4687,14 +4686,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 28
  },
  {
   "name": "Premium American Lager",
   "type": "beer",
   "category": "Light Lager",
   "style_guide": "BJCP",
-  "style_letter": "1",
   "original_gravity": {
    "minimum": {
     "value": 1.046,
@@ -4754,14 +4753,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 1
  },
  {
   "name": "Pyment",
   "type": "beer",
   "category": "Melomel (Fruit Mead)",
   "style_guide": "BJCP",
-  "style_letter": "25",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -4821,14 +4820,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 25
  },
  {
   "name": "Robust Porter",
   "type": "beer",
   "category": "Porter",
   "style_guide": "BJCP",
-  "style_letter": "12",
   "original_gravity": {
    "minimum": {
     "value": 1.048,
@@ -4888,14 +4887,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 12
  },
  {
   "name": "Roggenbier (German Rye Beer)",
   "type": "beer",
   "category": "German Wheat and Rye Beer",
   "style_guide": "BJCP",
-  "style_letter": "15",
   "original_gravity": {
    "minimum": {
     "value": 1.046,
@@ -4955,14 +4954,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 15
  },
  {
   "name": "Russian Imperial Stout",
   "type": "beer",
   "category": "Stout",
   "style_guide": "BJCP",
-  "style_letter": "13",
   "original_gravity": {
    "minimum": {
     "value": 1.075,
@@ -5022,14 +5021,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 13
  },
  {
   "name": "Saison",
   "type": "beer",
   "category": "Belgian and French Ale",
   "style_guide": "BJCP",
-  "style_letter": "16",
   "original_gravity": {
    "minimum": {
     "value": 1.048,
@@ -5089,14 +5088,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 16
  },
  {
   "name": "Schwarzbier (Black Beer)",
   "type": "beer",
   "category": "Dark Lager",
   "style_guide": "BJCP",
-  "style_letter": "4",
   "original_gravity": {
    "minimum": {
     "value": 1.046,
@@ -5156,14 +5155,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 4
  },
  {
   "name": "Scottish Export 80/-",
   "type": "beer",
   "category": "Scottish and Irish Ale",
   "style_guide": "BJCP",
-  "style_letter": "9",
   "original_gravity": {
    "minimum": {
     "value": 1.04,
@@ -5223,14 +5222,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 9
  },
  {
   "name": "Scottish Heavy 70/-",
   "type": "beer",
   "category": "Scottish and Irish Ale",
   "style_guide": "BJCP",
-  "style_letter": "9",
   "original_gravity": {
    "minimum": {
     "value": 1.035,
@@ -5290,14 +5289,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 9
  },
  {
   "name": "Scottish Light 60/-",
   "type": "beer",
   "category": "Scottish and Irish Ale",
   "style_guide": "BJCP",
-  "style_letter": "9",
   "original_gravity": {
    "minimum": {
     "value": 1.03,
@@ -5357,14 +5356,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 9
  },
  {
   "name": "Semi-sweet Mead",
   "type": "beer",
   "category": "Traditional Mead",
   "style_guide": "BJCP",
-  "style_letter": "24",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -5424,14 +5423,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 24
  },
  {
   "name": "Southern English Brown",
   "type": "beer",
   "category": "English Brown Ale",
   "style_guide": "BJCP",
-  "style_letter": "11",
   "original_gravity": {
    "minimum": {
     "value": 1.033,
@@ -5491,14 +5490,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 11
  },
  {
   "name": "Special/Best/Premium Bitter",
   "type": "beer",
   "category": "English Pale Ale",
   "style_guide": "BJCP",
-  "style_letter": "8",
   "original_gravity": {
    "minimum": {
     "value": 1.04,
@@ -5558,14 +5557,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 8
  },
  {
   "name": "Specialty Beer",
   "type": "beer",
   "category": "Specialty Beer",
   "style_guide": "BJCP",
-  "style_letter": "23",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -5625,14 +5624,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 23
  },
  {
   "name": "Spice, Herb, or Vegetable Beer",
   "type": "beer",
   "category": "Spice/Herb/Vegetable Beer",
   "style_guide": "BJCP",
-  "style_letter": "21",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -5692,14 +5691,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 21
  },
  {
   "name": "Standard American Lager",
   "type": "beer",
   "category": "Light Lager",
   "style_guide": "BJCP",
-  "style_letter": "1",
   "original_gravity": {
    "minimum": {
     "value": 1.04,
@@ -5759,14 +5758,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 1
  },
  {
   "name": "Standard/Ordinary Bitter",
   "type": "beer",
   "category": "English Pale Ale",
   "style_guide": "BJCP",
-  "style_letter": "8",
   "original_gravity": {
    "minimum": {
     "value": 1.032,
@@ -5826,14 +5825,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 8
  },
  {
   "name": "Straight (Unblended) Lambic",
   "type": "beer",
   "category": "Sour Ale",
   "style_guide": "BJCP",
-  "style_letter": "17",
   "original_gravity": {
    "minimum": {
     "value": 1.04,
@@ -5893,14 +5892,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 17
  },
  {
   "name": "Strong Scotch Ale",
   "type": "beer",
   "category": "Scottish and Irish Ale",
   "style_guide": "BJCP",
-  "style_letter": "9",
   "original_gravity": {
    "minimum": {
     "value": 1.07,
@@ -5960,14 +5959,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 9
  },
  {
   "name": "Sweet Mead",
   "type": "beer",
   "category": "Traditional Mead",
   "style_guide": "BJCP",
-  "style_letter": "24",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -6027,14 +6026,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 24
  },
  {
   "name": "Sweet Stout",
   "type": "beer",
   "category": "Stout",
   "style_guide": "BJCP",
-  "style_letter": "13",
   "original_gravity": {
    "minimum": {
     "value": 1.044,
@@ -6094,14 +6093,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 13
  },
  {
   "name": "Traditional Bock",
   "type": "beer",
   "category": "Bock",
   "style_guide": "BJCP",
-  "style_letter": "5",
   "original_gravity": {
    "minimum": {
     "value": 1.064,
@@ -6161,14 +6160,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 5
  },
  {
   "name": "Traditional Perry",
   "type": "cider",
   "category": "Standard Cider and Perry",
   "style_guide": "BJCP",
-  "style_letter": "27",
   "original_gravity": {
    "minimum": {
     "value": 1.05,
@@ -6228,14 +6227,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 27
  },
  {
   "name": "Vienna Lager",
   "type": "beer",
   "category": "European Amber Lager",
   "style_guide": "BJCP",
-  "style_letter": "3",
   "original_gravity": {
    "minimum": {
     "value": 1.046,
@@ -6295,14 +6294,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 3
  },
  {
   "name": "Weizen/Weissbier",
   "type": "beer",
   "category": "German Wheat and Rye Beer",
   "style_guide": "BJCP",
-  "style_letter": "15",
   "original_gravity": {
    "minimum": {
     "value": 1.044,
@@ -6362,14 +6361,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 15
  },
  {
   "name": "Weizenbock",
   "type": "beer",
   "category": "German Wheat and Rye Beer",
   "style_guide": "BJCP",
-  "style_letter": "15",
   "original_gravity": {
    "minimum": {
     "value": 1.064,
@@ -6429,14 +6428,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 15
  },
  {
   "name": "Witbier",
   "type": "beer",
   "category": "Belgian and French Ale",
   "style_guide": "BJCP",
-  "style_letter": "16",
   "original_gravity": {
    "minimum": {
     "value": 1.044,
@@ -6496,14 +6495,14 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 16
  },
  {
   "name": "Wood-Aged Beer",
   "type": "beer",
   "category": "Smoke-flavored/Wood-aged Beer",
   "style_guide": "BJCP",
-  "style_letter": "22",
   "original_gravity": {
    "minimum": {
     "value": 1,
@@ -6563,6 +6562,7 @@
     "value": 0,
     "unit": "vols"
    }
-  }
+  },
+  "category_number": 22
  }
 ]

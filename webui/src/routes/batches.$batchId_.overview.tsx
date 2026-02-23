@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useLiveQuery } from "@tanstack/react-db";
-import { batchesCollection, equipmentCollection } from "@/db";
+import { useBatch, updateBatchImperative, batchKeys } from "@/lib/db/batches";
+import { useQueryClient } from "@tanstack/react-query";
+import { get_equipment } from "brewdio-wasm";
 import { EditableNotes } from "@/components/editable-notes";
 import { InlineEditable } from "@/components/inline-editable";
 import { useEffect } from "react";
@@ -9,13 +10,11 @@ import { stores } from "@/lib/calculate";
 import { RetroCockpitDial } from "@/components/retro-cockpit-dial";
 import { GravitySightGlass } from "@/components/gravity-sight-glass";
 import { Screw } from "@/components/screw";
-import { OlFarve } from "@/calculations/olfarve";
+import { srm_to_srgb, rgb_to_hex, color_to_srm } from "brewdio-wasm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Info, Beaker, Calendar } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Info, Calendar } from "lucide-react";
 import { GrainIcon, HopIcon, YeastIcon } from "@/components/ingredient-icons";
-import { colorToSrm } from "@/calculations/units";
-import type { FermentableAdditionType } from "@beerjson/beerjson";
+import type { FermentableAdditionType } from "brewdio-wasm";
 import { BatchWaterCalculator } from "@/components/batch-water-calculator";
 import { Input } from "@/components/ui/input";
 import { DeleteBatchDialog } from "@/components/delete-batch-dialog";
@@ -35,9 +34,9 @@ function getFermentableColorHex(fermentable: FermentableAdditionType): string | 
   }
 
   try {
-    const srm = colorToSrm(colorData);
-    const rgb = OlFarve.srmToSRGB(srm);
-    return OlFarve.rgbToHex(rgb);
+    const srm = color_to_srm(colorData);
+    const rgb = srm_to_srgb(srm) as [number, number, number];
+    return rgb_to_hex(rgb[0], rgb[1], rgb[2]);
   } catch {
     return undefined;
   }
@@ -45,15 +44,35 @@ function getFermentableColorHex(fermentable: FermentableAdditionType): string | 
 
 function BatchOverviewComponent() {
   const { batchId } = Route.useParams();
-  const { data: batches, status } = useLiveQuery(batchesCollection);
-  const { data: equipmentProfiles } = useLiveQuery(equipmentCollection);
+  const { data: batch, status } = useBatch(batchId);
+  const queryClient = useQueryClient();
 
-  const batch = batches?.find((b) => b.id === batchId);
+  // Static equipment data
+  const equipmentProfiles = get_equipment();
+
   const og = useCalculation<number>("og");
   const fg = useCalculation<number>("fg");
   const abv = useCalculation<number>("abv");
   const color = useCalculation<number>("color");
   const ibu = useCalculation<number>("ibu");
+
+  // Helper to update the batch
+  const updateBatch = (updater: (b: typeof batch) => Partial<typeof batch>) => {
+    if (!batch) return;
+    const updates = updater(batch);
+    const updated = { ...batch, ...updates, updatedAt: Date.now() };
+    updateBatchImperative(batchId, updated.name, {
+      equipmentId: updated.equipmentId,
+      recipe: updated.recipe,
+      equipment: updated.equipment,
+      brewDate: updated.brewDate,
+      notes: updated.notes,
+      createdAt: updated.createdAt,
+      updatedAt: updated.updatedAt,
+    });
+    queryClient.invalidateQueries({ queryKey: batchKeys.all });
+    queryClient.invalidateQueries({ queryKey: batchKeys.detail(batchId) });
+  };
 
   // Sync batch's recipe data to calculation store
   useEffect(() => {
@@ -64,7 +83,7 @@ function BatchOverviewComponent() {
     }
   }, [batch]);
 
-  if (status === "loading") {
+  if (status === "pending") {
     return <div>Loading batch...</div>;
   }
 
@@ -74,40 +93,30 @@ function BatchOverviewComponent() {
 
   const { recipe: beerRecipe } = batch;
 
-  const handleNameUpdate = async (newName: string) => {
-    await batchesCollection.update(batchId, (draft) => {
-      draft.name = newName;
-      draft.updatedAt = Date.now();
-    });
+  const handleNameUpdate = (newName: string) => {
+    updateBatch(() => ({ name: newName }));
   };
 
-  const handleNotesUpdate = async (newNotes: string) => {
-    await batchesCollection.update(batchId, (draft) => {
-      draft.notes = newNotes;
-      draft.updatedAt = Date.now();
-    });
+  const handleNotesUpdate = (newNotes: string) => {
+    updateBatch(() => ({ notes: newNotes }));
   };
 
-  const handleEquipmentChange = async (newEquipmentId: string) => {
-    const selectedEquipment = equipmentProfiles?.find(e => e.id === newEquipmentId);
+  const handleEquipmentChange = (newEquipmentId: string) => {
+    const selectedEquipment = equipmentProfiles.find(e => e.name === newEquipmentId);
     if (!selectedEquipment) return;
 
-    await batchesCollection.update(batchId, (draft) => {
-      draft.equipmentId = newEquipmentId;
-      draft.equipment = structuredClone(selectedEquipment.equipment);
-      draft.updatedAt = Date.now();
-    });
+    updateBatch(() => ({
+      equipmentId: newEquipmentId,
+      equipment: structuredClone(selectedEquipment),
+    }));
   };
 
-  const handleBrewDateChange = async (newDate: string) => {
+  const handleBrewDateChange = (newDate: string) => {
     const timestamp = new Date(newDate).getTime();
-    await batchesCollection.update(batchId, (draft) => {
-      draft.brewDate = timestamp;
-      draft.updatedAt = Date.now();
-    });
+    updateBatch(() => ({ brewDate: timestamp }));
   };
 
-  const liquidColor = color ? OlFarve.rgbToHex(OlFarve.srmToSRGB(color)) : "#FBB123";
+  const liquidColor = color ? (() => { const rgb = srm_to_srgb(color) as [number, number, number]; return rgb_to_hex(rgb[0], rgb[1], rgb[2]); })() : "#FBB123";
 
   // Format brew date for display and input
   const brewDate = new Date(batch.brewDate);
@@ -196,9 +205,9 @@ function BatchOverviewComponent() {
               onChange={(e) => handleEquipmentChange(e.target.value)}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             >
-              {equipmentProfiles?.map((profile) => (
-                <option key={profile.id} value={profile.id}>
-                  {profile.equipment.name}
+              {equipmentProfiles.map((profile) => (
+                <option key={profile.name} value={profile.name}>
+                  {profile.name}
                 </option>
               ))}
             </select>
@@ -334,18 +343,22 @@ function BatchOverviewComponent() {
               <span className="text-muted-foreground">Batch Size:</span>
               <span className="font-medium">{beerRecipe.batch_size.value} {beerRecipe.batch_size.unit}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Boil Size:</span>
-              <span className="font-medium">{beerRecipe.boil_size.value} {beerRecipe.boil_size.unit}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Boil Time:</span>
-              <span className="font-medium">{beerRecipe.boil_time.value} {beerRecipe.boil_time.unit}</span>
-            </div>
+            {beerRecipe.boil?.pre_boil_size && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Boil Size:</span>
+                <span className="font-medium">{beerRecipe.boil.pre_boil_size.value} {beerRecipe.boil.pre_boil_size.unit}</span>
+              </div>
+            )}
+            {beerRecipe.boil?.boil_time && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Boil Time:</span>
+                <span className="font-medium">{beerRecipe.boil.boil_time.value} {beerRecipe.boil.boil_time.unit}</span>
+              </div>
+            )}
             {beerRecipe.efficiency && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Brewhouse Efficiency:</span>
-                <span className="font-medium">{beerRecipe.efficiency.brewhouse}%</span>
+                <span className="font-medium">{beerRecipe.efficiency.brewhouse.value}%</span>
               </div>
             )}
           </div>

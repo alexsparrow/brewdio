@@ -1,53 +1,25 @@
-#![cfg(feature = "native")]
-
 use brewdio_core::beerjson_types::RecipeType;
-use rusqlite::{params, Connection};
 
+use crate::connection::{Connection, DbError, Value};
 use crate::recipe::{hydrate_from_automerge, reconcile_to_automerge, RecipeDocument, RecipeRow};
 
-const MIGRATION_SQL: &str = r#"
-CREATE TABLE IF NOT EXISTS recipe (
-    id TEXT PRIMARY KEY NOT NULL,
-    name TEXT NOT NULL,
-    recipe TEXT NOT NULL,
-    am_data BLOB NOT NULL,
-    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-    is_dirty BOOLEAN NOT NULL DEFAULT TRUE
-);
-
-CREATE TABLE IF NOT EXISTS sync_state (
-    recipe_id TEXT NOT NULL,
-    peer_id TEXT NOT NULL DEFAULT 'server',
-    state BLOB NOT NULL,
-    PRIMARY KEY (recipe_id, peer_id),
-    FOREIGN KEY (recipe_id) REFERENCES recipe(id)
-);
-"#;
-
-/// Initialize the database, run migrations, and return a connection.
-pub fn init_db(path: &str) -> Result<Connection, rusqlite::Error> {
-    let conn = Connection::open(path)?;
-    conn.execute_batch(MIGRATION_SQL)?;
-    Ok(conn)
-}
-
-fn row_from_rusqlite(row: &rusqlite::Row) -> Result<RecipeRow, rusqlite::Error> {
-    Ok(RecipeRow {
-        id: row.get("id")?,
-        name: row.get("name")?,
-        recipe: row.get("recipe")?,
-        am_data: row.get("am_data")?,
-        is_deleted: row.get("is_deleted")?,
-        is_dirty: row.get("is_dirty")?,
-    })
+fn row_from_query(row: &dyn crate::connection::Row) -> RecipeRow {
+    RecipeRow {
+        id: row.get_text(0),
+        name: row.get_text(1),
+        recipe: row.get_text(2),
+        am_data: row.get_blob(3),
+        is_deleted: row.get_bool(4),
+        is_dirty: row.get_bool(5),
+    }
 }
 
 /// Create a new recipe and return its row.
 pub fn create_recipe(
-    conn: &Connection,
+    conn: &(impl Connection + ?Sized),
     name: &str,
     recipe: &RecipeType,
-) -> Result<RecipeRow, rusqlite::Error> {
+) -> Result<RecipeRow, DbError> {
     let id = ulid::Ulid::new().to_string();
     let recipe_json = serde_json::to_string(recipe).expect("Failed to serialize recipe");
 
@@ -61,7 +33,7 @@ pub fn create_recipe(
 
     conn.execute(
         "INSERT INTO recipe (id, name, recipe, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
-        params![id, name, recipe_json, am_data, false, true],
+        &[Value::Text(&id), Value::Text(name), Value::Text(&recipe_json), Value::Blob(&am_data), Value::Bool(false), Value::Bool(true)],
     )?;
 
     Ok(RecipeRow {
@@ -75,34 +47,30 @@ pub fn create_recipe(
 }
 
 /// Get a recipe by ID.
-pub fn get_recipe(conn: &Connection, id: &str) -> Result<Option<RecipeRow>, rusqlite::Error> {
-    let mut stmt = conn.prepare(
+pub fn get_recipe(conn: &(impl Connection + ?Sized), id: &str) -> Result<Option<RecipeRow>, DbError> {
+    conn.query_one(
         "SELECT id, name, recipe, am_data, is_deleted, is_dirty FROM recipe WHERE id = ?1",
-    )?;
-    let mut rows = stmt.query_map(params![id], row_from_rusqlite)?;
-    match rows.next() {
-        Some(Ok(row)) => Ok(Some(row)),
-        Some(Err(e)) => Err(e),
-        None => Ok(None),
-    }
+        &[Value::Text(id)],
+        row_from_query,
+    )
 }
 
 /// List all non-deleted recipes.
-pub fn list_recipes(conn: &Connection) -> Result<Vec<RecipeRow>, rusqlite::Error> {
-    let mut stmt = conn.prepare(
+pub fn list_recipes(conn: &(impl Connection + ?Sized)) -> Result<Vec<RecipeRow>, DbError> {
+    conn.query_map(
         "SELECT id, name, recipe, am_data, is_deleted, is_dirty FROM recipe WHERE is_deleted = FALSE",
-    )?;
-    let rows = stmt.query_map([], row_from_rusqlite)?;
-    rows.collect()
+        &[],
+        row_from_query,
+    )
 }
 
 /// Update a recipe's name and content, re-reconciling into the existing Automerge document.
 pub fn update_recipe(
-    conn: &Connection,
+    conn: &(impl Connection + ?Sized),
     id: &str,
     name: &str,
     recipe: &RecipeType,
-) -> Result<(), rusqlite::Error> {
+) -> Result<(), DbError> {
     let recipe_json = serde_json::to_string(recipe).expect("Failed to serialize recipe");
 
     let existing = get_recipe(conn, id)?;
@@ -118,14 +86,14 @@ pub fn update_recipe(
 
     conn.execute(
         "UPDATE recipe SET name = ?1, recipe = ?2, am_data = ?3, is_dirty = TRUE WHERE id = ?4",
-        params![name, recipe_json, am_data, id],
+        &[Value::Text(name), Value::Text(&recipe_json), Value::Blob(&am_data), Value::Text(id)],
     )?;
 
     Ok(())
 }
 
 /// Soft-delete a recipe by setting `is_deleted = true`.
-pub fn delete_recipe(conn: &Connection, id: &str) -> Result<(), rusqlite::Error> {
+pub fn delete_recipe(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
     let existing = get_recipe(conn, id)?;
     if let Some(row) = existing {
         let mut doc = row.to_document().expect("Failed to deserialize recipe");
@@ -134,7 +102,7 @@ pub fn delete_recipe(conn: &Connection, id: &str) -> Result<(), rusqlite::Error>
 
         conn.execute(
             "UPDATE recipe SET is_deleted = TRUE, is_dirty = TRUE, am_data = ?1 WHERE id = ?2",
-            params![am_data, id],
+            &[Value::Blob(&am_data), Value::Text(id)],
         )?;
     }
 
@@ -144,70 +112,62 @@ pub fn delete_recipe(conn: &Connection, id: &str) -> Result<(), rusqlite::Error>
 // --- Sync-related functions ---
 
 /// List all recipes that have local changes not yet synced.
-pub fn list_dirty_recipes(conn: &Connection) -> Result<Vec<RecipeRow>, rusqlite::Error> {
-    let mut stmt = conn.prepare(
+pub fn list_dirty_recipes(conn: &(impl Connection + ?Sized)) -> Result<Vec<RecipeRow>, DbError> {
+    conn.query_map(
         "SELECT id, name, recipe, am_data, is_deleted, is_dirty FROM recipe WHERE is_dirty = TRUE",
-    )?;
-    let rows = stmt.query_map([], row_from_rusqlite)?;
-    rows.collect()
+        &[],
+        row_from_query,
+    )
 }
 
 /// Clear the dirty flag for a recipe (after successful sync).
-pub fn clear_dirty(conn: &Connection, id: &str) -> Result<(), rusqlite::Error> {
+pub fn clear_dirty(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
     conn.execute(
         "UPDATE recipe SET is_dirty = FALSE WHERE id = ?1",
-        params![id],
-    )?;
-    Ok(())
+        &[Value::Text(id)],
+    )
 }
 
 /// List all recipe IDs (including deleted).
-pub fn list_all_recipe_ids(conn: &Connection) -> Result<Vec<String>, rusqlite::Error> {
-    let mut stmt = conn.prepare("SELECT id FROM recipe")?;
-    let rows = stmt.query_map([], |row| row.get(0))?;
-    rows.collect()
+pub fn list_all_recipe_ids(conn: &(impl Connection + ?Sized)) -> Result<Vec<String>, DbError> {
+    conn.query_map("SELECT id FROM recipe", &[], |row| row.get_text(0))
 }
 
 /// Get the stored Automerge sync state for a (recipe, peer) pair.
 pub fn get_sync_state(
-    conn: &Connection,
+    conn: &(impl Connection + ?Sized),
     recipe_id: &str,
     peer_id: &str,
-) -> Result<Option<Vec<u8>>, rusqlite::Error> {
-    let mut stmt = conn.prepare(
+) -> Result<Option<Vec<u8>>, DbError> {
+    conn.query_one(
         "SELECT state FROM sync_state WHERE recipe_id = ?1 AND peer_id = ?2",
-    )?;
-    let mut rows = stmt.query_map(params![recipe_id, peer_id], |row| row.get(0))?;
-    match rows.next() {
-        Some(Ok(state)) => Ok(Some(state)),
-        Some(Err(e)) => Err(e),
-        None => Ok(None),
-    }
+        &[Value::Text(recipe_id), Value::Text(peer_id)],
+        |row| row.get_blob(0),
+    )
 }
 
 /// Save (upsert) Automerge sync state for a (recipe, peer) pair.
 pub fn save_sync_state(
-    conn: &Connection,
+    conn: &(impl Connection + ?Sized),
     recipe_id: &str,
     peer_id: &str,
     state: &[u8],
-) -> Result<(), rusqlite::Error> {
+) -> Result<(), DbError> {
     conn.execute(
         "INSERT INTO sync_state (recipe_id, peer_id, state) VALUES (?1, ?2, ?3)
          ON CONFLICT (recipe_id, peer_id) DO UPDATE SET state = excluded.state",
-        params![recipe_id, peer_id, state],
-    )?;
-    Ok(())
+        &[Value::Text(recipe_id), Value::Text(peer_id), Value::Blob(state)],
+    )
 }
 
 /// Apply a remotely-merged Automerge document. Updates the JSON and name columns
 /// from the merged AM state. Does NOT set `is_dirty` since the change came from the server.
 /// If the recipe doesn't exist locally, inserts it with `is_dirty = FALSE`.
 pub fn apply_remote_merge(
-    conn: &Connection,
+    conn: &(impl Connection + ?Sized),
     recipe_id: &str,
     am_data: &[u8],
-) -> Result<(), rusqlite::Error> {
+) -> Result<(), DbError> {
     let doc = hydrate_from_automerge(am_data).expect("Failed to hydrate merged AM doc");
     let recipe_json = serde_json::to_string(&doc.recipe).expect("Failed to serialize recipe");
 
@@ -215,12 +175,12 @@ pub fn apply_remote_merge(
     if existing.is_some() {
         conn.execute(
             "UPDATE recipe SET name = ?1, recipe = ?2, am_data = ?3, is_deleted = ?4 WHERE id = ?5",
-            params![doc.name, recipe_json, am_data, doc.is_deleted, recipe_id],
+            &[Value::Text(&doc.name), Value::Text(&recipe_json), Value::Blob(am_data), Value::Bool(doc.is_deleted), Value::Text(recipe_id)],
         )?;
     } else {
         conn.execute(
             "INSERT INTO recipe (id, name, recipe, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, FALSE)",
-            params![recipe_id, doc.name, recipe_json, am_data, doc.is_deleted],
+            &[Value::Text(recipe_id), Value::Text(&doc.name), Value::Text(&recipe_json), Value::Blob(am_data), Value::Bool(doc.is_deleted)],
         )?;
     }
 
@@ -231,6 +191,10 @@ pub fn apply_remote_merge(
 mod tests {
     use super::*;
     use brewdio_core::beerjson_types::RecipeType;
+
+    fn test_conn() -> rusqlite::Connection {
+        crate::connection_native::open(":memory:").unwrap()
+    }
 
     fn sample_recipe() -> RecipeType {
         serde_json::from_str(
@@ -268,7 +232,7 @@ mod tests {
 
     #[test]
     fn crud_operations() {
-        let conn = init_db(":memory:").unwrap();
+        let conn = test_conn();
 
         // Create
         let row = create_recipe(&conn, "Test IPA", &sample_recipe()).unwrap();
@@ -306,7 +270,7 @@ mod tests {
 
     #[test]
     fn dirty_tracking() {
-        let conn = init_db(":memory:").unwrap();
+        let conn = test_conn();
 
         // Create sets dirty
         let row = create_recipe(&conn, "Dirty Test", &sample_recipe()).unwrap();
@@ -326,7 +290,7 @@ mod tests {
 
     #[test]
     fn sync_state_crud() {
-        let conn = init_db(":memory:").unwrap();
+        let conn = test_conn();
 
         // Create a recipe first (foreign key)
         let row = create_recipe(&conn, "Sync Test", &sample_recipe()).unwrap();
@@ -351,7 +315,7 @@ mod tests {
 
     #[test]
     fn apply_remote_merge_new_recipe() {
-        let conn = init_db(":memory:").unwrap();
+        let conn = test_conn();
 
         // Create AM data for a recipe that doesn't exist locally
         let doc = RecipeDocument {
@@ -371,7 +335,7 @@ mod tests {
 
     #[test]
     fn apply_remote_merge_existing_recipe() {
-        let conn = init_db(":memory:").unwrap();
+        let conn = test_conn();
 
         let row = create_recipe(&conn, "Local Beer", &sample_recipe()).unwrap();
         clear_dirty(&conn, &row.id).unwrap();
@@ -394,7 +358,7 @@ mod tests {
 
     #[test]
     fn list_all_recipe_ids_includes_deleted() {
-        let conn = init_db(":memory:").unwrap();
+        let conn = test_conn();
 
         let row1 = create_recipe(&conn, "Beer 1", &sample_recipe()).unwrap();
         let row2 = create_recipe(&conn, "Beer 2", &sample_recipe()).unwrap();

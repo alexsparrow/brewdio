@@ -6,7 +6,8 @@ use persistence::db;
 use persistence::recipe::RecipeDocument;
 use rusqlite::Connection;
 
-use crate::styles::{self, BEER_STYLES};
+use crate::search_selector::{SearchItem, SearchSelector};
+use crate::styles;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Screen {
@@ -76,8 +77,7 @@ pub struct App {
     pub active_tab: Tab,
     pub name_input: String,
     pub editing_name: bool,
-    pub style_index: usize,
-    pub editing_style: bool,
+    pub style_selector: Option<SearchSelector>,
     pub should_quit: bool,
 }
 
@@ -93,8 +93,7 @@ impl App {
             active_tab: Tab::Fermentables,
             name_input: String::new(),
             editing_name: false,
-            style_index: 0,
-            editing_style: false,
+            style_selector: None,
             should_quit: false,
         };
         app.refresh_recipes();
@@ -138,22 +137,12 @@ impl App {
         if let Ok(Some(row)) = db::get_recipe(&self.conn, id) {
             if let Ok(doc) = row.to_document() {
                 self.name_input = doc.name.clone();
-                self.style_index = doc
-                    .recipe
-                    .style
-                    .as_ref()
-                    .and_then(|s| {
-                        BEER_STYLES
-                            .iter()
-                            .position(|bs| bs.name == s.0.name)
-                    })
-                    .unwrap_or(0);
                 self.current_doc = Some(doc);
                 self.screen = Screen::RecipeEdit {
                     recipe_id: id.to_string(),
                 };
                 self.editing_name = false;
-                self.editing_style = false;
+                self.style_selector = None;
                 self.edit_focus = EditFocus::Name;
                 self.active_tab = Tab::Fermentables;
             }
@@ -181,7 +170,7 @@ impl App {
         self.screen = Screen::RecipeList;
         self.current_doc = None;
         self.editing_name = false;
-        self.editing_style = false;
+        self.style_selector = None;
         self.refresh_recipes();
     }
 
@@ -201,17 +190,41 @@ impl App {
         self.editing_name = false;
     }
 
-    pub fn confirm_style(&mut self) {
+    pub fn open_style_selector(&mut self) {
+        let all = styles::all_styles();
+        let items: Vec<SearchItem> = all
+            .iter()
+            .enumerate()
+            .map(|(i, s)| SearchItem {
+                label: s.name.clone(),
+                detail: s.category.clone(),
+                index: i,
+            })
+            .collect();
+        let mut selector = SearchSelector::new("Select Style", items);
+        // Pre-position cursor on current style
+        if let Some(ref doc) = self.current_doc {
+            if let Some(ref style) = doc.recipe.style {
+                if let Some(pos) = all.iter().position(|s| s.name == style.0.name) {
+                    selector.set_cursor_to_index(pos);
+                }
+            }
+        }
+        self.style_selector = Some(selector);
+    }
+
+    pub fn confirm_style(&mut self, idx: usize) {
         if let Some(ref mut doc) = self.current_doc {
-            let style = &BEER_STYLES[self.style_index];
+            let all = styles::all_styles();
+            let style = &all[idx];
             doc.recipe.style = Some(RecipeStyleType(styles::to_style_base(style)));
         }
-        self.editing_style = false;
+        self.style_selector = None;
         self.save_current();
     }
 
     pub fn cancel_style(&mut self) {
-        self.editing_style = false;
+        self.style_selector = None;
     }
 
     pub fn set_tab(&mut self, n: usize) {

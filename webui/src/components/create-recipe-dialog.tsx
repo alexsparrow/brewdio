@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
-import { useLiveQuery } from "@tanstack/react-db";
-import { settingsCollection } from "@/db";
+import { useSettings } from "@/lib/db/settings";
 import { createRecipe, getAvailableStyles } from "@/lib/actions/recipes";
 import {
   Dialog,
@@ -28,8 +27,7 @@ import { Plus } from "lucide-react";
 export function CreateRecipeDialog() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const { data: settingsData } = useLiveQuery(settingsCollection);
-  const settings = settingsData?.find((s) => s.id === "user-settings");
+  const { data: settings } = useSettings();
   const availableStyles = getAvailableStyles();
 
   const form = useForm({

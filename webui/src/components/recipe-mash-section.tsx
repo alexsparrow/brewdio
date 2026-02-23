@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { useLiveQuery } from "@tanstack/react-db";
-import { mashProfilesCollection } from "@/db";
+import { useState, useEffect, useMemo } from "react";
+import { get_mash_profiles } from "brewdio-wasm";
+import type { MashProcedureType as MashProfileData } from "brewdio-wasm";
 import { useRecipeEdit } from "@/contexts/recipe-edit-context";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,11 +16,17 @@ import {
 } from "@/components/ui/select";
 import { MashStepList } from "@/components/mash-step-list";
 import { Edit, Save, RotateCcw } from "lucide-react";
-import type { MashProcedureType, MashStepType } from "@beerjson/beerjson";
+import type { MashProcedureType, MashStepType } from "brewdio-wasm";
 
 export function RecipeMashSection() {
-  const { id, collection, document: recipe } = useRecipeEdit();
-  const { data: mashProfiles } = useLiveQuery(mashProfilesCollection);
+  const { update, document: recipe } = useRecipeEdit();
+  const mashProfiles = useMemo(() => {
+    const profiles = get_mash_profiles();
+    return profiles.map((p, i) => ({
+      id: p.name.toLowerCase().replace(/\s+/g, '-'),
+      mashProfile: p,
+    }));
+  }, []);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedMash, setEditedMash] = useState<MashProcedureType | null>(null);
@@ -44,9 +50,8 @@ export function RecipeMashSection() {
     const profile = mashProfiles?.find((p) => p.id === profileId);
     if (!profile) return;
 
-    await collection.update(id, (draft) => {
+    update((draft) => {
       draft.recipe.mash = structuredClone(profile.mashProfile);
-      draft.updatedAt = Date.now();
     });
   };
 
@@ -54,9 +59,8 @@ export function RecipeMashSection() {
   const handleSave = async () => {
     if (!editedMash) return;
 
-    await collection.update(id, (draft) => {
+    update((draft) => {
       draft.recipe.mash = structuredClone(editedMash);
-      draft.updatedAt = Date.now();
     });
     setHasChanges(false);
     setIsEditing(false);
@@ -148,7 +152,7 @@ export function RecipeMashSection() {
           <p className="text-muted-foreground">
             No mash procedure set for this recipe.
           </p>
-          {mashProfiles && mashProfiles.length > 0 && (
+          {mashProfiles.length > 0 && (
             <div className="space-y-2">
               <Label>Select a mash profile to get started:</Label>
               <Select onValueChange={handleSelectProfile}>
@@ -203,7 +207,7 @@ export function RecipeMashSection() {
       </div>
 
       {/* Mash profile selector */}
-      {!isEditing && mashProfiles && mashProfiles.length > 0 && (
+      {!isEditing && mashProfiles.length > 0 && (
         <Card className="p-4">
           <div className="space-y-2">
             <Label>Change Mash Profile:</Label>

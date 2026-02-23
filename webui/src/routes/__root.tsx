@@ -1,6 +1,6 @@
 import { createRootRoute, Outlet, useRouterState } from "@tanstack/react-router";
-import { useLiveQuery } from "@tanstack/react-db";
-import { recipesCollection, batchesCollection, equipmentCollection, DEFAULT_EQUIPMENT, mashProfilesCollection, createDefaultMashProfile, settingsCollection } from "@/db";
+import { useBatches } from "@/lib/db/batches";
+import { useRecipes } from "@/lib/db/recipes";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChatSidebar } from "@/components/chat-sidebar";
@@ -14,88 +14,49 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useEffect } from "react";
+import { useRef } from "react";
 import { stores, wireCalculations } from "@/lib/calculate";
-import { OG } from "@/calculations/og";
-import { FG } from "@/calculations/fg";
-import { ABV } from "@/calculations/abv";
-import { Color } from "@/calculations/color";
-import { IBU } from "@/calculations/ibu";
-
-// Wire calculations at module level (runs once when module loads)
-wireCalculations(stores, [
-  OG,
-  FG,
-  ABV,
-  Color,
-  IBU,
-  {
-    type: "dynamic",
-    dependsOn: ["recipe.ingredients.fermentable_additions", "recipe.batch_size"],
-    expr: `(fermentables, batchSize) => {
-      const colors = fermentables.map((fermentable) => fermentable.color?.value);
-      return batchSize.value + colors.filter((color) => color).length + 0.5;
-    }`,
-    id: "fermentable_colors",
-  },
-  {
-    type: "dynamic",
-    dependsOn: ["calculations.fermentable_colors", "recipe.batch_size"],
-    expr: `(fermentable_colors, batchSize) => {
-      return fermentable_colors + batchSize.value;
-    }`,
-    id: "my_var",
-  },
-]);
+import { OG, FG, ABV, Color, IBU } from "@/lib/calculations";
 
 export const Route = createRootRoute({
   component: RootComponent,
 });
 
+let calculationsWired = false;
+
 function RootComponent() {
+  // Wire calculations on first render (WASM is initialized by this point)
+  if (!calculationsWired) {
+    calculationsWired = true;
+    wireCalculations(stores, [
+      OG,
+      FG,
+      ABV,
+      Color,
+      IBU,
+      {
+        type: "dynamic",
+        dependsOn: ["recipe.ingredients.fermentable_additions", "recipe.batch_size"],
+        expr: `(fermentables, batchSize) => {
+          const colors = fermentables.map((fermentable) => fermentable.color?.value);
+          return batchSize.value + colors.filter((color) => color).length + 0.5;
+        }`,
+        id: "fermentable_colors",
+      },
+      {
+        type: "dynamic",
+        dependsOn: ["calculations.fermentable_colors", "recipe.batch_size"],
+        expr: `(fermentable_colors, batchSize) => {
+          return fermentable_colors + batchSize.value;
+        }`,
+        id: "my_var",
+      },
+    ]);
+  }
+
   const routerState = useRouterState();
-  const { data: recipesData } = useLiveQuery(recipesCollection);
-  const { data: batchesData } = useLiveQuery(batchesCollection);
-  const { data: equipmentData, status: equipmentStatus } = useLiveQuery(equipmentCollection);
-  const { data: mashProfiles, status: mashProfilesStatus } = useLiveQuery(mashProfilesCollection);
-  const { data: settings } = useLiveQuery(settingsCollection);
-
-  // Initialize default equipment if none exists
-  useEffect(() => {
-    console.log("Equipment initialization check:", {
-      status: equipmentStatus,
-      dataLength: equipmentData?.length,
-      data: equipmentData,
-      defaultEquipment: DEFAULT_EQUIPMENT
-    });
-
-    if (equipmentStatus === "ready" && equipmentData) {
-      const defaultExists = equipmentData.some(e => e.id === "default");
-      console.log("Default exists?", defaultExists);
-
-      if (!defaultExists) {
-        console.log("Inserting default equipment...");
-        equipmentCollection.insert(DEFAULT_EQUIPMENT);
-      }
-    }
-  }, [equipmentStatus, equipmentData]);
-
-  // Initialize default mash profile if none exists
-  useEffect(() => {
-    if (mashProfilesStatus === "ready" && mashProfiles && settings) {
-      const defaultExists = mashProfiles.some(
-        (m) => m.id === "default-single-infusion"
-      );
-
-      if (!defaultExists) {
-        console.log("Inserting default mash profile...");
-        const userSettings = settings.find((s) => s.id === "user-settings");
-        const temperatureUnit = userSettings?.defaultTemperatureUnit || "F";
-        const defaultMashProfile = createDefaultMashProfile(temperatureUnit);
-        mashProfilesCollection.insert(defaultMashProfile);
-      }
-    }
-  }, [mashProfilesStatus, mashProfiles, settings]);
+  const { data: recipesData } = useRecipes();
+  const { data: batchesData } = useBatches();
 
   // Extract recipeId from the route if we're on a recipe page
   const recipeId = routerState.location.pathname.startsWith('/recipes/')

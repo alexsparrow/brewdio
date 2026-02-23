@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useLiveQuery } from "@tanstack/react-db";
-import { settingsCollection, DEFAULT_SETTINGS, type SettingsDocument } from "@/db";
-import { useEffect, useState } from "react";
+import { useSettings, saveSettingsImperative, DEFAULT_SETTINGS, type SettingsDocument } from "@/lib/db/settings";
+import { useQueryClient } from "@tanstack/react-query";
+import { settingsKeys } from "@/lib/db/settings";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,46 +24,27 @@ const massUnits = ["mg", "g", "kg", "lb", "oz"] as const;
 const temperatureUnits = ["C", "F"] as const;
 
 function SettingsComponent() {
-  const { data: allSettings, status } = useLiveQuery(settingsCollection);
+  const { data: currentSettings, status } = useSettings();
+  const queryClient = useQueryClient();
   const [settings, setSettings] = useState<SettingsDocument>(DEFAULT_SETTINGS);
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Load settings or use defaults
+  // Load settings when they become available
   useEffect(() => {
-    if (status === "ready" && allSettings) {
-      const userSettings = allSettings.find((s) => s.id === "user-settings");
-      if (userSettings) {
-        setSettings(userSettings);
-      } else {
-        // Initialize with defaults
-        settingsCollection.insert(DEFAULT_SETTINGS);
-      }
+    if (status === "success" && currentSettings) {
+      setSettings(currentSettings);
     }
-  }, [allSettings, status]);
+  }, [currentSettings, status]);
 
-  const handleSave = async () => {
-    const existing = allSettings?.find((s) => s.id === "user-settings");
-
-    if (existing) {
-      await settingsCollection.update("user-settings", (draft) => {
-        draft.vimMode = settings.vimMode;
-        draft.defaultVolumeUnit = settings.defaultVolumeUnit;
-        draft.defaultMassUnit = settings.defaultMassUnit;
-        draft.defaultTemperatureUnit = settings.defaultTemperatureUnit;
-        draft.openaiApiKey = settings.openaiApiKey;
-        draft.defaultAuthor = settings.defaultAuthor;
-      });
-    } else {
-      await settingsCollection.insert(settings);
-    }
-
+  const handleSave = () => {
+    saveSettingsImperative(settings);
+    queryClient.invalidateQueries({ queryKey: settingsKeys.all });
     setHasChanges(false);
   };
 
   const handleReset = () => {
-    const userSettings = allSettings?.find((s) => s.id === "user-settings");
-    if (userSettings) {
-      setSettings(userSettings);
+    if (currentSettings) {
+      setSettings(currentSettings);
     } else {
       setSettings(DEFAULT_SETTINGS);
     }
@@ -77,7 +59,7 @@ function SettingsComponent() {
     setHasChanges(true);
   };
 
-  if (status === "loading") {
+  if (status === "pending") {
     return <div>Loading settings...</div>;
   }
 

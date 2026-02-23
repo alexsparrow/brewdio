@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { VolumeType } from "@beerjson/beerjson";
+import type { VolumeType } from "brewdio-wasm";
 
 interface InlineVolumeProps {
   label: string;

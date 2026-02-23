@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
-import { useLiveQuery } from "@tanstack/react-db";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,9 +23,9 @@ import { Plus, Trash2 } from "lucide-react";
 import { BreweryVisualization, type TankShape } from "@/components/brewery-visualization";
 import { BreweryBatchSettings } from "@/components/brewery-batch-settings";
 import { BreweryLossControls, type CalculatedStage } from "@/components/brewery-loss-controls";
-import { equipmentCollection, DEFAULT_EQUIPMENT } from "@/db";
-import type { EquipmentItemType } from "@beerjson/beerjson";
-import { volumeToGallons, specificVolumeToGallonsPerKilogram } from "@/calculations/units";
+import { get_equipment } from "brewdio-wasm";
+import type { EquipmentItemType } from "brewdio-wasm";
+import { volume_to_gallons, specific_volume_to_gallons_per_kilogram } from "brewdio-wasm";
 
 export const Route = createFileRoute("/brewery")({
   component: BreweryComponent,
@@ -81,8 +80,17 @@ function getLossLabel(item: EquipmentItemType): string {
 }
 
 function BreweryComponent() {
-  const { data: equipmentProfiles, status } = useLiveQuery(equipmentCollection);
-  const [selectedProfileId, setSelectedProfileId] = useState<string>("default");
+  // Static equipment data from WASM (read-only for now)
+  const equipmentProfiles = useMemo(() => {
+    const profiles = get_equipment();
+    return profiles.map((e) => ({
+      id: e.name.toLowerCase().replace(/\s+/g, '-'),
+      equipment: e,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    }));
+  }, []);
+  const [selectedProfileId, setSelectedProfileId] = useState<string>(equipmentProfiles[0]?.id || "default");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newProfileName, setNewProfileName] = useState("");
 
@@ -128,18 +136,18 @@ function BreweryComponent() {
       // Calculate loss based on type
       if (item.grain_absorption_rate) {
         // Grain absorption: rate * grain weight
-        const rateInGalPerKg = specificVolumeToGallonsPerKilogram(item.grain_absorption_rate);
+        const rateInGalPerKg = specific_volume_to_gallons_per_kilogram(item.grain_absorption_rate);
         stageLossTotal += rateInGalPerKg * grainWeight;
       }
 
       if (item.boil_rate_per_hour) {
         // Boil off: rate * time
-        const rateInGalPerHr = volumeToGallons(item.boil_rate_per_hour);
+        const rateInGalPerHr = volume_to_gallons(item.boil_rate_per_hour);
         stageLossTotal += rateInGalPerHr * (boilTime / 60);
       }
 
       // Add static loss
-      const staticLoss = volumeToGallons(item.loss);
+      const staticLoss = volume_to_gallons(item.loss);
       stageLossTotal += staticLoss;
 
       const volIn = currentVol + stageLossTotal;
@@ -183,34 +191,14 @@ function BreweryComponent() {
     selectedStageIndex > 0 ? calculationData.stages[selectedStageIndex] : null;
 
   const handleAddProfile = async () => {
-    if (!newProfileName.trim()) return;
-
-    const newProfile = {
-      id: `profile-${Date.now()}`,
-      equipment: {
-        name: newProfileName.trim(),
-        equipment_items: DEFAULT_EQUIPMENT.equipment.equipment_items,
-      },
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
-
-    await equipmentCollection.insertOne(newProfile);
-    setSelectedProfileId(newProfile.id);
-    setNewProfileName("");
+    // Equipment profiles are now static/read-only
+    // TODO: Add CRUD for equipment when needed
     setIsAddDialogOpen(false);
   };
 
-  const handleDeleteProfile = async (profileId: string) => {
-    // Prevent deleting the default profile
-    if (profileId === "default") return;
-
-    await equipmentCollection.deleteOne(profileId);
-
-    // If we're deleting the selected profile, switch to default
-    if (selectedProfileId === profileId) {
-      setSelectedProfileId("default");
-    }
+  const handleDeleteProfile = async (_profileId: string) => {
+    // Equipment profiles are now static/read-only
+    // TODO: Add CRUD for equipment when needed
   };
 
   const handleLossChange = (stageIndex: number, newLossValue: number) => {
@@ -282,13 +270,8 @@ function BreweryComponent() {
   };
 
   const handleSave = async () => {
-    if (!editedEquipment || !currentEquipment) return;
-
-    await equipmentCollection.update(selectedProfileId, (draft) => {
-      draft.equipment.equipment_items = editedEquipment;
-      draft.updatedAt = Date.now();
-    });
-
+    // Equipment profiles are static/read-only for now
+    // TODO: Add CRUD for equipment when needed
     setHasChanges(false);
   };
 
@@ -298,10 +281,6 @@ function BreweryComponent() {
       setHasChanges(false);
     }
   };
-
-  if (status === "pending") {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div className="flex flex-col gap-6">

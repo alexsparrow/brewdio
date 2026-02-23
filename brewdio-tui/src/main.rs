@@ -1,4 +1,5 @@
 mod app;
+mod search_selector;
 mod styles;
 mod ui;
 
@@ -22,7 +23,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(data_dir)?;
     let db_path = data_dir.join("brewdio.db");
 
-    let conn = persistence::db::init_db(db_path.to_str().unwrap())?;
+    let conn = persistence::connection_native::open(db_path.to_str().unwrap())?;
     let mut app = App::new(conn);
 
     // Setup terminal
@@ -104,21 +105,11 @@ fn handle_edit_input(app: &mut App, key: KeyCode) {
         return;
     }
 
-    if app.editing_style {
-        match key {
-            KeyCode::Enter => app.confirm_style(),
-            KeyCode::Esc => app.cancel_style(),
-            KeyCode::Char('j') | KeyCode::Down => {
-                if app.style_index < crate::styles::BEER_STYLES.len() - 1 {
-                    app.style_index += 1;
-                }
-            }
-            KeyCode::Char('k') | KeyCode::Up => {
-                if app.style_index > 0 {
-                    app.style_index -= 1;
-                }
-            }
-            _ => {}
+    if let Some(ref mut selector) = app.style_selector {
+        match selector.handle_key(key) {
+            search_selector::SearchAction::Confirm(idx) => app.confirm_style(idx),
+            search_selector::SearchAction::Cancel => app.cancel_style(),
+            search_selector::SearchAction::Nothing => {}
         }
         return;
     }
@@ -127,7 +118,7 @@ fn handle_edit_input(app: &mut App, key: KeyCode) {
     match key {
         KeyCode::Esc | KeyCode::Char('q') => app.back_to_list(),
         KeyCode::Char('n') => app.editing_name = true,
-        KeyCode::Char('s') => app.editing_style = true,
+        KeyCode::Char('s') => app.open_style_selector(),
         KeyCode::Char('1') => app.set_tab(0),
         KeyCode::Char('2') => app.set_tab(1),
         KeyCode::Char('3') => app.set_tab(2),

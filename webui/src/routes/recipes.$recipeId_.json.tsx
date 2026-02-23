@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useLiveQuery } from "@tanstack/react-db";
-import { recipesCollection, settingsCollection } from "@/db";
+import { useSettings } from "@/lib/db/settings";
+import { useRecipe, getRecipeDb, recipeKeys } from "@/lib/db/recipes";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
 import Editor from "@monaco-editor/react";
 import { Button } from "@/components/ui/button";
@@ -24,18 +25,16 @@ export const Route = createFileRoute("/recipes/$recipeId_/json")({
 
 function RecipeJsonEditorComponent() {
   const { recipeId } = Route.useParams();
-  const { data: recipes, status } = useLiveQuery(recipesCollection);
-  const { data: settingsData } = useLiveQuery(settingsCollection);
+  const { data: recipe, status } = useRecipe(recipeId);
+  const { data: settings } = useSettings();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const vimModeRef = useRef<any>(null);
   const [isValid, setIsValid] = useState(true);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const recipe = recipes?.find((r) => r.id === recipeId);
-  const settings = settingsData?.find((s) => s.id === "user-settings");
-
-  if (status === "loading") {
+  if (status === "pending") {
     return <div>Loading recipe...</div>;
   }
 
@@ -149,10 +148,10 @@ function RecipeJsonEditorComponent() {
       const parsedRecipe = JSON.parse(value);
 
       // Update the recipe in the database
-      await recipesCollection.update(recipeId, (draft) => {
-        draft.recipe = parsedRecipe;
-        draft.updatedAt = Date.now();
-      });
+      const db = getRecipeDb();
+      db.update_recipe(recipeId, parsedRecipe.name, parsedRecipe as any);
+      queryClient.invalidateQueries({ queryKey: recipeKeys.all });
+      queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipeId) });
 
       setHasChanges(false);
 

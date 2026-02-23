@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useLiveQuery } from '@tanstack/react-db';
-import { settingsCollection, recipesCollection } from '@/db';
+import { useSettings } from '@/lib/db/settings';
+import { useRecipes } from '@/lib/db/recipes';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -24,9 +24,8 @@ interface ChatSidebarProps {
 export function ChatSidebar({ recipeId }: ChatSidebarProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
-  const { data: settingsData } = useLiveQuery(settingsCollection);
-  const { data: recipesData } = useLiveQuery(recipesCollection);
-  const settings = settingsData?.find((s) => s.id === "user-settings");
+  const { data: settings } = useSettings();
+  const { data: recipesData } = useRecipes();
 
   // Find the current recipe if we have a recipeId
   const currentRecipe = recipeId ? recipesData?.find((r) => r.id === recipeId) : undefined;

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { MashStepCard } from "@/components/mash-step-card";
-import type { MashStepType } from "@beerjson/beerjson";
+import type { MashStepType } from "brewdio-wasm";
 
 interface MashStepListProps {
   steps: MashStepType[];

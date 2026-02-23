@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
-import { useLiveQuery } from "@tanstack/react-db";
-import { settingsCollection } from "@/db";
+import { useSettings } from "@/lib/db/settings";
 import { useRecipeEdit } from "@/contexts/recipe-edit-context";
-import type { HopAdditionType, MassUnitType, UseType } from "@beerjson/beerjson";
+import type { HopAdditionType, MassUnitType, UseType } from "brewdio-wasm";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
 import { Plus } from "lucide-react";
-import hops from "@/data/hops.json";
+import { get_hops } from "brewdio-wasm";
 
 interface AddHopDialogProps {
   existingHop?: HopAdditionType;
@@ -40,9 +39,8 @@ export function AddHopDialog({
   trigger,
 }: AddHopDialogProps) {
   const [open, setOpen] = useState(false);
-  const { id: recipeId, collection } = useRecipeEdit();
-  const { data: settingsData } = useLiveQuery(settingsCollection);
-  const settings = settingsData?.find((s) => s.id === "user-settings");
+  const { update } = useRecipeEdit();
+  const { data: settings } = useSettings();
   const isEditing = existingHop !== undefined && index !== undefined;
 
   const form = useForm({
@@ -56,7 +54,7 @@ export function AddHopDialog({
     },
     onSubmit: async ({ value }) => {
       // Find the selected hop from the hops data
-      const selectedHop = hops.find((h) => h.name === value.hopName);
+      const selectedHop = get_hops().find((h) => h.name === value.hopName);
 
       if (!selectedHop) {
         return;
@@ -96,7 +94,7 @@ export function AddHopDialog({
       };
 
       // Update in the database
-      await collection.update(recipeId, (draft) => {
+      update((draft) => {
         if (isEditing && index !== undefined) {
           // Edit existing hop
           draft.recipe.ingredients.hop_additions =
@@ -110,7 +108,6 @@ export function AddHopDialog({
             hopAddition,
           ];
         }
-        draft.updatedAt = Date.now();
       });
 
       // Reset form and close dialog
@@ -157,7 +154,7 @@ export function AddHopDialog({
               <div className="space-y-2">
                 <Label htmlFor={field.name}>Hop Variety</Label>
                 <Combobox
-                  options={hops.map((h) => ({
+                  options={get_hops().map((h) => ({
                     value: h.name,
                     label: `${h.name} (${h.origin})`,
                   }))}

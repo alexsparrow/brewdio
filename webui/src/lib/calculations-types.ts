@@ -1,4 +1,4 @@
-import type { RecipeType } from "@beerjson/beerjson";
+import type { RecipeType } from "brewdio-wasm";
 import type { Path } from "@clickbar/dot-diver";
 
 /**

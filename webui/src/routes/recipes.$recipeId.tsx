@@ -1,6 +1,6 @@
 import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
-import { useLiveQuery } from "@tanstack/react-db";
-import { recipesCollection } from "@/db";
+import { useRecipe, getRecipeDb, recipeKeys } from "@/lib/db/recipes";
+import { useQueryClient } from "@tanstack/react-query";
 import { RecipeEditProvider } from "@/contexts/recipe-edit-context";
 import { AddFermentableDialog } from "@/components/add-fermentable-dialog";
 import { AddHopDialog } from "@/components/add-hop-dialog";
@@ -17,11 +17,10 @@ import { stores } from "@/lib/calculate";
 import { RetroCockpitDial } from "@/components/retro-cockpit-dial";
 import { GravitySightGlass } from "@/components/gravity-sight-glass";
 import { Screw } from "@/components/screw";
-import { OlFarve } from "@/calculations/olfarve";
+import { srm_to_srgb, rgb_to_hex, color_to_srm } from "brewdio-wasm";
 import WaterCalculator from "@/components/water-calculator";
 import { GrainIcon, HopIcon, YeastIcon } from "@/components/ingredient-icons";
-import { colorToSrm } from "@/calculations/units";
-import type { FermentableAdditionType } from "@beerjson/beerjson";
+import type { FermentableAdditionType, RecipeType } from "brewdio-wasm";
 
 export const Route = createFileRoute("/recipes/$recipeId")({
   component: RecipeDetailComponent,
@@ -39,9 +38,9 @@ function getFermentableColorHex(fermentable: FermentableAdditionType): string | 
   }
 
   try {
-    const srm = colorToSrm(colorData);
-    const rgb = OlFarve.srmToSRGB(srm);
-    return OlFarve.rgbToHex(rgb);
+    const srm = color_to_srm(colorData);
+    const rgb = srm_to_srgb(srm) as [number, number, number];
+    return rgb_to_hex(rgb[0], rgb[1], rgb[2]);
   } catch {
     return undefined;
   }
@@ -49,10 +48,9 @@ function getFermentableColorHex(fermentable: FermentableAdditionType): string | 
 
 function RecipeDetailComponent() {
   const { recipeId } = Route.useParams();
-  const { data: recipes, status } = useLiveQuery(recipesCollection);
+  const { data: recipe, status } = useRecipe(recipeId);
   const router = useRouter();
-
-  const recipe = recipes?.find((r) => r.id === recipeId);
+  const queryClient = useQueryClient();
   const og = useCalculation<number>("og");
   const fg = useCalculation<number>("fg");
   const abv = useCalculation<number>("abv");
@@ -83,27 +81,34 @@ function RecipeDetailComponent() {
     };
   }, [recipe?.recipe?.style]);
 
-  const handleRemoveFermentable = async (index: number) => {
-    await recipesCollection.update(recipeId, (draft) => {
-      draft.recipe.ingredients.fermentable_additions =
-        draft.recipe.ingredients.fermentable_additions?.filter((_, idx) => idx !== index) || [];
-      draft.updatedAt = Date.now();
+  const updateRecipe = (mutateFn: (r: RecipeType) => void) => {
+    if (!recipe) return;
+    const updated = structuredClone(recipe.recipe);
+    mutateFn(updated);
+    const db = getRecipeDb();
+    db.update_recipe(recipeId, updated.name, updated as any);
+    queryClient.invalidateQueries({ queryKey: recipeKeys.all });
+    queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipeId) });
+  };
+
+  const handleRemoveFermentable = (index: number) => {
+    updateRecipe((r) => {
+      r.ingredients.fermentable_additions =
+        r.ingredients.fermentable_additions?.filter((_, idx) => idx !== index) || [];
     });
   };
 
-  const handleRemoveHop = async (index: number) => {
-    await recipesCollection.update(recipeId, (draft) => {
-      draft.recipe.ingredients.hop_additions =
-        draft.recipe.ingredients.hop_additions?.filter((_, idx) => idx !== index) || [];
-      draft.updatedAt = Date.now();
+  const handleRemoveHop = (index: number) => {
+    updateRecipe((r) => {
+      r.ingredients.hop_additions =
+        r.ingredients.hop_additions?.filter((_, idx) => idx !== index) || [];
     });
   };
 
-  const handleRemoveCulture = async (index: number) => {
-    await recipesCollection.update(recipeId, (draft) => {
-      draft.recipe.ingredients.culture_additions =
-        draft.recipe.ingredients.culture_additions?.filter((_, idx) => idx !== index) || [];
-      draft.updatedAt = Date.now();
+  const handleRemoveCulture = (index: number) => {
+    updateRecipe((r) => {
+      r.ingredients.culture_additions =
+        r.ingredients.culture_additions?.filter((_, idx) => idx !== index) || [];
     });
   };
 
@@ -130,7 +135,7 @@ function RecipeDetailComponent() {
     }
   }, [recipe]);
 
-  if (status === "loading") {
+  if (status === "pending") {
     return <div>Loading recipe...</div>;
   }
 
@@ -140,58 +145,49 @@ function RecipeDetailComponent() {
 
   const { recipe: beerRecipe } = recipe;
 
-  const handleBatchSizeUpdate = async (newValue: number, newUnit: string) => {
-    await recipesCollection.update(recipeId, (draft) => {
-      draft.recipe.batch_size = { value: newValue, unit: newUnit };
-      draft.updatedAt = Date.now();
+  const handleBatchSizeUpdate = (newValue: number, newUnit: string) => {
+    updateRecipe((r) => { r.batch_size = { value: newValue, unit: newUnit }; });
+  };
+
+  const handleBoilSizeUpdate = (newValue: number, newUnit: string) => {
+    updateRecipe((r) => {
+      if (!r.boil) r.boil = { boil_time: { value: 60, unit: "min" } };
+      r.boil.pre_boil_size = { value: newValue, unit: newUnit };
     });
   };
 
-  const handleBoilSizeUpdate = async (newValue: number, newUnit: string) => {
-    await recipesCollection.update(recipeId, (draft) => {
-      draft.recipe.boil_size = { value: newValue, unit: newUnit };
-      draft.updatedAt = Date.now();
+  const handleBoilTimeUpdate = (newValue: number, newUnit: string) => {
+    updateRecipe((r) => {
+      if (!r.boil) r.boil = { boil_time: { value: 60, unit: "min" } };
+      r.boil.boil_time = { value: newValue, unit: newUnit };
     });
   };
 
-  const handleBoilTimeUpdate = async (newValue: number, newUnit: string) => {
-    await recipesCollection.update(recipeId, (draft) => {
-      draft.recipe.boil_time = { value: newValue, unit: newUnit };
-      draft.updatedAt = Date.now();
-    });
-  };
-
-  const handleEfficiencyUpdate = async (newValue: number, unit: string) => {
-    // Unit is always '%' for efficiency, but we accept it for consistency
-    await recipesCollection.update(recipeId, (draft) => {
-      if (!draft.recipe.efficiency) {
-        draft.recipe.efficiency = {
-          brewhouse: newValue,
-          conversion: 100,
-          lauter: 95,
-          mash: 95,
+  const handleEfficiencyUpdate = (newValue: number, _unit: string) => {
+    updateRecipe((r) => {
+      if (!r.efficiency) {
+        r.efficiency = {
+          brewhouse: { value: newValue, unit: "%" },
+          conversion: { value: 100, unit: "%" },
+          lauter: { value: 95, unit: "%" },
+          mash: { value: 95, unit: "%" },
         };
       } else {
-        draft.recipe.efficiency.brewhouse = newValue;
+        r.efficiency.brewhouse = { value: newValue, unit: "%" };
       }
-      draft.updatedAt = Date.now();
     });
   };
 
-  const handleNotesUpdate = async (newNotes: string) => {
-    await recipesCollection.update(recipeId, (draft) => {
-      draft.recipe.notes = newNotes;
-      draft.updatedAt = Date.now();
-    });
+  const handleNotesUpdate = (newNotes: string) => {
+    updateRecipe((r) => { r.notes = newNotes; });
   };
 
-  const liquidColor = color ? OlFarve.rgbToHex(OlFarve.srmToSRGB(color)) : "#FBB123";
+  const liquidColor = color ? (() => { const rgb = srm_to_srgb(color) as [number, number, number]; return rgb_to_hex(rgb[0], rgb[1], rgb[2]); })() : "#FBB123";
 
   return (
     <RecipeEditProvider
       id={recipeId}
       document={recipe}
-      collection={recipesCollection}
       type="recipe"
     >
       <div className="flex flex-col gap-6">
@@ -294,23 +290,27 @@ function RecipeDetailComponent() {
               onSave={handleBatchSizeUpdate}
               label="Batch Size"
             />
-            <InlineEditableWithUnit
-              value={beerRecipe.boil_size.value}
-              unit={beerRecipe.boil_size.unit}
-              availableUnits={["gal", "l", "ml"]}
-              onSave={handleBoilSizeUpdate}
-              label="Boil Size"
-            />
-            <InlineEditableWithUnit
-              value={beerRecipe.boil_time.value}
-              unit={beerRecipe.boil_time.unit}
-              availableUnits={["min", "hr"]}
-              onSave={handleBoilTimeUpdate}
-              label="Boil Time"
-            />
+            {beerRecipe.boil?.pre_boil_size && (
+              <InlineEditableWithUnit
+                value={beerRecipe.boil.pre_boil_size.value}
+                unit={beerRecipe.boil.pre_boil_size.unit}
+                availableUnits={["gal", "l", "ml"]}
+                onSave={handleBoilSizeUpdate}
+                label="Boil Size"
+              />
+            )}
+            {beerRecipe.boil?.boil_time && (
+              <InlineEditableWithUnit
+                value={beerRecipe.boil.boil_time.value}
+                unit={beerRecipe.boil.boil_time.unit}
+                availableUnits={["min", "hr"]}
+                onSave={handleBoilTimeUpdate}
+                label="Boil Time"
+              />
+            )}
             {beerRecipe.efficiency && (
               <InlineEditableWithUnit
-                value={beerRecipe.efficiency.brewhouse}
+                value={beerRecipe.efficiency.brewhouse.value}
                 unit="%"
                 availableUnits={["%"]}
                 onSave={handleEfficiencyUpdate}

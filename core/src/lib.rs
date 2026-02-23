@@ -1,4 +1,5 @@
 pub mod beerjson_types;
+pub mod data;
 pub mod units;
 
 pub mod abv;

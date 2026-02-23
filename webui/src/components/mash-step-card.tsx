@@ -7,7 +7,7 @@ import { InlineSelect } from "@/components/inline-select";
 import { InlineTemperature } from "@/components/inline-temperature";
 import { InlineTime } from "@/components/inline-time";
 import { InlineVolume } from "@/components/inline-volume";
-import type { MashStepType } from "@beerjson/beerjson";
+import type { MashStepType } from "brewdio-wasm";
 
 interface MashStepCardProps {
   step: MashStepType;

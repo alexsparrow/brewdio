@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Single Infusion (F)",
+    "grain_temperature": { "value": 68, "unit": "F" },
+    "notes": "Standard single infusion mash for most beer styles",
+    "mash_steps": [
+      {
+        "name": "Saccharification",
+        "type": "infusion",
+        "step_temperature": { "value": 152, "unit": "F" },
+        "step_time": { "value": 60, "unit": "min" },
+        "description": "Convert starches to fermentable sugars"
+      },
+      {
+        "name": "Mash Out",
+        "type": "temperature",
+        "step_temperature": { "value": 168, "unit": "F" },
+        "step_time": { "value": 10, "unit": "min" },
+        "description": "Stop enzyme activity and improve lautering"
+      }
+    ]
+  },
+  {
+    "name": "Single Infusion (C)",
+    "grain_temperature": { "value": 20, "unit": "C" },
+    "notes": "Standard single infusion mash for most beer styles",
+    "mash_steps": [
+      {
+        "name": "Saccharification",
+        "type": "infusion",
+        "step_temperature": { "value": 67, "unit": "C" },
+        "step_time": { "value": 60, "unit": "min" },
+        "description": "Convert starches to fermentable sugars"
+      },
+      {
+        "name": "Mash Out",
+        "type": "temperature",
+        "step_temperature": { "value": 76, "unit": "C" },
+        "step_time": { "value": 10, "unit": "min" },
+        "description": "Stop enzyme activity and improve lautering"
+      }
+    ]
+  }
+]
