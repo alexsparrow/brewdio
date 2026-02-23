@@ -1,5 +1,3 @@
-use automerge::AutoCommit;
-use autosurgeon::{hydrate, reconcile};
 use brewdio_core::beerjson_types::RecipeType;
 use serde::{Deserialize, Serialize};
 
@@ -51,27 +49,11 @@ impl RecipeDocument {
     }
 }
 
-/// Create or update an Automerge document from a `RecipeDocument`.
-/// If `existing` bytes are provided, loads and reconciles into that doc (preserving history).
-/// Otherwise creates a new doc.
-pub fn reconcile_to_automerge(doc: &RecipeDocument, existing: Option<&[u8]>) -> Vec<u8> {
-    let mut am_doc = match existing {
-        Some(bytes) => AutoCommit::load(bytes).expect("Failed to load Automerge doc"),
-        None => AutoCommit::new(),
-    };
-    reconcile(&mut am_doc, doc).expect("Failed to reconcile document");
-    am_doc.save()
-}
-
-/// Hydrate a `RecipeDocument` from Automerge binary data.
-pub fn hydrate_from_automerge(bytes: &[u8]) -> Result<RecipeDocument, autosurgeon::HydrateError> {
-    let am_doc = AutoCommit::load(bytes).expect("Failed to load Automerge document");
-    hydrate(&am_doc)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use automerge::AutoCommit;
+    use crate::automerge::{hydrate_from_automerge, reconcile_to_automerge};
 
     fn sample_recipe_json() -> &'static str {
         r#"{
@@ -117,7 +99,7 @@ mod tests {
         let bytes = reconcile_to_automerge(&doc, None);
         assert!(!bytes.is_empty());
 
-        let hydrated = hydrate_from_automerge(&bytes).unwrap();
+        let hydrated: RecipeDocument = hydrate_from_automerge(&bytes).unwrap();
         assert_eq!(hydrated.id, "test-id");
         assert_eq!(hydrated.name, "Test IPA");
         assert_eq!(hydrated.is_deleted, false);
@@ -151,7 +133,7 @@ mod tests {
         let bytes_v2 = reconcile_to_automerge(&doc_v2, Some(&bytes_v1));
 
         // Verify the updated doc has the new name
-        let hydrated = hydrate_from_automerge(&bytes_v2).unwrap();
+        let hydrated: RecipeDocument = hydrate_from_automerge(&bytes_v2).unwrap();
         assert_eq!(hydrated.name, "Updated IPA");
 
         // Verify history is preserved: the v2 doc should have more than one change
@@ -162,6 +144,47 @@ mod tests {
             "Expected multiple changes for history preservation, got {}",
             change_count
         );
+    }
+
+    #[test]
+    fn automerge_roundtrip_with_style() {
+        // This reproduces the Unexpected(Map) bug: RecipeStyleType is a newtype
+        // wrapper around StyleBase. When used inside Option<T>, the autosurgeon
+        // derive's hydrate didn't implement hydrate_map, causing failure.
+        let recipe: RecipeType = serde_json::from_str(
+            r#"{
+                "name": "Belgian Ale",
+                "type": "all grain",
+                "author": "Tester",
+                "batch_size": { "unit": "l", "value": 20.0 },
+                "efficiency": { "brewhouse": { "unit": "%", "value": 72.0 } },
+                "style": {
+                    "name": "Belgian Specialty Ale",
+                    "category": "Belgian and French Ale",
+                    "category_number": 16,
+                    "style_guide": "BJCP",
+                    "type": "beer"
+                },
+                "ingredients": {
+                    "fermentable_additions": [],
+                    "hop_additions": []
+                }
+            }"#,
+        )
+        .unwrap();
+
+        let doc = RecipeDocument {
+            id: "style-test".to_string(),
+            name: "Belgian Ale".to_string(),
+            recipe,
+            is_deleted: false,
+        };
+
+        let bytes = reconcile_to_automerge(&doc, None);
+        let hydrated: RecipeDocument = hydrate_from_automerge(&bytes).unwrap();
+        assert_eq!(hydrated.name, "Belgian Ale");
+        assert!(hydrated.recipe.style.is_some());
+        assert_eq!(hydrated.recipe.style.unwrap().name, "Belgian Specialty Ale");
     }
 
     #[test]

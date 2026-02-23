@@ -73,6 +73,71 @@ fn main() {
         "$1\n#[cfg_attr(feature = \"wasm\", derive(Tsify))]\n#[cfg_attr(feature = \"wasm\", tsify(from_wasm_abi, into_wasm_abi))]\n#[cfg_attr(feature = \"crdt\", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]"
     ).to_string();
 
+    // 7b. For newtype wrapper structs (e.g. `pub struct Foo(Bar)`), autosurgeon's derived
+    // Hydrate only generates the `hydrate` entry method, not `hydrate_map`/`hydrate_string`
+    // etc. This breaks when the newtype is used inside `Option<T>`, because Option dispatches
+    // to those specific methods. Remove the derive and append manual impls instead.
+    let newtype_re = Regex::new(
+        r"(?m)#\[cfg_attr\(feature = .crdt., derive\(autosurgeon::Hydrate, autosurgeon::Reconcile\)\)\]\n(pub struct (\w+)\((pub )?([^)]+)\);)"
+    ).unwrap();
+
+    let mut hydrate_impls = String::new();
+    for cap in newtype_re.captures_iter(&final_code) {
+        let type_name = &cap[2];
+        let inner_type = &cap[4];
+
+        // Determine which hydrate_* method to delegate based on inner type
+        let extra_method = match inner_type.trim() {
+            "String" => format!(
+                r#"
+    fn hydrate_string(s: &str) -> Result<Self, autosurgeon::HydrateError> {{
+        Ok(Self(<String as autosurgeon::Hydrate>::hydrate_string(s)?))
+    }}"#
+            ),
+            "f64" => format!(
+                r#"
+    fn hydrate_f64(f: f64) -> Result<Self, autosurgeon::HydrateError> {{
+        Ok(Self(f))
+    }}"#
+            ),
+            // Struct types need hydrate_map
+            _ => format!(
+                r#"
+    fn hydrate_map<D: autosurgeon::ReadDoc>(
+        doc: &D,
+        obj: &automerge::ObjId,
+    ) -> Result<Self, autosurgeon::HydrateError> {{
+        Ok(Self(<{inner} as autosurgeon::Hydrate>::hydrate_map(doc, obj)?))
+    }}"#,
+                inner = inner_type.trim()
+            ),
+        };
+
+        hydrate_impls.push_str(&format!(
+            r#"
+#[cfg(feature = "crdt")]
+impl autosurgeon::Hydrate for {type_name} {{
+    fn hydrate<D: autosurgeon::ReadDoc>(
+        doc: &D,
+        obj: &automerge::ObjId,
+        prop: autosurgeon::Prop<'_>,
+    ) -> Result<Self, autosurgeon::HydrateError> {{
+        Ok(Self(<{inner} as autosurgeon::Hydrate>::hydrate(doc, obj, prop)?))
+    }}
+{extra_method}
+}}
+"#,
+            type_name = type_name,
+            inner = inner_type.trim(),
+            extra_method = extra_method,
+        ));
+    }
+
+    let final_code = newtype_re.replace_all(
+        &final_code,
+        "#[cfg_attr(feature = \"crdt\", derive(autosurgeon::Reconcile))]\n$1"
+    ).to_string();
+
     // Prepended imports so the compiler knows where derives come from
     let final_output = format!(
         r#"
@@ -81,8 +146,14 @@ fn main() {
 
 
     {}
+
+    // --- Manual Hydrate impls for newtype wrappers ---
+    // autosurgeon's derive for newtypes only generates `hydrate`, not `hydrate_map`/
+    // `hydrate_string` etc. Option<T> dispatches to those methods, causing Unexpected errors.
+    {}
     "#,
-        final_code
+        final_code,
+        hydrate_impls
     );
 
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();

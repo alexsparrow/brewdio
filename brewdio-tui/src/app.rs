@@ -13,6 +13,7 @@ use brewdio_persistence::recipe::RecipeDocument;
 use brewdio_persistence::settings;
 use rusqlite::Connection;
 use serde_json::Value as JsonValue;
+use std::sync::{Arc, Mutex};
 
 use brewdio_core::units;
 
@@ -270,6 +271,8 @@ pub struct VitalDisplay {
 pub struct RecipeListItem {
     pub id: String,
     pub name: String,
+    pub style: String,
+    pub is_deleted: bool,
 }
 
 pub struct BatchListItem {
@@ -294,13 +297,16 @@ const DEFAULT_SETTINGS: &[(&str, &str)] = &[
 ];
 
 pub struct App {
-    pub conn: Connection,
+    pub conn: Arc<Mutex<Connection>>,
+    pub sync_connected: Option<Arc<std::sync::atomic::AtomicBool>>,
     pub screen: Screen,
     // Home tab
     pub home_tab: HomeTab,
     // Recipe list state
     pub recipes: Vec<RecipeListItem>,
     pub list_index: usize,
+    pub show_deleted: bool,
+    pub confirm_delete: Option<(String, String)>, // (recipe_id, recipe_name)
     // Batch list state
     pub batches: Vec<BatchListItem>,
     pub batch_list_index: usize,
@@ -327,13 +333,16 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(conn: Connection) -> Self {
+    pub fn new(conn: Arc<Mutex<Connection>>) -> Self {
         let mut app = App {
             conn,
+            sync_connected: None,
             screen: Screen::Home,
             home_tab: HomeTab::Recipes,
             recipes: Vec::new(),
             list_index: 0,
+            show_deleted: false,
+            confirm_delete: None,
             batches: Vec::new(),
             batch_list_index: 0,
             settings_entries: Vec::new(),
@@ -362,19 +371,33 @@ impl App {
     }
 
     pub fn refresh_recipes(&mut self) {
-        if let Ok(rows) = db::list_recipes(&self.conn) {
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
+        let result = if self.show_deleted {
+            db::list_all_recipes(&*conn)
+        } else {
+            db::list_recipes(&*conn)
+        };
+        if let Ok(rows) = result {
             self.recipes = rows
                 .into_iter()
-                .map(|r| RecipeListItem {
-                    id: r.id,
-                    name: r.name,
+                .map(|r| {
+                    let style = serde_json::from_str::<JsonValue>(&r.recipe)
+                        .ok()
+                        .and_then(|v| v.get("style")?.get("name")?.as_str().map(String::from))
+                        .unwrap_or_default();
+                    RecipeListItem {
+                        id: r.id,
+                        name: r.name,
+                        style,
+                        is_deleted: r.is_deleted,
+                    }
                 })
                 .collect();
         }
     }
 
     pub fn refresh_batches(&mut self) {
-        if let Ok(rows) = batch::list_batches(&self.conn) {
+        if let Ok(rows) = batch::list_batches(&*self.conn.lock().unwrap_or_else(|e| e.into_inner())) {
             self.batches = rows
                 .into_iter()
                 .map(|r| {
@@ -396,7 +419,7 @@ impl App {
     }
 
     pub fn refresh_settings(&mut self) {
-        let saved: serde_json::Map<String, JsonValue> = settings::get_settings(&self.conn)
+        let saved: serde_json::Map<String, JsonValue> = settings::get_settings(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()))
             .ok()
             .flatten()
             .and_then(|row| serde_json::from_str(&row.data).ok())
@@ -435,28 +458,59 @@ impl App {
             map.insert(entry.key.clone(), val);
         }
         let json = serde_json::to_string(&map).unwrap_or_else(|_| "{}".to_string());
-        let _ = settings::save_settings(&self.conn, &json);
+        let _ = settings::save_settings(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), &json);
     }
 
     pub fn create_recipe(&mut self) {
         let recipe = default_recipe();
-        if let Ok(row) = db::create_recipe(&self.conn, "New Recipe", &recipe) {
+        let result = db::create_recipe(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), "New Recipe", &recipe);
+        if let Ok(row) = result {
             let id = row.id.clone();
             self.refresh_recipes();
             self.open_recipe(&id);
         }
     }
 
-    pub fn delete_selected(&mut self) {
+    pub fn prompt_delete_selected(&mut self) {
         if self.recipes.is_empty() {
             return;
         }
         let id = self.recipes[self.list_index].id.clone();
-        let _ = db::delete_recipe(&self.conn, &id);
+        let name = self.recipes[self.list_index].name.clone();
+        self.confirm_delete = Some((id, name));
+    }
+
+    pub fn confirm_delete_yes(&mut self) {
+        if let Some((ref id, _)) = self.confirm_delete {
+            let _ = db::delete_recipe(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), id);
+        }
+        self.confirm_delete = None;
         self.refresh_recipes();
         if self.list_index >= self.recipes.len() && !self.recipes.is_empty() {
             self.list_index = self.recipes.len() - 1;
         }
+    }
+
+    pub fn confirm_delete_no(&mut self) {
+        self.confirm_delete = None;
+    }
+
+    pub fn undelete_selected(&mut self) {
+        if self.recipes.is_empty() || !self.show_deleted {
+            return;
+        }
+        let id = self.recipes[self.list_index].id.clone();
+        let _ = db::undelete_recipe(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), &id);
+        self.refresh_recipes();
+        if self.list_index >= self.recipes.len() && !self.recipes.is_empty() {
+            self.list_index = self.recipes.len() - 1;
+        }
+    }
+
+    pub fn toggle_show_deleted(&mut self) {
+        self.show_deleted = !self.show_deleted;
+        self.list_index = 0;
+        self.refresh_recipes();
     }
 
     pub fn delete_selected_batch(&mut self) {
@@ -464,7 +518,7 @@ impl App {
             return;
         }
         let id = self.batches[self.batch_list_index].id.clone();
-        let _ = batch::delete_batch(&self.conn, &id);
+        let _ = batch::delete_batch(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), &id);
         self.refresh_batches();
         if self.batch_list_index >= self.batches.len() && !self.batches.is_empty() {
             self.batch_list_index = self.batches.len() - 1;
@@ -479,7 +533,7 @@ impl App {
             if let Some(equip) = equipment_list.first() {
                 let name = format!("{} — Batch", doc.name);
                 let _ = batch::create_batch_from_recipe(
-                    &self.conn,
+                    &*self.conn.lock().unwrap_or_else(|e| e.into_inner()),
                     &name,
                     recipe_id,
                     &doc.recipe,
@@ -490,7 +544,7 @@ impl App {
     }
 
     pub fn open_recipe(&mut self, id: &str) {
-        if let Ok(Some(row)) = db::get_recipe(&self.conn, id) {
+        if let Ok(Some(row)) = db::get_recipe(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), id) {
             if let Ok(doc) = row.to_document() {
                 self.name_input = doc.name.clone();
                 self.current_doc = Some(doc);
@@ -517,7 +571,7 @@ impl App {
         if let (Screen::RecipeEdit { ref recipe_id }, Some(ref doc)) =
             (&self.screen, &self.current_doc)
         {
-            let _ = db::update_recipe(&self.conn, recipe_id, &doc.name, &doc.recipe);
+            let _ = db::update_recipe(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), recipe_id, &doc.name, &doc.recipe);
         }
     }
 

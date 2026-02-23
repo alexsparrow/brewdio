@@ -1,7 +1,8 @@
 use brewdio_core::beerjson_types::RecipeType;
 
 use crate::connection::{Connection, DbError, Value};
-use crate::recipe::{hydrate_from_automerge, reconcile_to_automerge, RecipeDocument, RecipeRow};
+use crate::automerge::{dump_automerge_structure, extract_fields_from_automerge, hydrate_from_automerge, reconcile_to_automerge};
+use crate::recipe::{RecipeDocument, RecipeRow};
 
 fn row_from_query(row: &dyn crate::connection::Row) -> RecipeRow {
     RecipeRow {
@@ -92,6 +93,41 @@ pub fn update_recipe(
     Ok(())
 }
 
+/// List all soft-deleted recipes.
+pub fn list_deleted_recipes(conn: &(impl Connection + ?Sized)) -> Result<Vec<RecipeRow>, DbError> {
+    conn.query_map(
+        "SELECT id, name, recipe, am_data, is_deleted, is_dirty FROM recipe WHERE is_deleted = TRUE",
+        &[],
+        row_from_query,
+    )
+}
+
+/// List all recipes (including deleted).
+pub fn list_all_recipes(conn: &(impl Connection + ?Sized)) -> Result<Vec<RecipeRow>, DbError> {
+    conn.query_map(
+        "SELECT id, name, recipe, am_data, is_deleted, is_dirty FROM recipe",
+        &[],
+        row_from_query,
+    )
+}
+
+/// Restore a soft-deleted recipe by setting `is_deleted = false`.
+pub fn undelete_recipe(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
+    let existing = get_recipe(conn, id)?;
+    if let Some(row) = existing {
+        let mut doc = row.to_document().expect("Failed to deserialize recipe");
+        doc.is_deleted = false;
+        let am_data = reconcile_to_automerge(&doc, Some(&row.am_data));
+
+        conn.execute(
+            "UPDATE recipe SET is_deleted = FALSE, is_dirty = TRUE, am_data = ?1 WHERE id = ?2",
+            &[Value::Blob(&am_data), Value::Text(id)],
+        )?;
+    }
+
+    Ok(())
+}
+
 /// Soft-delete a recipe by setting `is_deleted = true`.
 pub fn delete_recipe(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
     let existing = get_recipe(conn, id)?;
@@ -160,28 +196,61 @@ pub fn save_sync_state(
     )
 }
 
+/// Clear all sync states for a given peer. Called at connection start to avoid
+/// stale state from a previous session causing sync loops.
+pub fn clear_sync_states_for_peer(conn: &(impl Connection + ?Sized), peer_id: &str) -> Result<(), DbError> {
+    conn.execute(
+        "DELETE FROM sync_state WHERE peer_id = ?1",
+        &[Value::Text(peer_id)],
+    )
+}
+
 /// Apply a remotely-merged Automerge document. Updates the JSON and name columns
 /// from the merged AM state. Does NOT set `is_dirty` since the change came from the server.
 /// If the recipe doesn't exist locally, inserts it with `is_dirty = FALSE`.
+///
+/// If full autosurgeon hydration fails (e.g. due to untagged enum types),
+/// falls back to extracting `name` and `is_deleted` directly from the Automerge
+/// document and still stores the `am_data` so CRDT sync can continue.
 pub fn apply_remote_merge(
     conn: &(impl Connection + ?Sized),
     recipe_id: &str,
     am_data: &[u8],
 ) -> Result<(), DbError> {
-    let doc = hydrate_from_automerge(am_data).expect("Failed to hydrate merged AM doc");
-    let recipe_json = serde_json::to_string(&doc.recipe).expect("Failed to serialize recipe");
-
     let existing = get_recipe(conn, recipe_id)?;
-    if existing.is_some() {
-        conn.execute(
-            "UPDATE recipe SET name = ?1, recipe = ?2, am_data = ?3, is_deleted = ?4 WHERE id = ?5",
-            &[Value::Text(&doc.name), Value::Text(&recipe_json), Value::Blob(am_data), Value::Bool(doc.is_deleted), Value::Text(recipe_id)],
-        )?;
-    } else {
-        conn.execute(
-            "INSERT INTO recipe (id, name, recipe, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, FALSE)",
-            &[Value::Text(recipe_id), Value::Text(&doc.name), Value::Text(&recipe_json), Value::Blob(am_data), Value::Bool(doc.is_deleted)],
-        )?;
+
+    match hydrate_from_automerge::<RecipeDocument>(am_data) {
+        Ok(doc) => {
+            let recipe_json = serde_json::to_string(&doc.recipe).expect("Failed to serialize recipe");
+            if existing.is_some() {
+                conn.execute(
+                    "UPDATE recipe SET name = ?1, recipe = ?2, am_data = ?3, is_deleted = ?4 WHERE id = ?5",
+                    &[Value::Text(&doc.name), Value::Text(&recipe_json), Value::Blob(am_data), Value::Bool(doc.is_deleted), Value::Text(recipe_id)],
+                )?;
+            } else {
+                conn.execute(
+                    "INSERT INTO recipe (id, name, recipe, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, FALSE)",
+                    &[Value::Text(recipe_id), Value::Text(&doc.name), Value::Text(&recipe_json), Value::Blob(am_data), Value::Bool(doc.is_deleted)],
+                )?;
+            }
+        }
+        Err(e) => {
+            eprintln!("[sync] hydration failed for {}: {}", recipe_id, e);
+            eprintln!("[sync] automerge document structure for {}:\n{}", recipe_id, dump_automerge_structure(am_data, 4));
+            eprintln!("[sync] extracting fields manually for {}", recipe_id);
+            let (name, is_deleted) = extract_fields_from_automerge(am_data);
+            if existing.is_some() {
+                conn.execute(
+                    "UPDATE recipe SET name = ?1, am_data = ?2, is_deleted = ?3 WHERE id = ?4",
+                    &[Value::Text(&name), Value::Blob(am_data), Value::Bool(is_deleted), Value::Text(recipe_id)],
+                )?;
+            } else {
+                conn.execute(
+                    "INSERT INTO recipe (id, name, recipe, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, FALSE)",
+                    &[Value::Text(recipe_id), Value::Text(&name), Value::Text("{}"), Value::Blob(am_data), Value::Bool(is_deleted)],
+                )?;
+            }
+        }
     }
 
     Ok(())

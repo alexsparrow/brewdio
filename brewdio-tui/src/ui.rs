@@ -38,18 +38,38 @@ fn draw_home(frame: &mut Frame, app: &App) {
 
     // Help bar
     let help = match app.home_tab {
-        HomeTab::Recipes => Paragraph::new(Line::from(vec![
-            Span::styled(" [n]", Style::default().fg(Color::Cyan)),
-            Span::raw("ew  "),
-            Span::styled("[d]", Style::default().fg(Color::Cyan)),
-            Span::raw("elete  "),
-            Span::styled("[Enter]", Style::default().fg(Color::Cyan)),
-            Span::raw(" open  "),
-            Span::styled("[Tab]", Style::default().fg(Color::Cyan)),
-            Span::raw(" next  "),
-            Span::styled("[q]", Style::default().fg(Color::Cyan)),
-            Span::raw("uit"),
-        ])),
+        HomeTab::Recipes => {
+            let selected_is_deleted = app.recipes.get(app.list_index).map_or(false, |r| r.is_deleted);
+            let mut spans = vec![Span::raw(" ")];
+            if !app.show_deleted {
+                spans.extend_from_slice(&[
+                    Span::styled("[n]", Style::default().fg(Color::Cyan)),
+                    Span::raw("ew  "),
+                ]);
+            }
+            if selected_is_deleted {
+                spans.extend_from_slice(&[
+                    Span::styled("[u]", Style::default().fg(Color::Cyan)),
+                    Span::raw("ndelete  "),
+                ]);
+            } else {
+                spans.extend_from_slice(&[
+                    Span::styled("[d]", Style::default().fg(Color::Cyan)),
+                    Span::raw("elete  "),
+                    Span::styled("[Enter]", Style::default().fg(Color::Cyan)),
+                    Span::raw(" open  "),
+                ]);
+            }
+            spans.extend_from_slice(&[
+                Span::styled("[r]", Style::default().fg(Color::Cyan)),
+                Span::raw(if app.show_deleted { "ecipes  " } else { "ubbish  " }),
+                Span::styled("[Tab]", Style::default().fg(Color::Cyan)),
+                Span::raw(" next  "),
+                Span::styled("[q]", Style::default().fg(Color::Cyan)),
+                Span::raw("uit"),
+            ]);
+            Paragraph::new(Line::from(spans))
+        }
         HomeTab::Batches => Paragraph::new(Line::from(vec![
             Span::styled(" [d]", Style::default().fg(Color::Cyan)),
             Span::raw("elete  "),
@@ -79,28 +99,133 @@ fn draw_home(frame: &mut Frame, app: &App) {
 }
 
 fn draw_recipes_tab(frame: &mut Frame, app: &App, area: Rect) {
-    let items: Vec<ListItem> = app
-        .recipes
-        .iter()
-        .enumerate()
-        .map(|(i, r)| {
-            let prefix = if i == app.list_index { " ► " } else { "   " };
-            let style = if i == app.list_index {
-                Style::default()
-                    .fg(Color::Yellow)
-                    .add_modifier(Modifier::BOLD)
-            } else {
-                Style::default()
-            };
-            ListItem::new(Line::from(Span::styled(
-                format!("{}{}", prefix, r.name),
-                style,
-            )))
-        })
-        .collect();
+    let title = if app.show_deleted { " Trash " } else { " Recipes " };
+    let empty_msg = if app.show_deleted {
+        "  No deleted recipes"
+    } else {
+        "  Press [n] to create a recipe"
+    };
 
-    let list = List::new(items).block(Block::default().borders(Borders::ALL).title(" Recipes "));
-    frame.render_widget(list, area);
+    let block = Block::default().borders(Borders::ALL).title(title);
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+
+    if app.recipes.is_empty() {
+        let empty = Paragraph::new(Line::from(Span::styled(
+            empty_msg,
+            Style::default().fg(Color::DarkGray),
+        )));
+        frame.render_widget(empty, inner);
+    } else {
+        let items: Vec<ListItem> = app
+            .recipes
+            .iter()
+            .enumerate()
+            .map(|(i, r)| {
+                let prefix = if i == app.list_index { " ► " } else { "   " };
+                let item_style = if r.is_deleted {
+                    if i == app.list_index {
+                        Style::default()
+                            .fg(Color::White)
+                            .bg(Color::Rgb(120, 40, 40))
+                            .add_modifier(Modifier::BOLD)
+                    } else {
+                        Style::default()
+                            .fg(Color::Rgb(180, 80, 80))
+                    }
+                } else if i == app.list_index {
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default()
+                };
+
+                let total_width = inner.width as usize;
+                // Use display columns (3) not byte length for padding calc
+                let used_cols = 3 + r.name.len() + r.style.len();
+                let padding = if total_width > used_cols { total_width - used_cols } else { 1 };
+
+                if r.style.is_empty() {
+                    ListItem::new(Line::from(vec![
+                        Span::styled(prefix, item_style),
+                        Span::styled(r.name.clone(), item_style),
+                    ]))
+                } else {
+                    let dim_style = if r.is_deleted || i == app.list_index {
+                        item_style
+                    } else {
+                        Style::default().fg(Color::DarkGray)
+                    };
+                    ListItem::new(Line::from(vec![
+                        Span::styled(prefix, item_style),
+                        Span::styled(r.name.clone(), item_style),
+                        Span::styled(" ".repeat(padding), Style::default()),
+                        Span::styled(r.style.clone(), dim_style),
+                    ]))
+                }
+            })
+            .collect();
+
+        let list = List::new(items);
+        frame.render_widget(list, inner);
+    }
+
+    // Confirm-delete popup overlay
+    if let Some((_, ref name)) = app.confirm_delete {
+        draw_confirm_delete(frame, name, area);
+    }
+}
+
+fn draw_confirm_delete(frame: &mut Frame, recipe_name: &str, area: Rect) {
+    let popup_width = 44u16.min(area.width.saturating_sub(4));
+    let popup_height = 5u16.min(area.height.saturating_sub(2));
+    let popup_area = centered_rect(popup_width, popup_height, area);
+
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(" Delete Recipe ");
+    let inner = block.inner(popup_area);
+    frame.render_widget(
+        Paragraph::new("").style(Style::default().bg(Color::Black)),
+        popup_area,
+    );
+    frame.render_widget(block, popup_area);
+
+    let rows = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(1),
+            Constraint::Length(1),
+            Constraint::Min(0),
+        ])
+        .split(inner);
+
+    // Truncate name if needed
+    let max_name_len = (inner.width as usize).saturating_sub(11); // " Delete '" + "'?"
+    let display_name = if recipe_name.len() > max_name_len {
+        format!("{}...", &recipe_name[..max_name_len.saturating_sub(3)])
+    } else {
+        recipe_name.to_string()
+    };
+
+    frame.render_widget(
+        Paragraph::new(Line::from(vec![
+            Span::styled(" Delete '", Style::default().fg(Color::White)),
+            Span::styled(display_name, Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+            Span::styled("'?", Style::default().fg(Color::White)),
+        ])),
+        rows[0],
+    );
+    frame.render_widget(
+        Paragraph::new(Line::from(vec![
+            Span::styled(" [y]", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+            Span::styled("es  ", Style::default().fg(Color::DarkGray)),
+            Span::styled("[n]", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+            Span::styled("o", Style::default().fg(Color::DarkGray)),
+        ])),
+        rows[1],
+    );
 }
 
 fn draw_batches_tab(frame: &mut Frame, app: &App, area: Rect) {
@@ -533,11 +658,35 @@ fn draw_status_bar(frame: &mut Frame, app: &App, area: Rect) {
         }
     }
 
-    // Fill remaining width with background
+    // Sync status indicator (right-aligned)
+    let sync_text = match &app.sync_connected {
+        Some(flag) => {
+            if flag.load(std::sync::atomic::Ordering::Relaxed) {
+                Some((" Connected ", Color::Rgb(80, 180, 80)))
+            } else {
+                Some((" Disconnected ", Color::Rgb(180, 80, 80)))
+            }
+        }
+        None => None,
+    };
+
+    let sync_width = sync_text.as_ref().map_or(0, |(t, _)| t.len() + 2); // +2 for icon + space
     let used: usize = spans.iter().map(|s| s.content.len()).sum();
-    let remaining = (area.width as usize).saturating_sub(used);
+    let remaining = (area.width as usize).saturating_sub(used + sync_width);
     if remaining > 0 {
         spans.push(Span::styled(" ".repeat(remaining), bar_style));
+    }
+
+    if let Some((label, color)) = sync_text {
+        let icon = if color == Color::Rgb(80, 180, 80) { "\u{25CF} " } else { "\u{25CB} " };
+        spans.push(Span::styled(
+            icon,
+            Style::default().bg(bg).fg(color),
+        ));
+        spans.push(Span::styled(
+            label,
+            Style::default().bg(bg).fg(color).add_modifier(Modifier::BOLD),
+        ));
     }
 
     let line = Line::from(spans);

@@ -37,6 +37,15 @@ impl SyncSession {
         Self { doc, state }
     }
 
+    /// Merge changes from another Automerge document into this session's document.
+    /// Preserves the sync state so the session can continue tracking what the peer has seen.
+    pub fn merge_doc(&mut self, am_bytes: &[u8]) {
+        let mut other = AutoCommit::load(am_bytes).expect("Failed to load Automerge doc for merge");
+        self.doc
+            .merge(&mut other)
+            .expect("Failed to merge Automerge docs");
+    }
+
     /// Reconcile a `RecipeDocument` into the Automerge doc.
     pub fn reconcile(&mut self, recipe_doc: &RecipeDocument) {
         autosurgeon::reconcile(&mut self.doc, recipe_doc)
@@ -107,7 +116,7 @@ impl Default for SyncSession {
 mod tests {
     use super::*;
     use brewdio_core::beerjson_types::RecipeType;
-    use crate::recipe::reconcile_to_automerge;
+    use crate::automerge::reconcile_to_automerge;
 
     fn sample_recipe() -> RecipeType {
         serde_json::from_str(
@@ -198,6 +207,358 @@ mod tests {
         let hydrated_a = session_a.hydrate();
         let hydrated_b = session_b.hydrate();
         assert_eq!(hydrated_a.name, hydrated_b.name);
+    }
+
+    /// Simulates the pattern used by ws_handler/sync_worker:
+    /// persistent SyncSessions are kept alive for the connection duration.
+    /// Doc changes are saved to a simulated "DB" after each message,
+    /// but the sessions themselves persist (preserving sync state in memory).
+    #[test]
+    fn persistent_sessions_converge_with_different_docs() {
+        let doc_a = RecipeDocument {
+            id: "recipe-1".to_string(),
+            name: "Server Beer".to_string(),
+            recipe: sample_recipe(),
+            is_deleted: false,
+        };
+        let doc_b = RecipeDocument {
+            id: "recipe-1".to_string(),
+            name: "Client Beer".to_string(),
+            recipe: sample_recipe(),
+            is_deleted: false,
+        };
+
+        // Both sides have the same recipe but with different names (concurrent edits)
+        let am_a = reconcile_to_automerge(&doc_a, None);
+        let am_b = reconcile_to_automerge(&doc_b, None);
+
+        // Persistent sessions (kept alive for the connection)
+        let mut session_a = SyncSession::from_doc_bytes(&am_a);
+        let mut session_b = SyncSession::from_doc_bytes(&am_b);
+
+        // Simulated "DB" storage (save_doc writes are for realism)
+        let mut _db_doc_a = am_a;
+        let mut _db_doc_b = am_b;
+
+        // Server initiates
+        let msg = session_a.generate_sync_message();
+        assert!(msg.is_some(), "Server should have an initial message to send");
+        let mut pending_to_b = msg;
+        let mut pending_to_a: Option<Vec<u8>> = None;
+
+        let mut rounds = 0;
+        let max_rounds = 20;
+
+        loop {
+            rounds += 1;
+            if rounds > max_rounds {
+                panic!("Sync did not converge after {} rounds", max_rounds);
+            }
+
+            let mut made_progress = false;
+
+            if let Some(msg_bytes) = pending_to_b.take() {
+                made_progress = true;
+                let reply = session_b.receive_sync_message(&msg_bytes).unwrap();
+                _db_doc_b = session_b.save_doc();
+                if reply.is_some() {
+                    pending_to_a = reply;
+                }
+            }
+
+            if let Some(msg_bytes) = pending_to_a.take() {
+                made_progress = true;
+                let reply = session_a.receive_sync_message(&msg_bytes).unwrap();
+                _db_doc_a = session_a.save_doc();
+                if reply.is_some() {
+                    pending_to_b = reply;
+                }
+            }
+
+            if !made_progress {
+                break;
+            }
+        }
+
+        eprintln!("Converged in {} rounds", rounds);
+        assert!(rounds <= 10, "Should converge quickly, took {} rounds", rounds);
+
+        // Verify both sides have the same document
+        let hydrated_a = session_a.hydrate();
+        let hydrated_b = session_b.hydrate();
+        assert_eq!(hydrated_a.name, hydrated_b.name);
+        assert_eq!(hydrated_a.id, hydrated_b.id);
+
+        // Verify no more messages needed
+        assert!(session_a.generate_sync_message().is_none(), "A should have nothing to send");
+        assert!(session_b.generate_sync_message().is_none(), "B should have nothing to send");
+    }
+
+    /// Persistent sessions converge when both sides start with identical docs.
+    /// This is the reconnection scenario: same data, fresh sync states.
+    #[test]
+    fn persistent_sessions_converge_when_already_identical() {
+        let doc = RecipeDocument {
+            id: "recipe-1".to_string(),
+            name: "Same Beer".to_string(),
+            recipe: sample_recipe(),
+            is_deleted: false,
+        };
+        let am_bytes = reconcile_to_automerge(&doc, None);
+
+        let mut session_a = SyncSession::from_doc_bytes(&am_bytes);
+        let mut session_b = SyncSession::from_doc_bytes(&am_bytes);
+
+        let msg = session_a.generate_sync_message();
+        assert!(msg.is_some(), "Should send initial hash summary even when docs match");
+        let mut pending_to_b = msg;
+        let mut pending_to_a: Option<Vec<u8>> = None;
+
+        let mut rounds = 0;
+        loop {
+            rounds += 1;
+            if rounds > 20 {
+                panic!("Sync did not converge after 20 rounds");
+            }
+
+            let mut made_progress = false;
+
+            if let Some(msg_bytes) = pending_to_b.take() {
+                made_progress = true;
+                pending_to_a = session_b.receive_sync_message(&msg_bytes).unwrap();
+            }
+
+            if let Some(msg_bytes) = pending_to_a.take() {
+                made_progress = true;
+                pending_to_b = session_a.receive_sync_message(&msg_bytes).unwrap();
+            }
+
+            if !made_progress {
+                break;
+            }
+        }
+
+        eprintln!("Identical docs converged in {} rounds", rounds);
+        assert!(rounds <= 5, "Identical docs should converge very quickly, took {}", rounds);
+    }
+
+    /// Tests that merge_doc correctly incorporates external changes
+    /// while preserving sync state.
+    #[test]
+    fn merge_doc_incorporates_changes() {
+        let doc_v1 = RecipeDocument {
+            id: "recipe-1".to_string(),
+            name: "Original Beer".to_string(),
+            recipe: sample_recipe(),
+            is_deleted: false,
+        };
+        let am_v1 = reconcile_to_automerge(&doc_v1, None);
+
+        // Create a session and start syncing
+        let mut session = SyncSession::from_doc_bytes(&am_v1);
+        let _msg = session.generate_sync_message(); // advances sync state
+
+        // Simulate a local edit: reconcile v2 on top of v1
+        let doc_v2 = RecipeDocument {
+            id: "recipe-1".to_string(),
+            name: "Updated Beer".to_string(),
+            recipe: sample_recipe(),
+            is_deleted: false,
+        };
+        let am_v2 = reconcile_to_automerge(&doc_v2, Some(&am_v1));
+
+        // Merge the updated doc into the session
+        session.merge_doc(&am_v2);
+        let hydrated = session.hydrate();
+        assert_eq!(hydrated.name, "Updated Beer");
+
+        // Session should have new changes to send
+        assert!(session.generate_sync_message().is_some(), "Should have new data after merge");
+    }
+
+    /// Simulates the dirty-check pattern: a persistent session gets new local
+    /// edits merged in via merge_doc, then generates sync messages to push them.
+    #[test]
+    fn persistent_sessions_handle_mid_sync_local_edits() {
+        let doc = RecipeDocument {
+            id: "recipe-1".to_string(),
+            name: "Original Beer".to_string(),
+            recipe: sample_recipe(),
+            is_deleted: false,
+        };
+        let am_bytes = reconcile_to_automerge(&doc, None);
+
+        let mut session_a = SyncSession::from_doc_bytes(&am_bytes);
+        let mut session_b = SyncSession::from_doc_bytes(&am_bytes);
+
+        // First: converge the identical docs
+        let mut msg = session_a.generate_sync_message();
+        for _ in 0..20 {
+            if msg.is_none() { break; }
+            let reply = session_b.receive_sync_message(msg.as_ref().unwrap()).unwrap();
+            if let Some(reply_bytes) = reply {
+                msg = session_a.receive_sync_message(&reply_bytes).unwrap();
+            } else {
+                msg = None;
+            }
+        }
+        assert!(session_a.generate_sync_message().is_none(), "Should be converged");
+
+        // Now simulate a local edit on side A (dirty-check picks it up)
+        let doc_v2 = RecipeDocument {
+            id: "recipe-1".to_string(),
+            name: "Edited Beer".to_string(),
+            recipe: sample_recipe(),
+            is_deleted: false,
+        };
+        let am_v2 = reconcile_to_automerge(&doc_v2, Some(&am_bytes));
+        session_a.merge_doc(&am_v2);
+
+        // A should now have something to send
+        let mut msg = session_a.generate_sync_message();
+        assert!(msg.is_some(), "Should have edit to send");
+
+        // Exchange until converged again
+        for _ in 0..20 {
+            if msg.is_none() { break; }
+            let reply = session_b.receive_sync_message(msg.as_ref().unwrap()).unwrap();
+            if let Some(reply_bytes) = reply {
+                msg = session_a.receive_sync_message(&reply_bytes).unwrap();
+            } else {
+                msg = None;
+            }
+        }
+
+        let hydrated_b = session_b.hydrate();
+        assert_eq!(hydrated_b.name, "Edited Beer");
+    }
+
+    /// Verify that is_deleted stays false through the full sync + merge_doc + save_doc cycle.
+    /// Reproduces the scenario where apply_remote_merge saves the session's doc back to DB.
+    #[test]
+    fn is_deleted_preserved_through_sync_and_save() {
+        use crate::automerge::hydrate_from_automerge;
+
+        let doc_a = RecipeDocument {
+            id: "recipe-1".to_string(),
+            name: "Server Beer".to_string(),
+            recipe: sample_recipe(),
+            is_deleted: false,
+        };
+        let doc_b = RecipeDocument {
+            id: "recipe-1".to_string(),
+            name: "Client Beer".to_string(),
+            recipe: sample_recipe(),
+            is_deleted: false,
+        };
+
+        // Independently created docs (different actors)
+        let am_a = reconcile_to_automerge(&doc_a, None);
+        let am_b = reconcile_to_automerge(&doc_b, None);
+
+        // Verify initial docs have is_deleted = false
+        let h: RecipeDocument = hydrate_from_automerge(&am_a).unwrap();
+        assert!(!h.is_deleted, "Server doc should start with is_deleted=false");
+        let h: RecipeDocument = hydrate_from_automerge(&am_b).unwrap();
+        assert!(!h.is_deleted, "Client doc should start with is_deleted=false");
+
+        let mut session_a = SyncSession::from_doc_bytes(&am_a);
+        let mut session_b = SyncSession::from_doc_bytes(&am_b);
+
+        // Sync until converged
+        let mut msg = session_a.generate_sync_message();
+        for _ in 0..20 {
+            if msg.is_none() { break; }
+            let reply = session_b.receive_sync_message(msg.as_ref().unwrap()).unwrap();
+            if let Some(reply_bytes) = reply {
+                msg = session_a.receive_sync_message(&reply_bytes).unwrap();
+            } else {
+                msg = None;
+            }
+        }
+
+        // Check is_deleted after sync on both sessions
+        let hydrated_a = session_a.hydrate();
+        let hydrated_b = session_b.hydrate();
+        assert!(!hydrated_a.is_deleted, "Server should not be deleted after sync");
+        assert!(!hydrated_b.is_deleted, "Client should not be deleted after sync");
+
+        // Simulate what ws_handler does: save_doc -> apply_remote_merge (hydrate saved bytes)
+        let saved_a = session_a.save_doc();
+        let saved_b = session_b.save_doc();
+        let h: RecipeDocument = hydrate_from_automerge(&saved_a).unwrap();
+        assert!(!h.is_deleted, "Server saved doc should have is_deleted=false");
+        let h: RecipeDocument = hydrate_from_automerge(&saved_b).unwrap();
+        assert!(!h.is_deleted, "Client saved doc should have is_deleted=false");
+
+        // Simulate merge_doc (dirty-check picks up DB changes)
+        session_a.merge_doc(&saved_a);
+        session_b.merge_doc(&saved_b);
+        let hydrated_a = session_a.hydrate();
+        let hydrated_b = session_b.hydrate();
+        assert!(!hydrated_a.is_deleted, "Server should not be deleted after merge_doc");
+        assert!(!hydrated_b.is_deleted, "Client should not be deleted after merge_doc");
+
+        // Verify no more sync needed
+        assert!(session_a.generate_sync_message().is_none());
+        assert!(session_b.generate_sync_message().is_none());
+    }
+
+    /// Verify is_deleted stays false through the full DB-backed sync flow:
+    /// create_recipe -> sync sessions -> apply_remote_merge -> verify DB state.
+    #[test]
+    fn is_deleted_preserved_through_db_sync() {
+        use crate::automerge::hydrate_from_automerge;
+
+        let conn_a = crate::connection_native::open(":memory:").unwrap();
+        let conn_b = crate::connection_native::open(":memory:").unwrap();
+
+        // Both sides create a recipe independently
+        let row_a = crate::db::create_recipe(&conn_a, "Server Beer", &sample_recipe()).unwrap();
+        let row_b = crate::db::create_recipe(&conn_b, "Client Beer", &sample_recipe()).unwrap();
+
+        // Verify both start non-deleted
+        assert!(!row_a.is_deleted);
+        assert!(!row_b.is_deleted);
+
+        // Now simulate the sync: server sends NewDoc with its recipe to client
+        crate::db::apply_remote_merge(&conn_b, &row_a.id, &row_a.am_data).unwrap();
+        // Client sends NewDoc with its recipe to server
+        crate::db::apply_remote_merge(&conn_a, &row_b.id, &row_b.am_data).unwrap();
+
+        // Verify both recipes on both sides are not deleted
+        let a_on_a = crate::db::get_recipe(&conn_a, &row_a.id).unwrap().unwrap();
+        let b_on_a = crate::db::get_recipe(&conn_a, &row_b.id).unwrap().unwrap();
+        let a_on_b = crate::db::get_recipe(&conn_b, &row_a.id).unwrap().unwrap();
+        let b_on_b = crate::db::get_recipe(&conn_b, &row_b.id).unwrap().unwrap();
+        assert!(!a_on_a.is_deleted, "Server's recipe on server should not be deleted");
+        assert!(!b_on_a.is_deleted, "Client's recipe on server should not be deleted");
+        assert!(!a_on_b.is_deleted, "Server's recipe on client should not be deleted");
+        assert!(!b_on_b.is_deleted, "Client's recipe on client should not be deleted");
+
+        // Now simulate SyncDoc for a shared recipe (same ID, different docs)
+        // This is the case where both sides already have the recipe
+        let mut session_a = SyncSession::from_doc_bytes(&a_on_a.am_data);
+        let mut session_b = SyncSession::from_doc_bytes(&a_on_b.am_data);
+
+        let mut msg = session_a.generate_sync_message();
+        for _ in 0..20 {
+            if msg.is_none() { break; }
+            let reply = session_b.receive_sync_message(msg.as_ref().unwrap()).unwrap();
+            // Simulate apply_remote_merge after receiving
+            let saved_b = session_b.save_doc();
+            let h: RecipeDocument = hydrate_from_automerge(&saved_b).unwrap();
+            assert!(!h.is_deleted, "Client hydrated doc should not be deleted during sync");
+
+            if let Some(reply_bytes) = reply {
+                msg = session_a.receive_sync_message(&reply_bytes).unwrap();
+                let saved_a = session_a.save_doc();
+                let h: RecipeDocument = hydrate_from_automerge(&saved_a).unwrap();
+                assert!(!h.is_deleted, "Server hydrated doc should not be deleted during sync");
+            } else {
+                msg = None;
+            }
+        }
     }
 
     #[test]

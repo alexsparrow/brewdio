@@ -4,6 +4,8 @@ mod styles;
 mod ui;
 
 use std::io;
+use std::sync::atomic::AtomicBool;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use crossterm::{
@@ -24,7 +26,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db_path = data_dir.join("brewdio.db");
 
     let conn = brewdio_persistence::connection_native::open(db_path.to_str().unwrap())?;
+    let conn = Arc::new(Mutex::new(conn));
+
+    // Start background sync worker if BREWDIO_SERVER_URL is set
+    let sync_connected = Arc::new(AtomicBool::new(false));
+    let _runtime = if let Ok(url) = std::env::var("BREWDIO_SERVER_URL") {
+        let rt = tokio::runtime::Runtime::new()?;
+        let conn_clone = conn.clone();
+        let connected = sync_connected.clone();
+        rt.spawn(async move {
+            let _ = brewdio_persistence::sync_worker::spawn_sync(conn_clone, url, connected).await;
+        });
+        Some(rt)
+    } else {
+        None
+    };
+
     let mut app = App::new(conn);
+    if _runtime.is_some() {
+        app.sync_connected = Some(sync_connected);
+    }
 
     // Setup terminal
     enable_raw_mode()?;
@@ -107,10 +128,24 @@ fn handle_home_input(app: &mut App, key: KeyCode) {
 }
 
 fn handle_recipes_tab_input(app: &mut App, key: KeyCode) {
+    // Handle confirm-delete popup first
+    if app.confirm_delete.is_some() {
+        match key {
+            KeyCode::Char('y') | KeyCode::Char('Y') => app.confirm_delete_yes(),
+            KeyCode::Char('n') | KeyCode::Char('N') | KeyCode::Esc => app.confirm_delete_no(),
+            _ => {}
+        }
+        return;
+    }
+
+    let selected_is_deleted = app.recipes.get(app.list_index).map_or(false, |r| r.is_deleted);
+
     match key {
-        KeyCode::Char('n') => app.create_recipe(),
-        KeyCode::Char('d') => app.delete_selected(),
-        KeyCode::Enter => app.open_selected(),
+        KeyCode::Char('n') if !app.show_deleted => app.create_recipe(),
+        KeyCode::Char('d') if !selected_is_deleted => app.prompt_delete_selected(),
+        KeyCode::Char('u') if selected_is_deleted => app.undelete_selected(),
+        KeyCode::Char('r') => app.toggle_show_deleted(),
+        KeyCode::Enter if !selected_is_deleted => app.open_selected(),
         KeyCode::Char('j') | KeyCode::Down => {
             if !app.recipes.is_empty() && app.list_index < app.recipes.len() - 1 {
                 app.list_index += 1;

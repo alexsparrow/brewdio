@@ -1968,7 +1968,7 @@ impl From<&CultureInventoryType> for CultureInventoryType {
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "wasm", derive(Tsify))]
 #[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
-#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Reconcile))]
 pub struct DateType(String);
 impl ::std::ops::Deref for DateType {
     type Target = String;
@@ -6772,7 +6772,7 @@ impl std::convert::TryFrom<String> for QualitativeRangeType {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[cfg_attr(feature = "wasm", derive(Tsify))]
 #[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
-#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Reconcile))]
 pub struct RecipeStyleType(pub StyleBase);
 impl ::std::ops::Deref for RecipeStyleType {
     type Target = StyleBase;
@@ -7406,7 +7406,7 @@ impl From<&StyleBase> for StyleBase {
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "wasm", derive(Tsify))]
 #[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
-#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Reconcile))]
 pub struct StyleBaseStyleLetter(String);
 impl ::std::ops::Deref for StyleBaseStyleLetter {
     type Target = String;
@@ -7696,7 +7696,7 @@ impl From<&StyleType> for StyleType {
 #[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "wasm", derive(Tsify))]
 #[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
-#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Reconcile))]
 pub struct StyleTypeStyleLetter(String);
 impl ::std::ops::Deref for StyleTypeStyleLetter {
     type Target = String;
@@ -8647,7 +8647,7 @@ impl std::convert::TryFrom<String> for VarietyInformationType {
 #[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
 #[cfg_attr(feature = "wasm", derive(Tsify))]
 #[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
-#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Reconcile))]
 pub struct VersionType(pub f64);
 impl ::std::ops::Deref for VersionType {
     type Target = f64;
@@ -9302,6 +9302,89 @@ pub struct Zymocide {
 impl From<&Zymocide> for Zymocide {
     fn from(value: &Zymocide) -> Self {
         value.clone()
+    }
+}
+
+
+    // --- Manual Hydrate impls for newtype wrappers ---
+    // autosurgeon's derive for newtypes only generates `hydrate`, not `hydrate_map`/
+    // `hydrate_string` etc. Option<T> dispatches to those methods, causing Unexpected errors.
+    
+#[cfg(feature = "crdt")]
+impl autosurgeon::Hydrate for DateType {
+    fn hydrate<D: autosurgeon::ReadDoc>(
+        doc: &D,
+        obj: &automerge::ObjId,
+        prop: autosurgeon::Prop<'_>,
+    ) -> Result<Self, autosurgeon::HydrateError> {
+        Ok(Self(<String as autosurgeon::Hydrate>::hydrate(doc, obj, prop)?))
+    }
+
+    fn hydrate_string(s: &str) -> Result<Self, autosurgeon::HydrateError> {
+        Ok(Self(<String as autosurgeon::Hydrate>::hydrate_string(s)?))
+    }
+}
+
+#[cfg(feature = "crdt")]
+impl autosurgeon::Hydrate for RecipeStyleType {
+    fn hydrate<D: autosurgeon::ReadDoc>(
+        doc: &D,
+        obj: &automerge::ObjId,
+        prop: autosurgeon::Prop<'_>,
+    ) -> Result<Self, autosurgeon::HydrateError> {
+        Ok(Self(<StyleBase as autosurgeon::Hydrate>::hydrate(doc, obj, prop)?))
+    }
+
+    fn hydrate_map<D: autosurgeon::ReadDoc>(
+        doc: &D,
+        obj: &automerge::ObjId,
+    ) -> Result<Self, autosurgeon::HydrateError> {
+        Ok(Self(<StyleBase as autosurgeon::Hydrate>::hydrate_map(doc, obj)?))
+    }
+}
+
+#[cfg(feature = "crdt")]
+impl autosurgeon::Hydrate for StyleBaseStyleLetter {
+    fn hydrate<D: autosurgeon::ReadDoc>(
+        doc: &D,
+        obj: &automerge::ObjId,
+        prop: autosurgeon::Prop<'_>,
+    ) -> Result<Self, autosurgeon::HydrateError> {
+        Ok(Self(<String as autosurgeon::Hydrate>::hydrate(doc, obj, prop)?))
+    }
+
+    fn hydrate_string(s: &str) -> Result<Self, autosurgeon::HydrateError> {
+        Ok(Self(<String as autosurgeon::Hydrate>::hydrate_string(s)?))
+    }
+}
+
+#[cfg(feature = "crdt")]
+impl autosurgeon::Hydrate for StyleTypeStyleLetter {
+    fn hydrate<D: autosurgeon::ReadDoc>(
+        doc: &D,
+        obj: &automerge::ObjId,
+        prop: autosurgeon::Prop<'_>,
+    ) -> Result<Self, autosurgeon::HydrateError> {
+        Ok(Self(<String as autosurgeon::Hydrate>::hydrate(doc, obj, prop)?))
+    }
+
+    fn hydrate_string(s: &str) -> Result<Self, autosurgeon::HydrateError> {
+        Ok(Self(<String as autosurgeon::Hydrate>::hydrate_string(s)?))
+    }
+}
+
+#[cfg(feature = "crdt")]
+impl autosurgeon::Hydrate for VersionType {
+    fn hydrate<D: autosurgeon::ReadDoc>(
+        doc: &D,
+        obj: &automerge::ObjId,
+        prop: autosurgeon::Prop<'_>,
+    ) -> Result<Self, autosurgeon::HydrateError> {
+        Ok(Self(<f64 as autosurgeon::Hydrate>::hydrate(doc, obj, prop)?))
+    }
+
+    fn hydrate_f64(f: f64) -> Result<Self, autosurgeon::HydrateError> {
+        Ok(Self(f))
     }
 }
 

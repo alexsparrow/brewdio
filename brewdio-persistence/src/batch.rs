@@ -2,8 +2,9 @@ use brewdio_core::beerjson_types::{EquipmentType, RecipeType};
 use serde::{Deserialize, Serialize};
 
 use crate::connection::{Connection, DbError, Value};
+use crate::automerge::reconcile_to_automerge;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate)]
 #[serde(rename_all = "camelCase")]
 pub struct BatchData {
     pub equipment_id: String,
@@ -25,9 +26,45 @@ pub struct BatchRow {
     pub is_dirty: bool,
 }
 
+/// Automerge-reconciled document for CRDT sync.
+#[derive(Clone, Debug, Serialize, Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate)]
+pub struct BatchDocument {
+    pub id: String,
+    pub name: String,
+    pub recipe_id: String,
+    pub data: BatchData,
+    pub is_deleted: bool,
+}
+
 impl BatchRow {
     pub fn to_data(&self) -> Result<BatchData, serde_json::Error> {
         serde_json::from_str(&self.data)
+    }
+
+    pub fn to_document(&self) -> Result<BatchDocument, serde_json::Error> {
+        let data: BatchData = serde_json::from_str(&self.data)?;
+        Ok(BatchDocument {
+            id: self.id.clone(),
+            name: self.name.clone(),
+            recipe_id: self.recipe_id.clone(),
+            data,
+            is_deleted: self.is_deleted,
+        })
+    }
+}
+
+impl BatchDocument {
+    pub fn to_row(&self, am_data: Vec<u8>) -> Result<BatchRow, serde_json::Error> {
+        let data_json = serde_json::to_string(&self.data)?;
+        Ok(BatchRow {
+            id: self.id.clone(),
+            name: self.name.clone(),
+            recipe_id: self.recipe_id.clone(),
+            data: data_json,
+            am_data,
+            is_deleted: self.is_deleted,
+            is_dirty: true,
+        })
     }
 }
 
@@ -50,13 +87,25 @@ pub fn create_batch(
     data: &str,
 ) -> Result<BatchRow, DbError> {
     let id = ulid::Ulid::new().to_string();
+    let parsed_data: BatchData =
+        serde_json::from_str(data).map_err(|e| DbError(e.to_string()))?;
+    let doc = BatchDocument {
+        id: id.clone(),
+        name: name.to_string(),
+        recipe_id: recipe_id.to_string(),
+        data: parsed_data,
+        is_deleted: false,
+    };
+    let am_data = reconcile_to_automerge(&doc, None);
+
     conn.execute(
-        "INSERT INTO batch (id, name, recipe_id, data) VALUES (?1, ?2, ?3, ?4)",
+        "INSERT INTO batch (id, name, recipe_id, data, am_data) VALUES (?1, ?2, ?3, ?4, ?5)",
         &[
             Value::Text(&id),
             Value::Text(name),
             Value::Text(recipe_id),
             Value::Text(data),
+            Value::Blob(&am_data),
         ],
     )?;
     Ok(BatchRow {
@@ -64,7 +113,7 @@ pub fn create_batch(
         name: name.to_string(),
         recipe_id: recipe_id.to_string(),
         data: data.to_string(),
-        am_data: Vec::new(),
+        am_data,
         is_deleted: false,
         is_dirty: true,
     })
@@ -95,17 +144,39 @@ pub fn update_batch(
     name: &str,
     data: &str,
 ) -> Result<(), DbError> {
+    let existing = get_batch(conn, id)?;
+    let existing_am = existing.as_ref().map(|r| r.am_data.as_slice());
+
+    let parsed_data: BatchData =
+        serde_json::from_str(data).map_err(|e| DbError(e.to_string()))?;
+    let doc = BatchDocument {
+        id: id.to_string(),
+        name: name.to_string(),
+        recipe_id: existing.as_ref().map(|r| r.recipe_id.clone()).unwrap_or_default(),
+        data: parsed_data,
+        is_deleted: false,
+    };
+    let am_data = reconcile_to_automerge(&doc, existing_am);
+
     conn.execute(
-        "UPDATE batch SET name = ?1, data = ?2, is_dirty = TRUE WHERE id = ?3",
-        &[Value::Text(name), Value::Text(data), Value::Text(id)],
+        "UPDATE batch SET name = ?1, data = ?2, am_data = ?3, is_dirty = TRUE WHERE id = ?4",
+        &[Value::Text(name), Value::Text(data), Value::Blob(&am_data), Value::Text(id)],
     )
 }
 
 pub fn delete_batch(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
-    conn.execute(
-        "UPDATE batch SET is_deleted = TRUE, is_dirty = TRUE WHERE id = ?1",
-        &[Value::Text(id)],
-    )
+    let existing = get_batch(conn, id)?;
+    if let Some(row) = existing {
+        let mut doc = row.to_document().map_err(|e| DbError(e.to_string()))?;
+        doc.is_deleted = true;
+        let am_data = reconcile_to_automerge(&doc, Some(&row.am_data));
+
+        conn.execute(
+            "UPDATE batch SET is_deleted = TRUE, is_dirty = TRUE, am_data = ?1 WHERE id = ?2",
+            &[Value::Blob(&am_data), Value::Text(id)],
+        )?;
+    }
+    Ok(())
 }
 
 pub fn create_batch_from_recipe(
@@ -140,30 +211,51 @@ mod tests {
         crate::connection_native::open(":memory:").unwrap()
     }
 
+    fn sample_batch_data_json() -> String {
+        serde_json::to_string(&BatchData {
+            equipment_id: "kettle-1".to_string(),
+            recipe: serde_json::from_str(r#"{
+                "name": "Test IPA", "type": "all grain", "author": "",
+                "batch_size": { "unit": "l", "value": 20.0 },
+                "efficiency": { "brewhouse": { "unit": "%", "value": 72.0 } },
+                "ingredients": { "fermentable_additions": [], "hop_additions": [] }
+            }"#).unwrap(),
+            equipment: brewdio_core::data::equipment()[0].clone(),
+            brew_date: 1000,
+            notes: Some("test".to_string()),
+            created_at: 1000,
+            updated_at: 1000,
+        }).unwrap()
+    }
+
     #[test]
     fn batch_crud() {
         let conn = test_conn();
+        let data = sample_batch_data_json();
 
         // Create
-        let row = create_batch(&conn, "Batch 1", "recipe-123", r#"{"notes":"test"}"#).unwrap();
+        let row = create_batch(&conn, "Batch 1", "recipe-123", &data).unwrap();
         assert_eq!(row.name, "Batch 1");
         assert!(!row.is_deleted);
         assert!(row.is_dirty);
+        assert!(!row.am_data.is_empty(), "am_data should be populated on create");
 
         // Get
         let fetched = get_batch(&conn, &row.id).unwrap().unwrap();
         assert_eq!(fetched.name, "Batch 1");
         assert_eq!(fetched.recipe_id, "recipe-123");
         assert!(fetched.is_dirty);
+        assert!(!fetched.am_data.is_empty());
 
         // List
         let batches = list_batches(&conn).unwrap();
         assert_eq!(batches.len(), 1);
 
         // Update
-        update_batch(&conn, &row.id, "Updated Batch", r#"{"notes":"updated"}"#).unwrap();
+        update_batch(&conn, &row.id, "Updated Batch", &data).unwrap();
         let fetched = get_batch(&conn, &row.id).unwrap().unwrap();
         assert_eq!(fetched.name, "Updated Batch");
+        assert!(!fetched.am_data.is_empty(), "am_data should be populated on update");
 
         // Soft-delete
         delete_batch(&conn, &row.id).unwrap();
@@ -174,6 +266,7 @@ mod tests {
         let fetched = get_batch(&conn, &row.id).unwrap().unwrap();
         assert!(fetched.is_deleted);
         assert!(fetched.is_dirty);
+        assert!(!fetched.am_data.is_empty(), "am_data should be populated on delete");
     }
 
     #[test]

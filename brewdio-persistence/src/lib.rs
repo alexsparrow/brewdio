@@ -1,3 +1,4 @@
+pub mod automerge;
 pub mod batch;
 pub mod connection;
 pub mod db;
