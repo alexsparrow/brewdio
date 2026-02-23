@@ -1,0 +1,9308 @@
+
+    #[cfg(feature = "wasm")]
+    use tsify::Tsify;
+
+
+    /// Error types.
+pub mod error {
+    /// Error from a TryFrom or FromStr implementation.
+    pub struct ConversionError(::std::borrow::Cow<'static, str>);
+    impl ::std::error::Error for ConversionError {}
+    impl ::std::fmt::Display for ConversionError {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
+            ::std::fmt::Display::fmt(&self.0, f)
+        }
+    }
+    impl ::std::fmt::Debug for ConversionError {
+        fn fmt(
+            &self,
+            f: &mut ::std::fmt::Formatter<'_>,
+        ) -> Result<(), ::std::fmt::Error> {
+            ::std::fmt::Debug::fmt(&self.0, f)
+        }
+    }
+    impl From<&'static str> for ConversionError {
+        fn from(value: &'static str) -> Self {
+            Self(value.into())
+        }
+    }
+    impl From<String> for ConversionError {
+        fn from(value: String) -> Self {
+            Self(value.into())
+        }
+    }
+}
+///AcidityType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/AcidityUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct AcidityType {
+    pub unit: AcidityUnitType,
+    pub value: f64,
+}
+impl From<&AcidityType> for AcidityType {
+    fn from(value: &AcidityType) -> Self {
+        value.clone()
+    }
+}
+///AcidityUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "pH"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum AcidityUnitType {
+    #[serde(rename = "pH")]
+    PH,
+}
+impl From<&AcidityUnitType> for AcidityUnitType {
+    fn from(value: &AcidityUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for AcidityUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::PH => write!(f, "pH"),
+        }
+    }
+}
+impl std::str::FromStr for AcidityUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "pH" => Ok(Self::PH),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for AcidityUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for AcidityUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for AcidityUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///BitternessRangeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "maximum",
+///    "minimum"
+///  ],
+///  "properties": {
+///    "maximum": {
+///      "$ref": "#/definitions/BitternessType"
+///    },
+///    "minimum": {
+///      "$ref": "#/definitions/BitternessType"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct BitternessRangeType {
+    pub maximum: BitternessType,
+    pub minimum: BitternessType,
+}
+impl From<&BitternessRangeType> for BitternessRangeType {
+    fn from(value: &BitternessRangeType) -> Self {
+        value.clone()
+    }
+}
+///BitternessType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/BitternessUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct BitternessType {
+    pub unit: BitternessUnitType,
+    pub value: f64,
+}
+impl From<&BitternessType> for BitternessType {
+    fn from(value: &BitternessType) -> Self {
+        value.clone()
+    }
+}
+///BitternessUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "IBUs"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum BitternessUnitType {
+    #[serde(rename = "IBUs")]
+    IbUs,
+}
+impl From<&BitternessUnitType> for BitternessUnitType {
+    fn from(value: &BitternessUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for BitternessUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::IbUs => write!(f, "IBUs"),
+        }
+    }
+}
+impl std::str::FromStr for BitternessUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "IBUs" => Ok(Self::IbUs),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for BitternessUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for BitternessUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for BitternessUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///BoilProcedureType defines the procedure for performing a boil. A boil procedure with no steps is the same as a standard single step boil.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "BoilProcedureType defines the procedure for performing a boil. A boil procedure with no steps is the same as a standard single step boil.",
+///  "type": "object",
+///  "required": [
+///    "boil_time"
+///  ],
+///  "properties": {
+///    "boil_steps": {
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/BoilStepType"
+///      }
+///    },
+///    "boil_time": {
+///      "$ref": "#/definitions/TimeType"
+///    },
+///    "description": {
+///      "type": "string"
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "notes": {
+///      "type": "string"
+///    },
+///    "pre_boil_size": {
+///      "$ref": "#/definitions/VolumeType"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct BoilProcedureType {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub boil_steps: Vec<BoilStepType>,
+    pub boil_time: TimeType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pre_boil_size: Option<VolumeType>,
+}
+impl From<&BoilProcedureType> for BoilProcedureType {
+    fn from(value: &BoilProcedureType) -> Self {
+        value.clone()
+    }
+}
+///BoilStepType - a per step representation of a boil process, can be used to support preboil steps, non-boiling pasteurization steps, boiling, whirlpool steps, and chilling.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "BoilStepType - a per step representation of a boil process, can be used to support preboil steps, non-boiling pasteurization steps, boiling, whirlpool steps, and chilling.",
+///  "type": "object",
+///  "required": [
+///    "name"
+///  ],
+///  "properties": {
+///    "chilling_type": {
+///      "description": "Chilling type seperates batch chilling, eg immersion chillers, where the entire volume of wort is brought down in temperture as a whole, vs inline chilling where the wort is chilled while it is being drained, which can leave a significant amount of hop isomerization occuring in the boil kettle.",
+///      "type": "string",
+///      "enum": [
+///        "batch",
+///        "inline"
+///      ]
+///    },
+///    "description": {
+///      "type": "string"
+///    },
+///    "end_gravity": {
+///      "$ref": "#/definitions/GravityType"
+///    },
+///    "end_ph": {
+///      "$ref": "#/definitions/AcidityType"
+///    },
+///    "end_temperature": {
+///      "$ref": "#/definitions/TemperatureType"
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "ramp_time": {
+///      "$ref": "#/definitions/TimeType"
+///    },
+///    "start_gravity": {
+///      "$ref": "#/definitions/GravityType"
+///    },
+///    "start_ph": {
+///      "$ref": "#/definitions/AcidityType"
+///    },
+///    "start_temperature": {
+///      "$ref": "#/definitions/TemperatureType"
+///    },
+///    "step_time": {
+///      "$ref": "#/definitions/TimeType"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct BoilStepType {
+    ///Chilling type seperates batch chilling, eg immersion chillers, where the entire volume of wort is brought down in temperture as a whole, vs inline chilling where the wort is chilled while it is being drained, which can leave a significant amount of hop isomerization occuring in the boil kettle.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub chilling_type: Option<BoilStepTypeChillingType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_gravity: Option<GravityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_ph: Option<AcidityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_temperature: Option<TemperatureType>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ramp_time: Option<TimeType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start_gravity: Option<GravityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start_ph: Option<AcidityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start_temperature: Option<TemperatureType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub step_time: Option<TimeType>,
+}
+impl From<&BoilStepType> for BoilStepType {
+    fn from(value: &BoilStepType) -> Self {
+        value.clone()
+    }
+}
+///Chilling type seperates batch chilling, eg immersion chillers, where the entire volume of wort is brought down in temperture as a whole, vs inline chilling where the wort is chilled while it is being drained, which can leave a significant amount of hop isomerization occuring in the boil kettle.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Chilling type seperates batch chilling, eg immersion chillers, where the entire volume of wort is brought down in temperture as a whole, vs inline chilling where the wort is chilled while it is being drained, which can leave a significant amount of hop isomerization occuring in the boil kettle.",
+///  "type": "string",
+///  "enum": [
+///    "batch",
+///    "inline"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum BoilStepTypeChillingType {
+    #[serde(rename = "batch")]
+    Batch,
+    #[serde(rename = "inline")]
+    Inline,
+}
+impl From<&BoilStepTypeChillingType> for BoilStepTypeChillingType {
+    fn from(value: &BoilStepTypeChillingType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for BoilStepTypeChillingType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Batch => write!(f, "batch"),
+            Self::Inline => write!(f, "inline"),
+        }
+    }
+}
+impl std::str::FromStr for BoilStepTypeChillingType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "batch" => Ok(Self::Batch),
+            "inline" => Ok(Self::Inline),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for BoilStepTypeChillingType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for BoilStepTypeChillingType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for BoilStepTypeChillingType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///CarbonationRangeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "maximum",
+///    "minimum"
+///  ],
+///  "properties": {
+///    "maximum": {
+///      "$ref": "#/definitions/CarbonationType"
+///    },
+///    "minimum": {
+///      "$ref": "#/definitions/CarbonationType"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct CarbonationRangeType {
+    pub maximum: CarbonationType,
+    pub minimum: CarbonationType,
+}
+impl From<&CarbonationRangeType> for CarbonationRangeType {
+    fn from(value: &CarbonationRangeType) -> Self {
+        value.clone()
+    }
+}
+///CarbonationType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/CarbonationUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct CarbonationType {
+    pub unit: CarbonationUnitType,
+    pub value: f64,
+}
+impl From<&CarbonationType> for CarbonationType {
+    fn from(value: &CarbonationType) -> Self {
+        value.clone()
+    }
+}
+///CarbonationUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "vols",
+///    "g/l"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum CarbonationUnitType {
+    #[serde(rename = "vols")]
+    Vols,
+    #[serde(rename = "g/l")]
+    GL,
+}
+impl From<&CarbonationUnitType> for CarbonationUnitType {
+    fn from(value: &CarbonationUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for CarbonationUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Vols => write!(f, "vols"),
+            Self::GL => write!(f, "g/l"),
+        }
+    }
+}
+impl std::str::FromStr for CarbonationUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "vols" => Ok(Self::Vols),
+            "g/l" => Ok(Self::GL),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for CarbonationUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for CarbonationUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for CarbonationUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///ColorRangeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "maximum",
+///    "minimum"
+///  ],
+///  "properties": {
+///    "maximum": {
+///      "$ref": "#/definitions/ColorType"
+///    },
+///    "minimum": {
+///      "$ref": "#/definitions/ColorType"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct ColorRangeType {
+    pub maximum: ColorType,
+    pub minimum: ColorType,
+}
+impl From<&ColorRangeType> for ColorRangeType {
+    fn from(value: &ColorRangeType) -> Self {
+        value.clone()
+    }
+}
+///ColorType supports both grain color properties, such as Lovibond, and wort color properties such as SRM and EBC.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "ColorType supports both grain color properties, such as Lovibond, and wort color properties such as SRM and EBC.",
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/ColorUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct ColorType {
+    pub unit: ColorUnitType,
+    pub value: f64,
+}
+impl From<&ColorType> for ColorType {
+    fn from(value: &ColorType) -> Self {
+        value.clone()
+    }
+}
+///ColorUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "EBC",
+///    "Lovi",
+///    "SRM"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum ColorUnitType {
+    #[serde(rename = "EBC")]
+    Ebc,
+    Lovi,
+    #[serde(rename = "SRM")]
+    Srm,
+}
+impl From<&ColorUnitType> for ColorUnitType {
+    fn from(value: &ColorUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for ColorUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Ebc => write!(f, "EBC"),
+            Self::Lovi => write!(f, "Lovi"),
+            Self::Srm => write!(f, "SRM"),
+        }
+    }
+}
+impl std::str::FromStr for ColorUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "EBC" => Ok(Self::Ebc),
+            "Lovi" => Ok(Self::Lovi),
+            "SRM" => Ok(Self::Srm),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for ColorUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for ColorUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for ColorUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///Examples for concentration include ppm, ppb, and mg/l.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Examples for concentration include ppm, ppb, and mg/l. ",
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/ConcentrationUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct ConcentrationType {
+    pub unit: ConcentrationUnitType,
+    pub value: f64,
+}
+impl From<&ConcentrationType> for ConcentrationType {
+    fn from(value: &ConcentrationType) -> Self {
+        value.clone()
+    }
+}
+///ConcentrationUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "ppm",
+///    "ppb",
+///    "mg/l"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum ConcentrationUnitType {
+    #[serde(rename = "ppm")]
+    Ppm,
+    #[serde(rename = "ppb")]
+    Ppb,
+    #[serde(rename = "mg/l")]
+    MgL,
+}
+impl From<&ConcentrationUnitType> for ConcentrationUnitType {
+    fn from(value: &ConcentrationUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for ConcentrationUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Ppm => write!(f, "ppm"),
+            Self::Ppb => write!(f, "ppb"),
+            Self::MgL => write!(f, "mg/l"),
+        }
+    }
+}
+impl std::str::FromStr for ConcentrationUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "ppm" => Ok(Self::Ppm),
+            "ppb" => Ok(Self::Ppb),
+            "mg/l" => Ok(Self::MgL),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for ConcentrationUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for ConcentrationUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for ConcentrationUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///CultureAdditionType collects the attributes of each culture ingredient for use in a recipe.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "CultureAdditionType collects the attributes of each culture ingredient for use in a recipe.",
+///  "type": "object",
+///  "allOf": [
+///    {
+///      "$ref": "#/definitions/CultureBase"
+///    },
+///    {
+///      "properties": {
+///        "amount": {
+///          "oneOf": [
+///            {
+///              "$ref": "#/definitions/VolumeType"
+///            },
+///            {
+///              "$ref": "#/definitions/MassType"
+///            },
+///            {
+///              "$ref": "#/definitions/UnitType"
+///            }
+///          ]
+///        },
+///        "attenuation": {
+///          "$ref": "#/definitions/PercentType"
+///        },
+///        "cell_count_billions": {
+///          "type": "integer"
+///        },
+///        "times_cultured": {
+///          "type": "integer"
+///        },
+///        "timing": {
+///          "$ref": "#/definitions/TimingType"
+///        }
+///      }
+///    },
+///    {
+///      "required": [
+///        "amount"
+///      ]
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct CultureAdditionType {
+    pub amount: CultureAdditionTypeAmount,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attenuation: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cell_count_billions: Option<i64>,
+    pub form: CultureAdditionTypeForm,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub times_cultured: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub timing: Option<TimingType>,
+    #[serde(rename = "type")]
+    pub type_: CultureAdditionTypeType,
+}
+impl From<&CultureAdditionType> for CultureAdditionType {
+    fn from(value: &CultureAdditionType) -> Self {
+        value.clone()
+    }
+}
+///CultureAdditionTypeAmount
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "oneOf": [
+///    {
+///      "$ref": "#/definitions/VolumeType"
+///    },
+///    {
+///      "$ref": "#/definitions/MassType"
+///    },
+///    {
+///      "$ref": "#/definitions/UnitType"
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(untagged)]
+pub enum CultureAdditionTypeAmount {
+    VolumeType(VolumeType),
+    MassType(MassType),
+    UnitType(UnitType),
+}
+impl From<&CultureAdditionTypeAmount> for CultureAdditionTypeAmount {
+    fn from(value: &CultureAdditionTypeAmount) -> Self {
+        value.clone()
+    }
+}
+impl From<VolumeType> for CultureAdditionTypeAmount {
+    fn from(value: VolumeType) -> Self {
+        Self::VolumeType(value)
+    }
+}
+impl From<MassType> for CultureAdditionTypeAmount {
+    fn from(value: MassType) -> Self {
+        Self::MassType(value)
+    }
+}
+impl From<UnitType> for CultureAdditionTypeAmount {
+    fn from(value: UnitType) -> Self {
+        Self::UnitType(value)
+    }
+}
+///CultureAdditionTypeForm
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "liquid",
+///    "dry",
+///    "slant",
+///    "culture",
+///    "dregs"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum CultureAdditionTypeForm {
+    #[serde(rename = "liquid")]
+    Liquid,
+    #[serde(rename = "dry")]
+    Dry,
+    #[serde(rename = "slant")]
+    Slant,
+    #[serde(rename = "culture")]
+    Culture,
+    #[serde(rename = "dregs")]
+    Dregs,
+}
+impl From<&CultureAdditionTypeForm> for CultureAdditionTypeForm {
+    fn from(value: &CultureAdditionTypeForm) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for CultureAdditionTypeForm {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Liquid => write!(f, "liquid"),
+            Self::Dry => write!(f, "dry"),
+            Self::Slant => write!(f, "slant"),
+            Self::Culture => write!(f, "culture"),
+            Self::Dregs => write!(f, "dregs"),
+        }
+    }
+}
+impl std::str::FromStr for CultureAdditionTypeForm {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "liquid" => Ok(Self::Liquid),
+            "dry" => Ok(Self::Dry),
+            "slant" => Ok(Self::Slant),
+            "culture" => Ok(Self::Culture),
+            "dregs" => Ok(Self::Dregs),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for CultureAdditionTypeForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for CultureAdditionTypeForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for CultureAdditionTypeForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///CultureAdditionTypeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "ale",
+///    "bacteria",
+///    "brett",
+///    "champagne",
+///    "kveik",
+///    "lacto",
+///    "lager",
+///    "malolactic",
+///    "mixed-culture",
+///    "other",
+///    "pedio",
+///    "spontaneous",
+///    "wine"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum CultureAdditionTypeType {
+    #[serde(rename = "ale")]
+    Ale,
+    #[serde(rename = "bacteria")]
+    Bacteria,
+    #[serde(rename = "brett")]
+    Brett,
+    #[serde(rename = "champagne")]
+    Champagne,
+    #[serde(rename = "kveik")]
+    Kveik,
+    #[serde(rename = "lacto")]
+    Lacto,
+    #[serde(rename = "lager")]
+    Lager,
+    #[serde(rename = "malolactic")]
+    Malolactic,
+    #[serde(rename = "mixed-culture")]
+    MixedCulture,
+    #[serde(rename = "other")]
+    Other,
+    #[serde(rename = "pedio")]
+    Pedio,
+    #[serde(rename = "spontaneous")]
+    Spontaneous,
+    #[serde(rename = "wine")]
+    Wine,
+}
+impl From<&CultureAdditionTypeType> for CultureAdditionTypeType {
+    fn from(value: &CultureAdditionTypeType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for CultureAdditionTypeType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Ale => write!(f, "ale"),
+            Self::Bacteria => write!(f, "bacteria"),
+            Self::Brett => write!(f, "brett"),
+            Self::Champagne => write!(f, "champagne"),
+            Self::Kveik => write!(f, "kveik"),
+            Self::Lacto => write!(f, "lacto"),
+            Self::Lager => write!(f, "lager"),
+            Self::Malolactic => write!(f, "malolactic"),
+            Self::MixedCulture => write!(f, "mixed-culture"),
+            Self::Other => write!(f, "other"),
+            Self::Pedio => write!(f, "pedio"),
+            Self::Spontaneous => write!(f, "spontaneous"),
+            Self::Wine => write!(f, "wine"),
+        }
+    }
+}
+impl std::str::FromStr for CultureAdditionTypeType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "ale" => Ok(Self::Ale),
+            "bacteria" => Ok(Self::Bacteria),
+            "brett" => Ok(Self::Brett),
+            "champagne" => Ok(Self::Champagne),
+            "kveik" => Ok(Self::Kveik),
+            "lacto" => Ok(Self::Lacto),
+            "lager" => Ok(Self::Lager),
+            "malolactic" => Ok(Self::Malolactic),
+            "mixed-culture" => Ok(Self::MixedCulture),
+            "other" => Ok(Self::Other),
+            "pedio" => Ok(Self::Pedio),
+            "spontaneous" => Ok(Self::Spontaneous),
+            "wine" => Ok(Self::Wine),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for CultureAdditionTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for CultureAdditionTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for CultureAdditionTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///Provides unique properties to identify individual records of a culture.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Provides unique properties to identify individual records of a culture.",
+///  "type": "object",
+///  "required": [
+///    "form",
+///    "name",
+///    "type"
+///  ],
+///  "properties": {
+///    "form": {
+///      "type": "string",
+///      "enum": [
+///        "liquid",
+///        "dry",
+///        "slant",
+///        "culture",
+///        "dregs"
+///      ]
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "producer": {
+///      "type": "string"
+///    },
+///    "product_id": {
+///      "type": "string"
+///    },
+///    "type": {
+///      "type": "string",
+///      "enum": [
+///        "ale",
+///        "bacteria",
+///        "brett",
+///        "champagne",
+///        "kveik",
+///        "lacto",
+///        "lager",
+///        "malolactic",
+///        "mixed-culture",
+///        "other",
+///        "pedio",
+///        "spontaneous",
+///        "wine"
+///      ]
+///    }
+///  }
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct CultureBase {
+    pub form: CultureBaseForm,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    #[serde(rename = "type")]
+    pub type_: CultureBaseType,
+}
+impl From<&CultureBase> for CultureBase {
+    fn from(value: &CultureBase) -> Self {
+        value.clone()
+    }
+}
+///CultureBaseForm
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "liquid",
+///    "dry",
+///    "slant",
+///    "culture",
+///    "dregs"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum CultureBaseForm {
+    #[serde(rename = "liquid")]
+    Liquid,
+    #[serde(rename = "dry")]
+    Dry,
+    #[serde(rename = "slant")]
+    Slant,
+    #[serde(rename = "culture")]
+    Culture,
+    #[serde(rename = "dregs")]
+    Dregs,
+}
+impl From<&CultureBaseForm> for CultureBaseForm {
+    fn from(value: &CultureBaseForm) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for CultureBaseForm {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Liquid => write!(f, "liquid"),
+            Self::Dry => write!(f, "dry"),
+            Self::Slant => write!(f, "slant"),
+            Self::Culture => write!(f, "culture"),
+            Self::Dregs => write!(f, "dregs"),
+        }
+    }
+}
+impl std::str::FromStr for CultureBaseForm {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "liquid" => Ok(Self::Liquid),
+            "dry" => Ok(Self::Dry),
+            "slant" => Ok(Self::Slant),
+            "culture" => Ok(Self::Culture),
+            "dregs" => Ok(Self::Dregs),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for CultureBaseForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for CultureBaseForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for CultureBaseForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///CultureBaseType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "ale",
+///    "bacteria",
+///    "brett",
+///    "champagne",
+///    "kveik",
+///    "lacto",
+///    "lager",
+///    "malolactic",
+///    "mixed-culture",
+///    "other",
+///    "pedio",
+///    "spontaneous",
+///    "wine"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum CultureBaseType {
+    #[serde(rename = "ale")]
+    Ale,
+    #[serde(rename = "bacteria")]
+    Bacteria,
+    #[serde(rename = "brett")]
+    Brett,
+    #[serde(rename = "champagne")]
+    Champagne,
+    #[serde(rename = "kveik")]
+    Kveik,
+    #[serde(rename = "lacto")]
+    Lacto,
+    #[serde(rename = "lager")]
+    Lager,
+    #[serde(rename = "malolactic")]
+    Malolactic,
+    #[serde(rename = "mixed-culture")]
+    MixedCulture,
+    #[serde(rename = "other")]
+    Other,
+    #[serde(rename = "pedio")]
+    Pedio,
+    #[serde(rename = "spontaneous")]
+    Spontaneous,
+    #[serde(rename = "wine")]
+    Wine,
+}
+impl From<&CultureBaseType> for CultureBaseType {
+    fn from(value: &CultureBaseType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for CultureBaseType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Ale => write!(f, "ale"),
+            Self::Bacteria => write!(f, "bacteria"),
+            Self::Brett => write!(f, "brett"),
+            Self::Champagne => write!(f, "champagne"),
+            Self::Kveik => write!(f, "kveik"),
+            Self::Lacto => write!(f, "lacto"),
+            Self::Lager => write!(f, "lager"),
+            Self::Malolactic => write!(f, "malolactic"),
+            Self::MixedCulture => write!(f, "mixed-culture"),
+            Self::Other => write!(f, "other"),
+            Self::Pedio => write!(f, "pedio"),
+            Self::Spontaneous => write!(f, "spontaneous"),
+            Self::Wine => write!(f, "wine"),
+        }
+    }
+}
+impl std::str::FromStr for CultureBaseType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "ale" => Ok(Self::Ale),
+            "bacteria" => Ok(Self::Bacteria),
+            "brett" => Ok(Self::Brett),
+            "champagne" => Ok(Self::Champagne),
+            "kveik" => Ok(Self::Kveik),
+            "lacto" => Ok(Self::Lacto),
+            "lager" => Ok(Self::Lager),
+            "malolactic" => Ok(Self::Malolactic),
+            "mixed-culture" => Ok(Self::MixedCulture),
+            "other" => Ok(Self::Other),
+            "pedio" => Ok(Self::Pedio),
+            "spontaneous" => Ok(Self::Spontaneous),
+            "wine" => Ok(Self::Wine),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for CultureBaseType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for CultureBaseType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for CultureBaseType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///CultureInformation collects the attributes of a microbial culture.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "CultureInformation collects the attributes of a microbial culture.",
+///  "type": "object",
+///  "allOf": [
+///    {
+///      "$ref": "#/definitions/CultureBase"
+///    },
+///    {
+///      "properties": {
+///        "alcohol_tolerance": {
+///          "$ref": "#/definitions/PercentType"
+///        },
+///        "attenuation_range": {
+///          "$ref": "#/definitions/PercentRangeType"
+///        },
+///        "best_for": {
+///          "description": "Recommended styles for a particular culture.",
+///          "type": "string"
+///        },
+///        "flocculation": {
+///          "$ref": "#/definitions/QualitativeRangeType"
+///        },
+///        "glucoamylase": {
+///          "description": "A glucoamylase positive culture is capable of producing glucoamylase, the enzyme produced through expression of the diastatic gene, which allows yeast to attenuate dextrins and starches leading to a very low FG. This is positive in some saison/brett yeasts as well as the new gulo hybrid by Omega yeast labs.",
+///          "type": "boolean"
+///        },
+///        "inventory": {
+///          "$ref": "#/definitions/CultureInventoryType"
+///        },
+///        "max_reuse": {
+///          "description": "Maximum number of times to reuse a culture before a new lab source is recommended.",
+///          "type": "integer"
+///        },
+///        "notes": {
+///          "type": "string"
+///        },
+///        "pof": {
+///          "description": "A POF+ culture is capable of producing phenols, which is a common distinctive property of saison, and brett yeasts.",
+///          "type": "boolean"
+///        },
+///        "temperature_range": {
+///          "$ref": "#/definitions/TemperatureRangeType"
+///        },
+///        "zymocide": {
+///          "$ref": "#/definitions/Zymocide"
+///        }
+///      }
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct CultureInformation {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub alcohol_tolerance: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attenuation_range: Option<PercentRangeType>,
+    ///Recommended styles for a particular culture.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub best_for: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub flocculation: Option<QualitativeRangeType>,
+    pub form: CultureInformationForm,
+    ///A glucoamylase positive culture is capable of producing glucoamylase, the enzyme produced through expression of the diastatic gene, which allows yeast to attenuate dextrins and starches leading to a very low FG. This is positive in some saison/brett yeasts as well as the new gulo hybrid by Omega yeast labs.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub glucoamylase: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inventory: Option<CultureInventoryType>,
+    ///Maximum number of times to reuse a culture before a new lab source is recommended.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_reuse: Option<i64>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+    ///A POF+ culture is capable of producing phenols, which is a common distinctive property of saison, and brett yeasts.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pof: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub temperature_range: Option<TemperatureRangeType>,
+    #[serde(rename = "type")]
+    pub type_: CultureInformationType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub zymocide: Option<Zymocide>,
+}
+impl From<&CultureInformation> for CultureInformation {
+    fn from(value: &CultureInformation) -> Self {
+        value.clone()
+    }
+}
+///CultureInformationForm
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "liquid",
+///    "dry",
+///    "slant",
+///    "culture",
+///    "dregs"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum CultureInformationForm {
+    #[serde(rename = "liquid")]
+    Liquid,
+    #[serde(rename = "dry")]
+    Dry,
+    #[serde(rename = "slant")]
+    Slant,
+    #[serde(rename = "culture")]
+    Culture,
+    #[serde(rename = "dregs")]
+    Dregs,
+}
+impl From<&CultureInformationForm> for CultureInformationForm {
+    fn from(value: &CultureInformationForm) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for CultureInformationForm {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Liquid => write!(f, "liquid"),
+            Self::Dry => write!(f, "dry"),
+            Self::Slant => write!(f, "slant"),
+            Self::Culture => write!(f, "culture"),
+            Self::Dregs => write!(f, "dregs"),
+        }
+    }
+}
+impl std::str::FromStr for CultureInformationForm {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "liquid" => Ok(Self::Liquid),
+            "dry" => Ok(Self::Dry),
+            "slant" => Ok(Self::Slant),
+            "culture" => Ok(Self::Culture),
+            "dregs" => Ok(Self::Dregs),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for CultureInformationForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for CultureInformationForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for CultureInformationForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///CultureInformationType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "ale",
+///    "bacteria",
+///    "brett",
+///    "champagne",
+///    "kveik",
+///    "lacto",
+///    "lager",
+///    "malolactic",
+///    "mixed-culture",
+///    "other",
+///    "pedio",
+///    "spontaneous",
+///    "wine"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum CultureInformationType {
+    #[serde(rename = "ale")]
+    Ale,
+    #[serde(rename = "bacteria")]
+    Bacteria,
+    #[serde(rename = "brett")]
+    Brett,
+    #[serde(rename = "champagne")]
+    Champagne,
+    #[serde(rename = "kveik")]
+    Kveik,
+    #[serde(rename = "lacto")]
+    Lacto,
+    #[serde(rename = "lager")]
+    Lager,
+    #[serde(rename = "malolactic")]
+    Malolactic,
+    #[serde(rename = "mixed-culture")]
+    MixedCulture,
+    #[serde(rename = "other")]
+    Other,
+    #[serde(rename = "pedio")]
+    Pedio,
+    #[serde(rename = "spontaneous")]
+    Spontaneous,
+    #[serde(rename = "wine")]
+    Wine,
+}
+impl From<&CultureInformationType> for CultureInformationType {
+    fn from(value: &CultureInformationType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for CultureInformationType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Ale => write!(f, "ale"),
+            Self::Bacteria => write!(f, "bacteria"),
+            Self::Brett => write!(f, "brett"),
+            Self::Champagne => write!(f, "champagne"),
+            Self::Kveik => write!(f, "kveik"),
+            Self::Lacto => write!(f, "lacto"),
+            Self::Lager => write!(f, "lager"),
+            Self::Malolactic => write!(f, "malolactic"),
+            Self::MixedCulture => write!(f, "mixed-culture"),
+            Self::Other => write!(f, "other"),
+            Self::Pedio => write!(f, "pedio"),
+            Self::Spontaneous => write!(f, "spontaneous"),
+            Self::Wine => write!(f, "wine"),
+        }
+    }
+}
+impl std::str::FromStr for CultureInformationType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "ale" => Ok(Self::Ale),
+            "bacteria" => Ok(Self::Bacteria),
+            "brett" => Ok(Self::Brett),
+            "champagne" => Ok(Self::Champagne),
+            "kveik" => Ok(Self::Kveik),
+            "lacto" => Ok(Self::Lacto),
+            "lager" => Ok(Self::Lager),
+            "malolactic" => Ok(Self::Malolactic),
+            "mixed-culture" => Ok(Self::MixedCulture),
+            "other" => Ok(Self::Other),
+            "pedio" => Ok(Self::Pedio),
+            "spontaneous" => Ok(Self::Spontaneous),
+            "wine" => Ok(Self::Wine),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for CultureInformationType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for CultureInformationType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for CultureInformationType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///CultureInventoryType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "properties": {
+///    "culture": {
+///      "$ref": "#/definitions/VolumeType"
+///    },
+///    "dry": {
+///      "$ref": "#/definitions/MassType"
+///    },
+///    "liquid": {
+///      "$ref": "#/definitions/VolumeType"
+///    },
+///    "slant": {
+///      "$ref": "#/definitions/VolumeType"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct CultureInventoryType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub culture: Option<VolumeType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dry: Option<MassType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub liquid: Option<VolumeType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub slant: Option<VolumeType>,
+}
+impl From<&CultureInventoryType> for CultureInventoryType {
+    fn from(value: &CultureInventoryType) -> Self {
+        value.clone()
+    }
+}
+///DateType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "pattern": "\\d{4}-\\d{2}-\\d{2}|\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct DateType(String);
+impl ::std::ops::Deref for DateType {
+    type Target = String;
+    fn deref(&self) -> &String {
+        &self.0
+    }
+}
+impl From<DateType> for String {
+    fn from(value: DateType) -> Self {
+        value.0
+    }
+}
+impl From<&DateType> for DateType {
+    fn from(value: &DateType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::str::FromStr for DateType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        if regress::Regex::new(
+                "\\d{4}-\\d{2}-\\d{2}|\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}",
+            )
+            .unwrap()
+            .find(value)
+            .is_none()
+        {
+            return Err(
+                "doesn't match pattern \"\\d{4}-\\d{2}-\\d{2}|\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\""
+                    .into(),
+            );
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for DateType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&String> for DateType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<String> for DateType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for DateType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///DensityUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "sg",
+///    "plato",
+///    "brix"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum DensityUnitType {
+    #[serde(rename = "sg")]
+    Sg,
+    #[serde(rename = "plato")]
+    Plato,
+    #[serde(rename = "brix")]
+    Brix,
+}
+impl From<&DensityUnitType> for DensityUnitType {
+    fn from(value: &DensityUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for DensityUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Sg => write!(f, "sg"),
+            Self::Plato => write!(f, "plato"),
+            Self::Brix => write!(f, "brix"),
+        }
+    }
+}
+impl std::str::FromStr for DensityUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "sg" => Ok(Self::Sg),
+            "plato" => Ok(Self::Plato),
+            "brix" => Ok(Self::Brix),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for DensityUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for DensityUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for DensityUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///Diastatic power is a measurement of malted grains enzymatic content. A value of 35 Lintner is needed to self convert, while a value of 100 or more is desirable for base malts.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Diastatic power is a measurement of malted grains enzymatic content. A value of 35 Lintner is needed to self convert, while a value of 100 or more is desirable for base malts.",
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/DiastaticPowerUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct DiastaticPowerType {
+    pub unit: DiastaticPowerUnitType,
+    pub value: f64,
+}
+impl From<&DiastaticPowerType> for DiastaticPowerType {
+    fn from(value: &DiastaticPowerType) -> Self {
+        value.clone()
+    }
+}
+///DiastaticPowerUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "Lintner",
+///    "WK"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum DiastaticPowerUnitType {
+    Lintner,
+    #[serde(rename = "WK")]
+    Wk,
+}
+impl From<&DiastaticPowerUnitType> for DiastaticPowerUnitType {
+    fn from(value: &DiastaticPowerUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for DiastaticPowerUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Lintner => write!(f, "Lintner"),
+            Self::Wk => write!(f, "WK"),
+        }
+    }
+}
+impl std::str::FromStr for DiastaticPowerUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "Lintner" => Ok(Self::Lintner),
+            "WK" => Ok(Self::Wk),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for DiastaticPowerUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for DiastaticPowerUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for DiastaticPowerUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///The efficiencyType stores each efficiency component.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The efficiencyType stores each efficiency component.",
+///  "type": "object",
+///  "required": [
+///    "brewhouse"
+///  ],
+///  "properties": {
+///    "brewhouse": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "conversion": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "lauter": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "mash": {
+///      "$ref": "#/definitions/PercentType"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct EfficiencyType {
+    pub brewhouse: PercentType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub conversion: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub lauter: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mash: Option<PercentType>,
+}
+impl From<&EfficiencyType> for EfficiencyType {
+    fn from(value: &EfficiencyType) -> Self {
+        value.clone()
+    }
+}
+///The descriptive base type for brew day equipment. Provides unique properties to fully describe the recipe.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The descriptive base type for brew day equipment. Provides unique properties to fully describe the recipe.",
+///  "type": "object",
+///  "required": [
+///    "form",
+///    "maximum_volume",
+///    "name"
+///  ],
+///  "properties": {
+///    "form": {
+///      "type": "string",
+///      "enum": [
+///        "HLT",
+///        "Mash Tun",
+///        "Lauter Tun",
+///        "Brew Kettle",
+///        "Fermenter",
+///        "Aging Vessel",
+///        "Packaging Vessel"
+///      ]
+///    },
+///    "maximum_volume": {
+///      "$ref": "#/definitions/VolumeType"
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "type": {
+///      "type": "string"
+///    }
+///  }
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct EquipmentBase {
+    pub form: EquipmentBaseForm,
+    pub maximum_volume: VolumeType,
+    pub name: String,
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
+    pub type_: Option<String>,
+}
+impl From<&EquipmentBase> for EquipmentBase {
+    fn from(value: &EquipmentBase) -> Self {
+        value.clone()
+    }
+}
+///EquipmentBaseForm
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "HLT",
+///    "Mash Tun",
+///    "Lauter Tun",
+///    "Brew Kettle",
+///    "Fermenter",
+///    "Aging Vessel",
+///    "Packaging Vessel"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum EquipmentBaseForm {
+    #[serde(rename = "HLT")]
+    Hlt,
+    #[serde(rename = "Mash Tun")]
+    MashTun,
+    #[serde(rename = "Lauter Tun")]
+    LauterTun,
+    #[serde(rename = "Brew Kettle")]
+    BrewKettle,
+    Fermenter,
+    #[serde(rename = "Aging Vessel")]
+    AgingVessel,
+    #[serde(rename = "Packaging Vessel")]
+    PackagingVessel,
+}
+impl From<&EquipmentBaseForm> for EquipmentBaseForm {
+    fn from(value: &EquipmentBaseForm) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for EquipmentBaseForm {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Hlt => write!(f, "HLT"),
+            Self::MashTun => write!(f, "Mash Tun"),
+            Self::LauterTun => write!(f, "Lauter Tun"),
+            Self::BrewKettle => write!(f, "Brew Kettle"),
+            Self::Fermenter => write!(f, "Fermenter"),
+            Self::AgingVessel => write!(f, "Aging Vessel"),
+            Self::PackagingVessel => write!(f, "Packaging Vessel"),
+        }
+    }
+}
+impl std::str::FromStr for EquipmentBaseForm {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "HLT" => Ok(Self::Hlt),
+            "Mash Tun" => Ok(Self::MashTun),
+            "Lauter Tun" => Ok(Self::LauterTun),
+            "Brew Kettle" => Ok(Self::BrewKettle),
+            "Fermenter" => Ok(Self::Fermenter),
+            "Aging Vessel" => Ok(Self::AgingVessel),
+            "Packaging Vessel" => Ok(Self::PackagingVessel),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for EquipmentBaseForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for EquipmentBaseForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for EquipmentBaseForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///EquipmentType provides necessary information for individual brewing equipment.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "EquipmentType provides necessary information for individual brewing equipment.",
+///  "type": "object",
+///  "allOf": [
+///    {
+///      "$ref": "#/definitions/EquipmentBase"
+///    },
+///    {
+///      "properties": {
+///        "boil_rate_per_hour": {
+///          "$ref": "#/definitions/VolumeType"
+///        },
+///        "drain_rate_per_minute": {
+///          "$ref": "#/definitions/VolumeType"
+///        },
+///        "grain_absorption_rate": {
+///          "$ref": "#/definitions/SpecificVolumeType"
+///        },
+///        "loss": {
+///          "$ref": "#/definitions/VolumeType"
+///        },
+///        "notes": {
+///          "type": "string"
+///        },
+///        "specific_heat": {
+///          "$ref": "#/definitions/SpecificHeatType"
+///        },
+///        "weight": {
+///          "$ref": "#/definitions/MassType"
+///        }
+///      }
+///    }
+///  ],
+///  "required": [
+///    "loss"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct EquipmentItemType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub boil_rate_per_hour: Option<VolumeType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub drain_rate_per_minute: Option<VolumeType>,
+    pub form: EquipmentItemTypeForm,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grain_absorption_rate: Option<SpecificVolumeType>,
+    pub loss: VolumeType,
+    pub maximum_volume: VolumeType,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub specific_heat: Option<SpecificHeatType>,
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
+    pub type_: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub weight: Option<MassType>,
+}
+impl From<&EquipmentItemType> for EquipmentItemType {
+    fn from(value: &EquipmentItemType) -> Self {
+        value.clone()
+    }
+}
+///EquipmentItemTypeForm
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "HLT",
+///    "Mash Tun",
+///    "Lauter Tun",
+///    "Brew Kettle",
+///    "Fermenter",
+///    "Aging Vessel",
+///    "Packaging Vessel"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum EquipmentItemTypeForm {
+    #[serde(rename = "HLT")]
+    Hlt,
+    #[serde(rename = "Mash Tun")]
+    MashTun,
+    #[serde(rename = "Lauter Tun")]
+    LauterTun,
+    #[serde(rename = "Brew Kettle")]
+    BrewKettle,
+    Fermenter,
+    #[serde(rename = "Aging Vessel")]
+    AgingVessel,
+    #[serde(rename = "Packaging Vessel")]
+    PackagingVessel,
+}
+impl From<&EquipmentItemTypeForm> for EquipmentItemTypeForm {
+    fn from(value: &EquipmentItemTypeForm) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for EquipmentItemTypeForm {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Hlt => write!(f, "HLT"),
+            Self::MashTun => write!(f, "Mash Tun"),
+            Self::LauterTun => write!(f, "Lauter Tun"),
+            Self::BrewKettle => write!(f, "Brew Kettle"),
+            Self::Fermenter => write!(f, "Fermenter"),
+            Self::AgingVessel => write!(f, "Aging Vessel"),
+            Self::PackagingVessel => write!(f, "Packaging Vessel"),
+        }
+    }
+}
+impl std::str::FromStr for EquipmentItemTypeForm {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "HLT" => Ok(Self::Hlt),
+            "Mash Tun" => Ok(Self::MashTun),
+            "Lauter Tun" => Ok(Self::LauterTun),
+            "Brew Kettle" => Ok(Self::BrewKettle),
+            "Fermenter" => Ok(Self::Fermenter),
+            "Aging Vessel" => Ok(Self::AgingVessel),
+            "Packaging Vessel" => Ok(Self::PackagingVessel),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for EquipmentItemTypeForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for EquipmentItemTypeForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for EquipmentItemTypeForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///Provides necessary information for brewing equipment set.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Provides necessary information for brewing equipment set.",
+///  "type": "object",
+///  "required": [
+///    "equipment_items",
+///    "name"
+///  ],
+///  "properties": {
+///    "equipment_items": {
+///      "description": "",
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/EquipmentItemType"
+///      }
+///    },
+///    "name": {
+///      "type": "string"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct EquipmentType {
+    ///
+    pub equipment_items: Vec<EquipmentItemType>,
+    pub name: String,
+}
+impl From<&EquipmentType> for EquipmentType {
+    fn from(value: &EquipmentType) -> Self {
+        value.clone()
+    }
+}
+///FermentableAdditionType collects the attributes of each fermentable ingredient for use in a recipe fermentable bill.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "FermentableAdditionType collects the attributes of each fermentable ingredient for use in a recipe fermentable bill.",
+///  "type": "object",
+///  "allOf": [
+///    {
+///      "$ref": "#/definitions/FermentableBase"
+///    },
+///    {
+///      "properties": {
+///        "amount": {
+///          "oneOf": [
+///            {
+///              "$ref": "#/definitions/VolumeType"
+///            },
+///            {
+///              "$ref": "#/definitions/MassType"
+///            }
+///          ]
+///        },
+///        "timing": {
+///          "$ref": "#/definitions/TimingType"
+///        }
+///      }
+///    }
+///  ],
+///  "required": [
+///    "amount"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct FermentableAdditionType {
+    pub amount: FermentableAdditionTypeAmount,
+    pub color: ColorType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grain_group: Option<FermentableAdditionTypeGrainGroup>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub origin: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub timing: Option<TimingType>,
+    #[serde(rename = "type")]
+    pub type_: FermentableAdditionTypeType,
+    #[serde(rename = "yield")]
+    pub yield_: YieldType,
+}
+impl From<&FermentableAdditionType> for FermentableAdditionType {
+    fn from(value: &FermentableAdditionType) -> Self {
+        value.clone()
+    }
+}
+///FermentableAdditionTypeAmount
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "oneOf": [
+///    {
+///      "$ref": "#/definitions/VolumeType"
+///    },
+///    {
+///      "$ref": "#/definitions/MassType"
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(untagged)]
+pub enum FermentableAdditionTypeAmount {
+    VolumeType(VolumeType),
+    MassType(MassType),
+}
+impl From<&FermentableAdditionTypeAmount> for FermentableAdditionTypeAmount {
+    fn from(value: &FermentableAdditionTypeAmount) -> Self {
+        value.clone()
+    }
+}
+impl From<VolumeType> for FermentableAdditionTypeAmount {
+    fn from(value: VolumeType) -> Self {
+        Self::VolumeType(value)
+    }
+}
+impl From<MassType> for FermentableAdditionTypeAmount {
+    fn from(value: MassType) -> Self {
+        Self::MassType(value)
+    }
+}
+///FermentableAdditionTypeGrainGroup
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "base",
+///    "caramel",
+///    "flaked",
+///    "roasted",
+///    "specialty",
+///    "smoked",
+///    "adjunct"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum FermentableAdditionTypeGrainGroup {
+    #[serde(rename = "base")]
+    Base,
+    #[serde(rename = "caramel")]
+    Caramel,
+    #[serde(rename = "flaked")]
+    Flaked,
+    #[serde(rename = "roasted")]
+    Roasted,
+    #[serde(rename = "specialty")]
+    Specialty,
+    #[serde(rename = "smoked")]
+    Smoked,
+    #[serde(rename = "adjunct")]
+    Adjunct,
+}
+impl From<&FermentableAdditionTypeGrainGroup> for FermentableAdditionTypeGrainGroup {
+    fn from(value: &FermentableAdditionTypeGrainGroup) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for FermentableAdditionTypeGrainGroup {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Base => write!(f, "base"),
+            Self::Caramel => write!(f, "caramel"),
+            Self::Flaked => write!(f, "flaked"),
+            Self::Roasted => write!(f, "roasted"),
+            Self::Specialty => write!(f, "specialty"),
+            Self::Smoked => write!(f, "smoked"),
+            Self::Adjunct => write!(f, "adjunct"),
+        }
+    }
+}
+impl std::str::FromStr for FermentableAdditionTypeGrainGroup {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "base" => Ok(Self::Base),
+            "caramel" => Ok(Self::Caramel),
+            "flaked" => Ok(Self::Flaked),
+            "roasted" => Ok(Self::Roasted),
+            "specialty" => Ok(Self::Specialty),
+            "smoked" => Ok(Self::Smoked),
+            "adjunct" => Ok(Self::Adjunct),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for FermentableAdditionTypeGrainGroup {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for FermentableAdditionTypeGrainGroup {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for FermentableAdditionTypeGrainGroup {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///FermentableAdditionTypeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "dry extract",
+///    "extract",
+///    "grain",
+///    "sugar",
+///    "fruit",
+///    "juice",
+///    "honey",
+///    "other"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum FermentableAdditionTypeType {
+    #[serde(rename = "dry extract")]
+    DryExtract,
+    #[serde(rename = "extract")]
+    Extract,
+    #[serde(rename = "grain")]
+    Grain,
+    #[serde(rename = "sugar")]
+    Sugar,
+    #[serde(rename = "fruit")]
+    Fruit,
+    #[serde(rename = "juice")]
+    Juice,
+    #[serde(rename = "honey")]
+    Honey,
+    #[serde(rename = "other")]
+    Other,
+}
+impl From<&FermentableAdditionTypeType> for FermentableAdditionTypeType {
+    fn from(value: &FermentableAdditionTypeType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for FermentableAdditionTypeType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::DryExtract => write!(f, "dry extract"),
+            Self::Extract => write!(f, "extract"),
+            Self::Grain => write!(f, "grain"),
+            Self::Sugar => write!(f, "sugar"),
+            Self::Fruit => write!(f, "fruit"),
+            Self::Juice => write!(f, "juice"),
+            Self::Honey => write!(f, "honey"),
+            Self::Other => write!(f, "other"),
+        }
+    }
+}
+impl std::str::FromStr for FermentableAdditionTypeType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "dry extract" => Ok(Self::DryExtract),
+            "extract" => Ok(Self::Extract),
+            "grain" => Ok(Self::Grain),
+            "sugar" => Ok(Self::Sugar),
+            "fruit" => Ok(Self::Fruit),
+            "juice" => Ok(Self::Juice),
+            "honey" => Ok(Self::Honey),
+            "other" => Ok(Self::Other),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for FermentableAdditionTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for FermentableAdditionTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for FermentableAdditionTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///FermentableBase provides unique properties to identify individual records of fermentable ingredients.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "FermentableBase provides unique properties to identify individual records of fermentable ingredients.",
+///  "type": "object",
+///  "required": [
+///    "color",
+///    "name",
+///    "type",
+///    "yield"
+///  ],
+///  "properties": {
+///    "color": {
+///      "$ref": "#/definitions/ColorType"
+///    },
+///    "grain_group": {
+///      "type": "string",
+///      "enum": [
+///        "base",
+///        "caramel",
+///        "flaked",
+///        "roasted",
+///        "specialty",
+///        "smoked",
+///        "adjunct"
+///      ]
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "origin": {
+///      "type": "string"
+///    },
+///    "producer": {
+///      "type": "string"
+///    },
+///    "product_id": {
+///      "type": "string"
+///    },
+///    "type": {
+///      "type": "string",
+///      "enum": [
+///        "dry extract",
+///        "extract",
+///        "grain",
+///        "sugar",
+///        "fruit",
+///        "juice",
+///        "honey",
+///        "other"
+///      ]
+///    },
+///    "yield": {
+///      "$ref": "#/definitions/YieldType"
+///    }
+///  }
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct FermentableBase {
+    pub color: ColorType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grain_group: Option<FermentableBaseGrainGroup>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub origin: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    #[serde(rename = "type")]
+    pub type_: FermentableBaseType,
+    #[serde(rename = "yield")]
+    pub yield_: YieldType,
+}
+impl From<&FermentableBase> for FermentableBase {
+    fn from(value: &FermentableBase) -> Self {
+        value.clone()
+    }
+}
+///FermentableBaseGrainGroup
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "base",
+///    "caramel",
+///    "flaked",
+///    "roasted",
+///    "specialty",
+///    "smoked",
+///    "adjunct"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum FermentableBaseGrainGroup {
+    #[serde(rename = "base")]
+    Base,
+    #[serde(rename = "caramel")]
+    Caramel,
+    #[serde(rename = "flaked")]
+    Flaked,
+    #[serde(rename = "roasted")]
+    Roasted,
+    #[serde(rename = "specialty")]
+    Specialty,
+    #[serde(rename = "smoked")]
+    Smoked,
+    #[serde(rename = "adjunct")]
+    Adjunct,
+}
+impl From<&FermentableBaseGrainGroup> for FermentableBaseGrainGroup {
+    fn from(value: &FermentableBaseGrainGroup) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for FermentableBaseGrainGroup {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Base => write!(f, "base"),
+            Self::Caramel => write!(f, "caramel"),
+            Self::Flaked => write!(f, "flaked"),
+            Self::Roasted => write!(f, "roasted"),
+            Self::Specialty => write!(f, "specialty"),
+            Self::Smoked => write!(f, "smoked"),
+            Self::Adjunct => write!(f, "adjunct"),
+        }
+    }
+}
+impl std::str::FromStr for FermentableBaseGrainGroup {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "base" => Ok(Self::Base),
+            "caramel" => Ok(Self::Caramel),
+            "flaked" => Ok(Self::Flaked),
+            "roasted" => Ok(Self::Roasted),
+            "specialty" => Ok(Self::Specialty),
+            "smoked" => Ok(Self::Smoked),
+            "adjunct" => Ok(Self::Adjunct),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for FermentableBaseGrainGroup {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for FermentableBaseGrainGroup {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for FermentableBaseGrainGroup {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///FermentableBaseType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "dry extract",
+///    "extract",
+///    "grain",
+///    "sugar",
+///    "fruit",
+///    "juice",
+///    "honey",
+///    "other"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum FermentableBaseType {
+    #[serde(rename = "dry extract")]
+    DryExtract,
+    #[serde(rename = "extract")]
+    Extract,
+    #[serde(rename = "grain")]
+    Grain,
+    #[serde(rename = "sugar")]
+    Sugar,
+    #[serde(rename = "fruit")]
+    Fruit,
+    #[serde(rename = "juice")]
+    Juice,
+    #[serde(rename = "honey")]
+    Honey,
+    #[serde(rename = "other")]
+    Other,
+}
+impl From<&FermentableBaseType> for FermentableBaseType {
+    fn from(value: &FermentableBaseType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for FermentableBaseType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::DryExtract => write!(f, "dry extract"),
+            Self::Extract => write!(f, "extract"),
+            Self::Grain => write!(f, "grain"),
+            Self::Sugar => write!(f, "sugar"),
+            Self::Fruit => write!(f, "fruit"),
+            Self::Juice => write!(f, "juice"),
+            Self::Honey => write!(f, "honey"),
+            Self::Other => write!(f, "other"),
+        }
+    }
+}
+impl std::str::FromStr for FermentableBaseType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "dry extract" => Ok(Self::DryExtract),
+            "extract" => Ok(Self::Extract),
+            "grain" => Ok(Self::Grain),
+            "sugar" => Ok(Self::Sugar),
+            "fruit" => Ok(Self::Fruit),
+            "juice" => Ok(Self::Juice),
+            "honey" => Ok(Self::Honey),
+            "other" => Ok(Self::Other),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for FermentableBaseType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for FermentableBaseType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for FermentableBaseType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///FermentableInventoryType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "properties": {
+///    "amount": {
+///      "oneOf": [
+///        {
+///          "$ref": "#/definitions/VolumeType"
+///        },
+///        {
+///          "$ref": "#/definitions/MassType"
+///        }
+///      ]
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct FermentableInventoryType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub amount: Option<FermentableInventoryTypeAmount>,
+}
+impl From<&FermentableInventoryType> for FermentableInventoryType {
+    fn from(value: &FermentableInventoryType) -> Self {
+        value.clone()
+    }
+}
+///FermentableInventoryTypeAmount
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "oneOf": [
+///    {
+///      "$ref": "#/definitions/VolumeType"
+///    },
+///    {
+///      "$ref": "#/definitions/MassType"
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(untagged)]
+pub enum FermentableInventoryTypeAmount {
+    VolumeType(VolumeType),
+    MassType(MassType),
+}
+impl From<&FermentableInventoryTypeAmount> for FermentableInventoryTypeAmount {
+    fn from(value: &FermentableInventoryTypeAmount) -> Self {
+        value.clone()
+    }
+}
+impl From<VolumeType> for FermentableInventoryTypeAmount {
+    fn from(value: VolumeType) -> Self {
+        Self::VolumeType(value)
+    }
+}
+impl From<MassType> for FermentableInventoryTypeAmount {
+    fn from(value: MassType) -> Self {
+        Self::MassType(value)
+    }
+}
+///FermentableType collects the attributes of a fermentable ingredient to store as record information.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "FermentableType collects the attributes of a fermentable ingredient to store as record information.",
+///  "type": "object",
+///  "allOf": [
+///    {
+///      "$ref": "#/definitions/FermentableBase"
+///    },
+///    {
+///      "properties": {
+///        "alpha_amylase": {
+///          "description": "Where diastatic power gives the total amount of all enzymes, alpha amylase, also known as dextrinizing units, refers to only the total amount of alpa amylase in the malted grain. A value of 25-50 is desirable for base malt.",
+///          "type": "number"
+///        },
+///        "beta_glucan": {
+///          "$ref": "#/definitions/ConcentrationType"
+///        },
+///        "di_ph": {
+///          "$ref": "#/definitions/AcidityType"
+///        },
+///        "diastatic_power": {
+///          "$ref": "#/definitions/DiastaticPowerType"
+///        },
+///        "dms_p": {
+///          "$ref": "#/definitions/ConcentrationType"
+///        },
+///        "fan": {
+///          "$ref": "#/definitions/ConcentrationType"
+///        },
+///        "fermentability": {
+///          "$ref": "#/definitions/PercentType"
+///        },
+///        "friability": {
+///          "$ref": "#/definitions/PercentType"
+///        },
+///        "glassy": {
+///          "$ref": "#/definitions/PercentType"
+///        },
+///        "half": {
+///          "$ref": "#/definitions/PercentType"
+///        },
+///        "inventory": {
+///          "$ref": "#/definitions/FermentableInventoryType"
+///        },
+///        "kolbach_index": {
+///          "$ref": "#/definitions/PercentType"
+///        },
+///        "max_in_batch": {
+///          "$ref": "#/definitions/PercentType"
+///        },
+///        "mealy": {
+///          "$ref": "#/definitions/PercentType"
+///        },
+///        "moisture": {
+///          "$ref": "#/definitions/PercentType"
+///        },
+///        "notes": {
+///          "type": "string"
+///        },
+///        "plump": {
+///          "$ref": "#/definitions/PercentType"
+///        },
+///        "protein": {
+///          "$ref": "#/definitions/PercentType"
+///        },
+///        "recommend_mash": {
+///          "description": "True if the fermentable must be mashed, false if it can be steeped. ",
+///          "type": "boolean"
+///        },
+///        "thru": {
+///          "$ref": "#/definitions/PercentType"
+///        },
+///        "viscosity": {
+///          "$ref": "#/definitions/ViscosityType"
+///        }
+///      }
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct FermentableType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub alpha_amylase: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub beta_glucan: Option<ConcentrationType>,
+    pub color: ColorType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub di_ph: Option<AcidityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub diastatic_power: Option<DiastaticPowerType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dms_p: Option<ConcentrationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fan: Option<ConcentrationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fermentability: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub friability: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub glassy: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grain_group: Option<FermentableTypeGrainGroup>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub half: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inventory: Option<FermentableInventoryType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub kolbach_index: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_in_batch: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mealy: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub moisture: Option<PercentType>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub origin: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub plump: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub protein: Option<PercentType>,
+    ///True if the fermentable must be mashed, false if it can be steeped.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub recommend_mash: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub thru: Option<PercentType>,
+    #[serde(rename = "type")]
+    pub type_: FermentableTypeType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub viscosity: Option<ViscosityType>,
+    #[serde(rename = "yield")]
+    pub yield_: YieldType,
+}
+impl From<&FermentableType> for FermentableType {
+    fn from(value: &FermentableType) -> Self {
+        value.clone()
+    }
+}
+///FermentableTypeGrainGroup
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "base",
+///    "caramel",
+///    "flaked",
+///    "roasted",
+///    "specialty",
+///    "smoked",
+///    "adjunct"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum FermentableTypeGrainGroup {
+    #[serde(rename = "base")]
+    Base,
+    #[serde(rename = "caramel")]
+    Caramel,
+    #[serde(rename = "flaked")]
+    Flaked,
+    #[serde(rename = "roasted")]
+    Roasted,
+    #[serde(rename = "specialty")]
+    Specialty,
+    #[serde(rename = "smoked")]
+    Smoked,
+    #[serde(rename = "adjunct")]
+    Adjunct,
+}
+impl From<&FermentableTypeGrainGroup> for FermentableTypeGrainGroup {
+    fn from(value: &FermentableTypeGrainGroup) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for FermentableTypeGrainGroup {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Base => write!(f, "base"),
+            Self::Caramel => write!(f, "caramel"),
+            Self::Flaked => write!(f, "flaked"),
+            Self::Roasted => write!(f, "roasted"),
+            Self::Specialty => write!(f, "specialty"),
+            Self::Smoked => write!(f, "smoked"),
+            Self::Adjunct => write!(f, "adjunct"),
+        }
+    }
+}
+impl std::str::FromStr for FermentableTypeGrainGroup {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "base" => Ok(Self::Base),
+            "caramel" => Ok(Self::Caramel),
+            "flaked" => Ok(Self::Flaked),
+            "roasted" => Ok(Self::Roasted),
+            "specialty" => Ok(Self::Specialty),
+            "smoked" => Ok(Self::Smoked),
+            "adjunct" => Ok(Self::Adjunct),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for FermentableTypeGrainGroup {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for FermentableTypeGrainGroup {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for FermentableTypeGrainGroup {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///FermentableTypeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "dry extract",
+///    "extract",
+///    "grain",
+///    "sugar",
+///    "fruit",
+///    "juice",
+///    "honey",
+///    "other"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum FermentableTypeType {
+    #[serde(rename = "dry extract")]
+    DryExtract,
+    #[serde(rename = "extract")]
+    Extract,
+    #[serde(rename = "grain")]
+    Grain,
+    #[serde(rename = "sugar")]
+    Sugar,
+    #[serde(rename = "fruit")]
+    Fruit,
+    #[serde(rename = "juice")]
+    Juice,
+    #[serde(rename = "honey")]
+    Honey,
+    #[serde(rename = "other")]
+    Other,
+}
+impl From<&FermentableTypeType> for FermentableTypeType {
+    fn from(value: &FermentableTypeType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for FermentableTypeType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::DryExtract => write!(f, "dry extract"),
+            Self::Extract => write!(f, "extract"),
+            Self::Grain => write!(f, "grain"),
+            Self::Sugar => write!(f, "sugar"),
+            Self::Fruit => write!(f, "fruit"),
+            Self::Juice => write!(f, "juice"),
+            Self::Honey => write!(f, "honey"),
+            Self::Other => write!(f, "other"),
+        }
+    }
+}
+impl std::str::FromStr for FermentableTypeType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "dry extract" => Ok(Self::DryExtract),
+            "extract" => Ok(Self::Extract),
+            "grain" => Ok(Self::Grain),
+            "sugar" => Ok(Self::Sugar),
+            "fruit" => Ok(Self::Fruit),
+            "juice" => Ok(Self::Juice),
+            "honey" => Ok(Self::Honey),
+            "other" => Ok(Self::Other),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for FermentableTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for FermentableTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for FermentableTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///FermentationProcedureType defines the procedure for performing fermentation.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "FermentationProcedureType defines the procedure for performing fermentation.",
+///  "type": "object",
+///  "required": [
+///    "fermentation_steps",
+///    "name"
+///  ],
+///  "properties": {
+///    "description": {
+///      "type": "string"
+///    },
+///    "fermentation_steps": {
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/FermentationStepType"
+///      },
+///      "minItems": 1
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "notes": {
+///      "type": "string"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct FermentationProcedureType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    pub fermentation_steps: Vec<FermentationStepType>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+}
+impl From<&FermentationProcedureType> for FermentationProcedureType {
+    fn from(value: &FermentationProcedureType) -> Self {
+        value.clone()
+    }
+}
+///FermentationStepType - a per step representation of a fermentation action.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "FermentationStepType - a per step representation of a fermentation action.",
+///  "type": "object",
+///  "required": [
+///    "name"
+///  ],
+///  "properties": {
+///    "description": {
+///      "type": "string"
+///    },
+///    "end_gravity": {
+///      "$ref": "#/definitions/GravityType"
+///    },
+///    "end_ph": {
+///      "$ref": "#/definitions/AcidityType"
+///    },
+///    "end_temperature": {
+///      "$ref": "#/definitions/TemperatureType"
+///    },
+///    "free_rise": {
+///      "description": "Free rise is used to indicate a fermentation step where the exothermic fermentation is allowed to raise the temperature without restriction This is either True or false.",
+///      "type": "boolean"
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "start_gravity": {
+///      "$ref": "#/definitions/GravityType"
+///    },
+///    "start_ph": {
+///      "$ref": "#/definitions/AcidityType"
+///    },
+///    "start_temperature": {
+///      "$ref": "#/definitions/TemperatureType"
+///    },
+///    "step_time": {
+///      "$ref": "#/definitions/TimeType"
+///    },
+///    "vessel": {
+///      "type": "string"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct FermentationStepType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_gravity: Option<GravityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_ph: Option<AcidityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_temperature: Option<TemperatureType>,
+    ///Free rise is used to indicate a fermentation step where the exothermic fermentation is allowed to raise the temperature without restriction This is either True or false.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub free_rise: Option<bool>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start_gravity: Option<GravityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start_ph: Option<AcidityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start_temperature: Option<TemperatureType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub step_time: Option<TimeType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vessel: Option<String>,
+}
+impl From<&FermentationStepType> for FermentationStepType {
+    fn from(value: &FermentationStepType) -> Self {
+        value.clone()
+    }
+}
+///GravityRangeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "maximum",
+///    "minimum"
+///  ],
+///  "properties": {
+///    "maximum": {
+///      "$ref": "#/definitions/GravityType"
+///    },
+///    "minimum": {
+///      "$ref": "#/definitions/GravityType"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct GravityRangeType {
+    pub maximum: GravityType,
+    pub minimum: GravityType,
+}
+impl From<&GravityRangeType> for GravityRangeType {
+    fn from(value: &GravityRangeType) -> Self {
+        value.clone()
+    }
+}
+///Gravity refers to the both the measurements of percent of sugar content, ie plato and brix, as well as relative density ie specific gravity.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Gravity refers to the both the measurements of percent of sugar content, ie plato and brix, as well as relative density ie specific gravity.",
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/GravityUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct GravityType {
+    pub unit: GravityUnitType,
+    pub value: f64,
+}
+impl From<&GravityType> for GravityType {
+    fn from(value: &GravityType) -> Self {
+        value.clone()
+    }
+}
+///GravityUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "sg",
+///    "plato",
+///    "brix"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum GravityUnitType {
+    #[serde(rename = "sg")]
+    Sg,
+    #[serde(rename = "plato")]
+    Plato,
+    #[serde(rename = "brix")]
+    Brix,
+}
+impl From<&GravityUnitType> for GravityUnitType {
+    fn from(value: &GravityUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for GravityUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Sg => write!(f, "sg"),
+            Self::Plato => write!(f, "plato"),
+            Self::Brix => write!(f, "brix"),
+        }
+    }
+}
+impl std::str::FromStr for GravityUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "sg" => Ok(Self::Sg),
+            "plato" => Ok(Self::Plato),
+            "brix" => Ok(Self::Brix),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for GravityUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for GravityUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for GravityUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///HopAdditionType collects the attributes of each hop ingredient for use in a recipe hop bil.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "HopAdditionType collects the attributes of each hop ingredient for use in a recipe hop bil.",
+///  "type": "object",
+///  "allOf": [
+///    {
+///      "$ref": "#/definitions/HopVarietyBase"
+///    },
+///    {
+///      "properties": {
+///        "amount": {
+///          "oneOf": [
+///            {
+///              "$ref": "#/definitions/VolumeType"
+///            },
+///            {
+///              "$ref": "#/definitions/MassType"
+///            }
+///          ]
+///        },
+///        "timing": {
+///          "$ref": "#/definitions/TimingType"
+///        }
+///      }
+///    }
+///  ],
+///  "required": [
+///    "amount",
+///    "timing"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct HopAdditionType {
+    pub alpha_acid: PercentType,
+    pub amount: HopAdditionTypeAmount,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub beta_acid: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub form: Option<HopAdditionTypeForm>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub origin: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    pub timing: TimingType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub year: Option<String>,
+}
+impl From<&HopAdditionType> for HopAdditionType {
+    fn from(value: &HopAdditionType) -> Self {
+        value.clone()
+    }
+}
+///HopAdditionTypeAmount
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "oneOf": [
+///    {
+///      "$ref": "#/definitions/VolumeType"
+///    },
+///    {
+///      "$ref": "#/definitions/MassType"
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(untagged)]
+pub enum HopAdditionTypeAmount {
+    VolumeType(VolumeType),
+    MassType(MassType),
+}
+impl From<&HopAdditionTypeAmount> for HopAdditionTypeAmount {
+    fn from(value: &HopAdditionTypeAmount) -> Self {
+        value.clone()
+    }
+}
+impl From<VolumeType> for HopAdditionTypeAmount {
+    fn from(value: VolumeType) -> Self {
+        Self::VolumeType(value)
+    }
+}
+impl From<MassType> for HopAdditionTypeAmount {
+    fn from(value: MassType) -> Self {
+        Self::MassType(value)
+    }
+}
+///HopAdditionTypeForm
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "extract",
+///    "leaf",
+///    "leaf (wet)",
+///    "pellet",
+///    "powder",
+///    "plug"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum HopAdditionTypeForm {
+    #[serde(rename = "extract")]
+    Extract,
+    #[serde(rename = "leaf")]
+    Leaf,
+    #[serde(rename = "leaf (wet)")]
+    LeafWet,
+    #[serde(rename = "pellet")]
+    Pellet,
+    #[serde(rename = "powder")]
+    Powder,
+    #[serde(rename = "plug")]
+    Plug,
+}
+impl From<&HopAdditionTypeForm> for HopAdditionTypeForm {
+    fn from(value: &HopAdditionTypeForm) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for HopAdditionTypeForm {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Extract => write!(f, "extract"),
+            Self::Leaf => write!(f, "leaf"),
+            Self::LeafWet => write!(f, "leaf (wet)"),
+            Self::Pellet => write!(f, "pellet"),
+            Self::Powder => write!(f, "powder"),
+            Self::Plug => write!(f, "plug"),
+        }
+    }
+}
+impl std::str::FromStr for HopAdditionTypeForm {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "extract" => Ok(Self::Extract),
+            "leaf" => Ok(Self::Leaf),
+            "leaf (wet)" => Ok(Self::LeafWet),
+            "pellet" => Ok(Self::Pellet),
+            "powder" => Ok(Self::Powder),
+            "plug" => Ok(Self::Plug),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for HopAdditionTypeForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for HopAdditionTypeForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for HopAdditionTypeForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///HopInventoryType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "properties": {
+///    "amount": {
+///      "oneOf": [
+///        {
+///          "$ref": "#/definitions/VolumeType"
+///        },
+///        {
+///          "$ref": "#/definitions/MassType"
+///        }
+///      ]
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct HopInventoryType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub amount: Option<HopInventoryTypeAmount>,
+}
+impl From<&HopInventoryType> for HopInventoryType {
+    fn from(value: &HopInventoryType) -> Self {
+        value.clone()
+    }
+}
+///HopInventoryTypeAmount
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "oneOf": [
+///    {
+///      "$ref": "#/definitions/VolumeType"
+///    },
+///    {
+///      "$ref": "#/definitions/MassType"
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(untagged)]
+pub enum HopInventoryTypeAmount {
+    VolumeType(VolumeType),
+    MassType(MassType),
+}
+impl From<&HopInventoryTypeAmount> for HopInventoryTypeAmount {
+    fn from(value: &HopInventoryTypeAmount) -> Self {
+        value.clone()
+    }
+}
+impl From<VolumeType> for HopInventoryTypeAmount {
+    fn from(value: VolumeType) -> Self {
+        Self::VolumeType(value)
+    }
+}
+impl From<MassType> for HopInventoryTypeAmount {
+    fn from(value: MassType) -> Self {
+        Self::MassType(value)
+    }
+}
+///HopVarietyBase provides unique properties to identify individual records of a hop variety.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "HopVarietyBase provides unique properties to identify individual records of a hop variety.",
+///  "type": "object",
+///  "required": [
+///    "alpha_acid",
+///    "name"
+///  ],
+///  "properties": {
+///    "alpha_acid": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "beta_acid": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "form": {
+///      "type": "string",
+///      "enum": [
+///        "extract",
+///        "leaf",
+///        "leaf (wet)",
+///        "pellet",
+///        "powder",
+///        "plug"
+///      ]
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "origin": {
+///      "type": "string"
+///    },
+///    "producer": {
+///      "type": "string"
+///    },
+///    "product_id": {
+///      "type": "string"
+///    },
+///    "year": {
+///      "type": "string"
+///    }
+///  }
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct HopVarietyBase {
+    pub alpha_acid: PercentType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub beta_acid: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub form: Option<HopVarietyBaseForm>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub origin: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub year: Option<String>,
+}
+impl From<&HopVarietyBase> for HopVarietyBase {
+    fn from(value: &HopVarietyBase) -> Self {
+        value.clone()
+    }
+}
+///HopVarietyBaseForm
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "extract",
+///    "leaf",
+///    "leaf (wet)",
+///    "pellet",
+///    "powder",
+///    "plug"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum HopVarietyBaseForm {
+    #[serde(rename = "extract")]
+    Extract,
+    #[serde(rename = "leaf")]
+    Leaf,
+    #[serde(rename = "leaf (wet)")]
+    LeafWet,
+    #[serde(rename = "pellet")]
+    Pellet,
+    #[serde(rename = "powder")]
+    Powder,
+    #[serde(rename = "plug")]
+    Plug,
+}
+impl From<&HopVarietyBaseForm> for HopVarietyBaseForm {
+    fn from(value: &HopVarietyBaseForm) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for HopVarietyBaseForm {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Extract => write!(f, "extract"),
+            Self::Leaf => write!(f, "leaf"),
+            Self::LeafWet => write!(f, "leaf (wet)"),
+            Self::Pellet => write!(f, "pellet"),
+            Self::Powder => write!(f, "powder"),
+            Self::Plug => write!(f, "plug"),
+        }
+    }
+}
+impl std::str::FromStr for HopVarietyBaseForm {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "extract" => Ok(Self::Extract),
+            "leaf" => Ok(Self::Leaf),
+            "leaf (wet)" => Ok(Self::LeafWet),
+            "pellet" => Ok(Self::Pellet),
+            "powder" => Ok(Self::Powder),
+            "plug" => Ok(Self::Plug),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for HopVarietyBaseForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for HopVarietyBaseForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for HopVarietyBaseForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///Used to differentiate which IBU formula is being used in a recipe. If formula is modified in any way, eg to support whirlpool/flameout additions etc etc, please use `Other` for transparency.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Used to differentiate which IBU formula is being used in a recipe. If formula is modified in any way, eg to support whirlpool/flameout additions etc etc, please use `Other` for transparency.",
+///  "type": "object",
+///  "properties": {
+///    "method": {
+///      "$ref": "#/definitions/IBUMethodType"
+///    }
+///  }
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct IbuEstimateType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub method: Option<IbuMethodType>,
+}
+impl From<&IbuEstimateType> for IbuEstimateType {
+    fn from(value: &IbuEstimateType) -> Self {
+        value.clone()
+    }
+}
+///IbuMethodType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "Rager",
+///    "Tinseth",
+///    "Garetz",
+///    "Other"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum IbuMethodType {
+    Rager,
+    Tinseth,
+    Garetz,
+    Other,
+}
+impl From<&IbuMethodType> for IbuMethodType {
+    fn from(value: &IbuMethodType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for IbuMethodType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Rager => write!(f, "Rager"),
+            Self::Tinseth => write!(f, "Tinseth"),
+            Self::Garetz => write!(f, "Garetz"),
+            Self::Other => write!(f, "Other"),
+        }
+    }
+}
+impl std::str::FromStr for IbuMethodType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "Rager" => Ok(Self::Rager),
+            "Tinseth" => Ok(Self::Tinseth),
+            "Garetz" => Ok(Self::Garetz),
+            "Other" => Ok(Self::Other),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for IbuMethodType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for IbuMethodType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for IbuMethodType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///IngredientsType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "fermentable_additions"
+///  ],
+///  "properties": {
+///    "culture_additions": {
+///      "description": "culture_additions collects all the culture items for use in a recipe",
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/CultureAdditionType"
+///      }
+///    },
+///    "fermentable_additions": {
+///      "description": "fermentable_additions collects all the fermentable ingredients for use in a recipe",
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/FermentableAdditionType"
+///      }
+///    },
+///    "hop_additions": {
+///      "description": "hop_additions collects all the hops for use in a recipe",
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/HopAdditionType"
+///      }
+///    },
+///    "miscellaneous_additions": {
+///      "description": "miscellaneous_additions collects all the miscellaneous items for use in a recipe",
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/MiscellaneousAdditionType"
+///      }
+///    },
+///    "water_additions": {
+///      "description": "water_additions collects all the water items for use in a recipe",
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/WaterAdditionType"
+///      }
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct IngredientsType {
+    ///culture_additions collects all the culture items for use in a recipe
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub culture_additions: Vec<CultureAdditionType>,
+    ///fermentable_additions collects all the fermentable ingredients for use in a recipe
+    pub fermentable_additions: Vec<FermentableAdditionType>,
+    ///hop_additions collects all the hops for use in a recipe
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub hop_additions: Vec<HopAdditionType>,
+    ///miscellaneous_additions collects all the miscellaneous items for use in a recipe
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub miscellaneous_additions: Vec<MiscellaneousAdditionType>,
+    ///water_additions collects all the water items for use in a recipe
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub water_additions: Vec<WaterAdditionType>,
+}
+impl From<&IngredientsType> for IngredientsType {
+    fn from(value: &IngredientsType) -> Self {
+        value.clone()
+    }
+}
+///This defines the procedure for performing unique mashing processes.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "This defines the procedure for performing unique mashing processes.",
+///  "type": "object",
+///  "required": [
+///    "grain_temperature",
+///    "mash_steps",
+///    "name"
+///  ],
+///  "properties": {
+///    "grain_temperature": {
+///      "$ref": "#/definitions/TemperatureType"
+///    },
+///    "mash_steps": {
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/MashStepType"
+///      },
+///      "minItems": 1
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "notes": {
+///      "type": "string"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct MashProcedureType {
+    pub grain_temperature: TemperatureType,
+    pub mash_steps: Vec<MashStepType>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+}
+impl From<&MashProcedureType> for MashProcedureType {
+    fn from(value: &MashProcedureType) -> Self {
+        value.clone()
+    }
+}
+///MashStepType - a per step representation occurring during the mash.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "MashStepType - a per step representation occurring during the mash.",
+///  "type": "object",
+///  "required": [
+///    "name",
+///    "step_temperature",
+///    "step_time",
+///    "type"
+///  ],
+///  "properties": {
+///    "amount": {
+///      "$ref": "#/definitions/VolumeType"
+///    },
+///    "description": {
+///      "type": "string"
+///    },
+///    "end_ph": {
+///      "$ref": "#/definitions/AcidityType"
+///    },
+///    "end_temperature": {
+///      "$ref": "#/definitions/TemperatureType"
+///    },
+///    "infuse_temperature": {
+///      "$ref": "#/definitions/TemperatureType"
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "ramp_time": {
+///      "$ref": "#/definitions/TimeType"
+///    },
+///    "start_ph": {
+///      "$ref": "#/definitions/AcidityType"
+///    },
+///    "step_temperature": {
+///      "$ref": "#/definitions/TemperatureType"
+///    },
+///    "step_time": {
+///      "$ref": "#/definitions/TimeType"
+///    },
+///    "type": {
+///      "type": "string",
+///      "enum": [
+///        "infusion",
+///        "temperature",
+///        "decoction",
+///        "souring mash",
+///        "souring wort",
+///        "drain mash tun",
+///        "sparge"
+///      ]
+///    },
+///    "water_grain_ratio": {
+///      "$ref": "#/definitions/SpecificVolumeType"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct MashStepType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub amount: Option<VolumeType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_ph: Option<AcidityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_temperature: Option<TemperatureType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub infuse_temperature: Option<TemperatureType>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ramp_time: Option<TimeType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start_ph: Option<AcidityType>,
+    pub step_temperature: TemperatureType,
+    pub step_time: TimeType,
+    #[serde(rename = "type")]
+    pub type_: MashStepTypeType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub water_grain_ratio: Option<SpecificVolumeType>,
+}
+impl From<&MashStepType> for MashStepType {
+    fn from(value: &MashStepType) -> Self {
+        value.clone()
+    }
+}
+///MashStepTypeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "infusion",
+///    "temperature",
+///    "decoction",
+///    "souring mash",
+///    "souring wort",
+///    "drain mash tun",
+///    "sparge"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum MashStepTypeType {
+    #[serde(rename = "infusion")]
+    Infusion,
+    #[serde(rename = "temperature")]
+    Temperature,
+    #[serde(rename = "decoction")]
+    Decoction,
+    #[serde(rename = "souring mash")]
+    SouringMash,
+    #[serde(rename = "souring wort")]
+    SouringWort,
+    #[serde(rename = "drain mash tun")]
+    DrainMashTun,
+    #[serde(rename = "sparge")]
+    Sparge,
+}
+impl From<&MashStepTypeType> for MashStepTypeType {
+    fn from(value: &MashStepTypeType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for MashStepTypeType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Infusion => write!(f, "infusion"),
+            Self::Temperature => write!(f, "temperature"),
+            Self::Decoction => write!(f, "decoction"),
+            Self::SouringMash => write!(f, "souring mash"),
+            Self::SouringWort => write!(f, "souring wort"),
+            Self::DrainMashTun => write!(f, "drain mash tun"),
+            Self::Sparge => write!(f, "sparge"),
+        }
+    }
+}
+impl std::str::FromStr for MashStepTypeType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "infusion" => Ok(Self::Infusion),
+            "temperature" => Ok(Self::Temperature),
+            "decoction" => Ok(Self::Decoction),
+            "souring mash" => Ok(Self::SouringMash),
+            "souring wort" => Ok(Self::SouringWort),
+            "drain mash tun" => Ok(Self::DrainMashTun),
+            "sparge" => Ok(Self::Sparge),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for MashStepTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for MashStepTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for MashStepTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///MassType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/MassUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct MassType {
+    pub unit: MassUnitType,
+    pub value: f64,
+}
+impl From<&MassType> for MassType {
+    fn from(value: &MassType) -> Self {
+        value.clone()
+    }
+}
+///MassUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "mg",
+///    "g",
+///    "kg",
+///    "lb",
+///    "oz"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum MassUnitType {
+    #[serde(rename = "mg")]
+    Mg,
+    #[serde(rename = "g")]
+    G,
+    #[serde(rename = "kg")]
+    Kg,
+    #[serde(rename = "lb")]
+    Lb,
+    #[serde(rename = "oz")]
+    Oz,
+}
+impl From<&MassUnitType> for MassUnitType {
+    fn from(value: &MassUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for MassUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Mg => write!(f, "mg"),
+            Self::G => write!(f, "g"),
+            Self::Kg => write!(f, "kg"),
+            Self::Lb => write!(f, "lb"),
+            Self::Oz => write!(f, "oz"),
+        }
+    }
+}
+impl std::str::FromStr for MassUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "mg" => Ok(Self::Mg),
+            "g" => Ok(Self::G),
+            "kg" => Ok(Self::Kg),
+            "lb" => Ok(Self::Lb),
+            "oz" => Ok(Self::Oz),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for MassUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for MassUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for MassUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///MiscellaneousAdditionType collects the attributes of each miscellaneous ingredient for use in a recipe.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "MiscellaneousAdditionType collects the attributes of each miscellaneous ingredient for use in a recipe.",
+///  "type": "object",
+///  "allOf": [
+///    {
+///      "$ref": "#/definitions/MiscellaneousBase"
+///    },
+///    {
+///      "properties": {
+///        "amount": {
+///          "oneOf": [
+///            {
+///              "$ref": "#/definitions/VolumeType"
+///            },
+///            {
+///              "$ref": "#/definitions/MassType"
+///            },
+///            {
+///              "$ref": "#/definitions/UnitType"
+///            }
+///          ]
+///        },
+///        "timing": {
+///          "$ref": "#/definitions/TimingType"
+///        }
+///      }
+///    },
+///    {
+///      "required": [
+///        "amount"
+///      ]
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct MiscellaneousAdditionType {
+    pub amount: MiscellaneousAdditionTypeAmount,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub timing: Option<TimingType>,
+    #[serde(rename = "type")]
+    pub type_: MiscellaneousAdditionTypeType,
+}
+impl From<&MiscellaneousAdditionType> for MiscellaneousAdditionType {
+    fn from(value: &MiscellaneousAdditionType) -> Self {
+        value.clone()
+    }
+}
+///MiscellaneousAdditionTypeAmount
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "oneOf": [
+///    {
+///      "$ref": "#/definitions/VolumeType"
+///    },
+///    {
+///      "$ref": "#/definitions/MassType"
+///    },
+///    {
+///      "$ref": "#/definitions/UnitType"
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(untagged)]
+pub enum MiscellaneousAdditionTypeAmount {
+    VolumeType(VolumeType),
+    MassType(MassType),
+    UnitType(UnitType),
+}
+impl From<&MiscellaneousAdditionTypeAmount> for MiscellaneousAdditionTypeAmount {
+    fn from(value: &MiscellaneousAdditionTypeAmount) -> Self {
+        value.clone()
+    }
+}
+impl From<VolumeType> for MiscellaneousAdditionTypeAmount {
+    fn from(value: VolumeType) -> Self {
+        Self::VolumeType(value)
+    }
+}
+impl From<MassType> for MiscellaneousAdditionTypeAmount {
+    fn from(value: MassType) -> Self {
+        Self::MassType(value)
+    }
+}
+impl From<UnitType> for MiscellaneousAdditionTypeAmount {
+    fn from(value: UnitType) -> Self {
+        Self::UnitType(value)
+    }
+}
+///MiscellaneousAdditionTypeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "spice",
+///    "fining",
+///    "water agent",
+///    "herb",
+///    "flavor",
+///    "wood",
+///    "other"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum MiscellaneousAdditionTypeType {
+    #[serde(rename = "spice")]
+    Spice,
+    #[serde(rename = "fining")]
+    Fining,
+    #[serde(rename = "water agent")]
+    WaterAgent,
+    #[serde(rename = "herb")]
+    Herb,
+    #[serde(rename = "flavor")]
+    Flavor,
+    #[serde(rename = "wood")]
+    Wood,
+    #[serde(rename = "other")]
+    Other,
+}
+impl From<&MiscellaneousAdditionTypeType> for MiscellaneousAdditionTypeType {
+    fn from(value: &MiscellaneousAdditionTypeType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for MiscellaneousAdditionTypeType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Spice => write!(f, "spice"),
+            Self::Fining => write!(f, "fining"),
+            Self::WaterAgent => write!(f, "water agent"),
+            Self::Herb => write!(f, "herb"),
+            Self::Flavor => write!(f, "flavor"),
+            Self::Wood => write!(f, "wood"),
+            Self::Other => write!(f, "other"),
+        }
+    }
+}
+impl std::str::FromStr for MiscellaneousAdditionTypeType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "spice" => Ok(Self::Spice),
+            "fining" => Ok(Self::Fining),
+            "water agent" => Ok(Self::WaterAgent),
+            "herb" => Ok(Self::Herb),
+            "flavor" => Ok(Self::Flavor),
+            "wood" => Ok(Self::Wood),
+            "other" => Ok(Self::Other),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for MiscellaneousAdditionTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for MiscellaneousAdditionTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for MiscellaneousAdditionTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///MiscellaneousBase provides unique properties to identify individual records of ingredients that are neither hops, nor provide a contribution to the gravity of wort.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "MiscellaneousBase provides unique properties to identify individual records of ingredients that are neither hops, nor provide a contribution to the gravity of wort.",
+///  "type": "object",
+///  "required": [
+///    "name",
+///    "type"
+///  ],
+///  "properties": {
+///    "name": {
+///      "type": "string"
+///    },
+///    "producer": {
+///      "type": "string"
+///    },
+///    "product_id": {
+///      "type": "string"
+///    },
+///    "type": {
+///      "type": "string",
+///      "enum": [
+///        "spice",
+///        "fining",
+///        "water agent",
+///        "herb",
+///        "flavor",
+///        "wood",
+///        "other"
+///      ]
+///    }
+///  }
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct MiscellaneousBase {
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    #[serde(rename = "type")]
+    pub type_: MiscellaneousBaseType,
+}
+impl From<&MiscellaneousBase> for MiscellaneousBase {
+    fn from(value: &MiscellaneousBase) -> Self {
+        value.clone()
+    }
+}
+///MiscellaneousBaseType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "spice",
+///    "fining",
+///    "water agent",
+///    "herb",
+///    "flavor",
+///    "wood",
+///    "other"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum MiscellaneousBaseType {
+    #[serde(rename = "spice")]
+    Spice,
+    #[serde(rename = "fining")]
+    Fining,
+    #[serde(rename = "water agent")]
+    WaterAgent,
+    #[serde(rename = "herb")]
+    Herb,
+    #[serde(rename = "flavor")]
+    Flavor,
+    #[serde(rename = "wood")]
+    Wood,
+    #[serde(rename = "other")]
+    Other,
+}
+impl From<&MiscellaneousBaseType> for MiscellaneousBaseType {
+    fn from(value: &MiscellaneousBaseType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for MiscellaneousBaseType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Spice => write!(f, "spice"),
+            Self::Fining => write!(f, "fining"),
+            Self::WaterAgent => write!(f, "water agent"),
+            Self::Herb => write!(f, "herb"),
+            Self::Flavor => write!(f, "flavor"),
+            Self::Wood => write!(f, "wood"),
+            Self::Other => write!(f, "other"),
+        }
+    }
+}
+impl std::str::FromStr for MiscellaneousBaseType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "spice" => Ok(Self::Spice),
+            "fining" => Ok(Self::Fining),
+            "water agent" => Ok(Self::WaterAgent),
+            "herb" => Ok(Self::Herb),
+            "flavor" => Ok(Self::Flavor),
+            "wood" => Ok(Self::Wood),
+            "other" => Ok(Self::Other),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for MiscellaneousBaseType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for MiscellaneousBaseType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for MiscellaneousBaseType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///MiscellaneousInventoryType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "amount"
+///  ],
+///  "properties": {
+///    "amount": {
+///      "oneOf": [
+///        {
+///          "$ref": "#/definitions/VolumeType"
+///        },
+///        {
+///          "$ref": "#/definitions/MassType"
+///        },
+///        {
+///          "$ref": "#/definitions/UnitType"
+///        }
+///      ]
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct MiscellaneousInventoryType {
+    pub amount: MiscellaneousInventoryTypeAmount,
+}
+impl From<&MiscellaneousInventoryType> for MiscellaneousInventoryType {
+    fn from(value: &MiscellaneousInventoryType) -> Self {
+        value.clone()
+    }
+}
+///MiscellaneousInventoryTypeAmount
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "oneOf": [
+///    {
+///      "$ref": "#/definitions/VolumeType"
+///    },
+///    {
+///      "$ref": "#/definitions/MassType"
+///    },
+///    {
+///      "$ref": "#/definitions/UnitType"
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(untagged)]
+pub enum MiscellaneousInventoryTypeAmount {
+    VolumeType(VolumeType),
+    MassType(MassType),
+    UnitType(UnitType),
+}
+impl From<&MiscellaneousInventoryTypeAmount> for MiscellaneousInventoryTypeAmount {
+    fn from(value: &MiscellaneousInventoryTypeAmount) -> Self {
+        value.clone()
+    }
+}
+impl From<VolumeType> for MiscellaneousInventoryTypeAmount {
+    fn from(value: VolumeType) -> Self {
+        Self::VolumeType(value)
+    }
+}
+impl From<MassType> for MiscellaneousInventoryTypeAmount {
+    fn from(value: MassType) -> Self {
+        Self::MassType(value)
+    }
+}
+impl From<UnitType> for MiscellaneousInventoryTypeAmount {
+    fn from(value: UnitType) -> Self {
+        Self::UnitType(value)
+    }
+}
+///MiscellaneousType collects the attributes of an ingredient to store as record information.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "MiscellaneousType collects the attributes of an ingredient to store as record information.",
+///  "type": "object",
+///  "allOf": [
+///    {
+///      "$ref": "#/definitions/MiscellaneousBase"
+///    },
+///    {
+///      "properties": {
+///        "inventory": {
+///          "$ref": "#/definitions/MiscellaneousInventoryType"
+///        },
+///        "notes": {
+///          "type": "string"
+///        },
+///        "use_for": {
+///          "description": "Used to describe the purpose of the miscellaneous ingredient, e.g. whirlfloc is used for clarity.",
+///          "type": "string"
+///        }
+///      }
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct MiscellaneousType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inventory: Option<MiscellaneousInventoryType>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    #[serde(rename = "type")]
+    pub type_: MiscellaneousTypeType,
+    ///Used to describe the purpose of the miscellaneous ingredient, e.g. whirlfloc is used for clarity.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub use_for: Option<String>,
+}
+impl From<&MiscellaneousType> for MiscellaneousType {
+    fn from(value: &MiscellaneousType) -> Self {
+        value.clone()
+    }
+}
+///MiscellaneousTypeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "spice",
+///    "fining",
+///    "water agent",
+///    "herb",
+///    "flavor",
+///    "wood",
+///    "other"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum MiscellaneousTypeType {
+    #[serde(rename = "spice")]
+    Spice,
+    #[serde(rename = "fining")]
+    Fining,
+    #[serde(rename = "water agent")]
+    WaterAgent,
+    #[serde(rename = "herb")]
+    Herb,
+    #[serde(rename = "flavor")]
+    Flavor,
+    #[serde(rename = "wood")]
+    Wood,
+    #[serde(rename = "other")]
+    Other,
+}
+impl From<&MiscellaneousTypeType> for MiscellaneousTypeType {
+    fn from(value: &MiscellaneousTypeType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for MiscellaneousTypeType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Spice => write!(f, "spice"),
+            Self::Fining => write!(f, "fining"),
+            Self::WaterAgent => write!(f, "water agent"),
+            Self::Herb => write!(f, "herb"),
+            Self::Flavor => write!(f, "flavor"),
+            Self::Wood => write!(f, "wood"),
+            Self::Other => write!(f, "other"),
+        }
+    }
+}
+impl std::str::FromStr for MiscellaneousTypeType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "spice" => Ok(Self::Spice),
+            "fining" => Ok(Self::Fining),
+            "water agent" => Ok(Self::WaterAgent),
+            "herb" => Ok(Self::Herb),
+            "flavor" => Ok(Self::Flavor),
+            "wood" => Ok(Self::Wood),
+            "other" => Ok(Self::Other),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for MiscellaneousTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for MiscellaneousTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for MiscellaneousTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///oil_content collects all information of a hop variety pertaining to oil content, polyphenols, and thiols. Each individual compound is expressed as a percent of the total oil measurement.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "oil_content collects all information of a hop variety pertaining to oil content, polyphenols, and thiols. Each individual compound is expressed as a percent of the total oil measurement.",
+///  "type": "object",
+///  "properties": {
+///    "b_pinene": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "caryophyllene": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "cohumulone": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "farnesene": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "geraniol": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "humulene": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "limonene": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "linalool": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "myrcene": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "nerol": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "pinene": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "polyphenols": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "total_oil_ml_per_100g": {
+///      "description": "The total amount of oil, including hydrocarbons, esters, and terpene alcohols in units of ml of oil per 100g of hop mass.",
+///      "type": "number"
+///    },
+///    "xanthohumol": {
+///      "$ref": "#/definitions/PercentType"
+///    }
+///  }
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct OilContentType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub b_pinene: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub caryophyllene: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cohumulone: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub farnesene: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub geraniol: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub humulene: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub limonene: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub linalool: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub myrcene: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nerol: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pinene: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub polyphenols: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_oil_ml_per_100g: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub xanthohumol: Option<PercentType>,
+}
+impl From<&OilContentType> for OilContentType {
+    fn from(value: &OilContentType) -> Self {
+        value.clone()
+    }
+}
+///PackagingGraphicType - a representation of a graphic to be placed on a vessel.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "PackagingGraphicType - a representation of a graphic to be placed on a vessel.",
+///  "type": "object",
+///  "required": [
+///    "position",
+///    "type"
+///  ],
+///  "properties": {
+///    "URLS": {
+///      "description": "URLS to hosted version of image.",
+///      "type": "array",
+///      "items": {
+///        "type": "string"
+///      }
+///    },
+///    "base64_data": {
+///      "description": "base64 encoded file.",
+///      "type": "string"
+///    },
+///    "dpi": {
+///      "description": "Dots per inch.",
+///      "type": "number"
+///    },
+///    "height": {
+///      "type": "number"
+///    },
+///    "position": {
+///      "type": "string",
+///      "enum": [
+///        "body front",
+///        "body back",
+///        "body wrap around",
+///        "neck front",
+///        "neck back",
+///        "neck wrap around",
+///        "cap",
+///        "carrier"
+///      ]
+///    },
+///    "type": {
+///      "description": "File type",
+///      "type": "string",
+///      "enum": [
+///        "svg",
+///        "svgz",
+///        "ai",
+///        "cdr",
+///        "cdx",
+///        "odg",
+///        "eps",
+///        "pdf",
+///        "png",
+///        "jpg",
+///        "gif"
+///      ]
+///    },
+///    "units": {
+///      "description": "The unit type which are used for measurements.",
+///      "type": "string",
+///      "enum": [
+///        "mm",
+///        "in"
+///      ]
+///    },
+///    "width": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct PackagingGraphicType {
+    ///base64 encoded file.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub base64_data: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dpi: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub height: Option<f64>,
+    pub position: PackagingGraphicTypePosition,
+    ///File type
+    #[serde(rename = "type")]
+    pub type_: PackagingGraphicTypeType,
+    ///The unit type which are used for measurements.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub units: Option<PackagingGraphicTypeUnits>,
+    ///URLS to hosted version of image.
+    #[serde(rename = "URLS", default, skip_serializing_if = "Vec::is_empty")]
+    pub urls: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub width: Option<f64>,
+}
+impl From<&PackagingGraphicType> for PackagingGraphicType {
+    fn from(value: &PackagingGraphicType) -> Self {
+        value.clone()
+    }
+}
+///PackagingGraphicTypePosition
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "body front",
+///    "body back",
+///    "body wrap around",
+///    "neck front",
+///    "neck back",
+///    "neck wrap around",
+///    "cap",
+///    "carrier"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum PackagingGraphicTypePosition {
+    #[serde(rename = "body front")]
+    BodyFront,
+    #[serde(rename = "body back")]
+    BodyBack,
+    #[serde(rename = "body wrap around")]
+    BodyWrapAround,
+    #[serde(rename = "neck front")]
+    NeckFront,
+    #[serde(rename = "neck back")]
+    NeckBack,
+    #[serde(rename = "neck wrap around")]
+    NeckWrapAround,
+    #[serde(rename = "cap")]
+    Cap,
+    #[serde(rename = "carrier")]
+    Carrier,
+}
+impl From<&PackagingGraphicTypePosition> for PackagingGraphicTypePosition {
+    fn from(value: &PackagingGraphicTypePosition) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for PackagingGraphicTypePosition {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::BodyFront => write!(f, "body front"),
+            Self::BodyBack => write!(f, "body back"),
+            Self::BodyWrapAround => write!(f, "body wrap around"),
+            Self::NeckFront => write!(f, "neck front"),
+            Self::NeckBack => write!(f, "neck back"),
+            Self::NeckWrapAround => write!(f, "neck wrap around"),
+            Self::Cap => write!(f, "cap"),
+            Self::Carrier => write!(f, "carrier"),
+        }
+    }
+}
+impl std::str::FromStr for PackagingGraphicTypePosition {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "body front" => Ok(Self::BodyFront),
+            "body back" => Ok(Self::BodyBack),
+            "body wrap around" => Ok(Self::BodyWrapAround),
+            "neck front" => Ok(Self::NeckFront),
+            "neck back" => Ok(Self::NeckBack),
+            "neck wrap around" => Ok(Self::NeckWrapAround),
+            "cap" => Ok(Self::Cap),
+            "carrier" => Ok(Self::Carrier),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for PackagingGraphicTypePosition {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for PackagingGraphicTypePosition {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for PackagingGraphicTypePosition {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///File type
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "File type",
+///  "type": "string",
+///  "enum": [
+///    "svg",
+///    "svgz",
+///    "ai",
+///    "cdr",
+///    "cdx",
+///    "odg",
+///    "eps",
+///    "pdf",
+///    "png",
+///    "jpg",
+///    "gif"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum PackagingGraphicTypeType {
+    #[serde(rename = "svg")]
+    Svg,
+    #[serde(rename = "svgz")]
+    Svgz,
+    #[serde(rename = "ai")]
+    Ai,
+    #[serde(rename = "cdr")]
+    Cdr,
+    #[serde(rename = "cdx")]
+    Cdx,
+    #[serde(rename = "odg")]
+    Odg,
+    #[serde(rename = "eps")]
+    Eps,
+    #[serde(rename = "pdf")]
+    Pdf,
+    #[serde(rename = "png")]
+    Png,
+    #[serde(rename = "jpg")]
+    Jpg,
+    #[serde(rename = "gif")]
+    Gif,
+}
+impl From<&PackagingGraphicTypeType> for PackagingGraphicTypeType {
+    fn from(value: &PackagingGraphicTypeType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for PackagingGraphicTypeType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Svg => write!(f, "svg"),
+            Self::Svgz => write!(f, "svgz"),
+            Self::Ai => write!(f, "ai"),
+            Self::Cdr => write!(f, "cdr"),
+            Self::Cdx => write!(f, "cdx"),
+            Self::Odg => write!(f, "odg"),
+            Self::Eps => write!(f, "eps"),
+            Self::Pdf => write!(f, "pdf"),
+            Self::Png => write!(f, "png"),
+            Self::Jpg => write!(f, "jpg"),
+            Self::Gif => write!(f, "gif"),
+        }
+    }
+}
+impl std::str::FromStr for PackagingGraphicTypeType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "svg" => Ok(Self::Svg),
+            "svgz" => Ok(Self::Svgz),
+            "ai" => Ok(Self::Ai),
+            "cdr" => Ok(Self::Cdr),
+            "cdx" => Ok(Self::Cdx),
+            "odg" => Ok(Self::Odg),
+            "eps" => Ok(Self::Eps),
+            "pdf" => Ok(Self::Pdf),
+            "png" => Ok(Self::Png),
+            "jpg" => Ok(Self::Jpg),
+            "gif" => Ok(Self::Gif),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for PackagingGraphicTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for PackagingGraphicTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for PackagingGraphicTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///The unit type which are used for measurements.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The unit type which are used for measurements.",
+///  "type": "string",
+///  "enum": [
+///    "mm",
+///    "in"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum PackagingGraphicTypeUnits {
+    #[serde(rename = "mm")]
+    Mm,
+    #[serde(rename = "in")]
+    In,
+}
+impl From<&PackagingGraphicTypeUnits> for PackagingGraphicTypeUnits {
+    fn from(value: &PackagingGraphicTypeUnits) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for PackagingGraphicTypeUnits {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Mm => write!(f, "mm"),
+            Self::In => write!(f, "in"),
+        }
+    }
+}
+impl std::str::FromStr for PackagingGraphicTypeUnits {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "mm" => Ok(Self::Mm),
+            "in" => Ok(Self::In),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for PackagingGraphicTypeUnits {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for PackagingGraphicTypeUnits {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for PackagingGraphicTypeUnits {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///Describes the procedure for packaging your beverage.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Describes the procedure for packaging your beverage.",
+///  "type": "object",
+///  "required": [
+///    "name"
+///  ],
+///  "properties": {
+///    "description": {
+///      "type": "string"
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "notes": {
+///      "type": "string"
+///    },
+///    "packaged_volume": {
+///      "$ref": "#/definitions/VolumeType"
+///    },
+///    "packaging_vessels": {
+///      "type": "array",
+///      "items": {
+///        "$ref": "#/definitions/PackagingVesselType"
+///      }
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct PackagingProcedureType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub packaged_volume: Option<VolumeType>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub packaging_vessels: Vec<PackagingVesselType>,
+}
+impl From<&PackagingProcedureType> for PackagingProcedureType {
+    fn from(value: &PackagingProcedureType) -> Self {
+        value.clone()
+    }
+}
+///PackagingVesselType - a per vessel representation of a packaging process.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "PackagingVesselType - a per vessel representation of a packaging process.",
+///  "type": "object",
+///  "required": [
+///    "name"
+///  ],
+///  "properties": {
+///    "carbonation": {
+///      "type": "number"
+///    },
+///    "description": {
+///      "type": "string"
+///    },
+///    "end_gravity": {
+///      "$ref": "#/definitions/GravityType"
+///    },
+///    "end_ph": {
+///      "$ref": "#/definitions/AcidityType"
+///    },
+///    "end_temperature": {
+///      "$ref": "#/definitions/TemperatureType"
+///    },
+///    "graphics": {
+///      "$ref": "#/definitions/PackagingGraphicType"
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "package_date": {
+///      "$ref": "#/definitions/DateType"
+///    },
+///    "start_gravity": {
+///      "$ref": "#/definitions/GravityType"
+///    },
+///    "start_ph": {
+///      "$ref": "#/definitions/AcidityType"
+///    },
+///    "start_temperature": {
+///      "$ref": "#/definitions/TemperatureType"
+///    },
+///    "step_time": {
+///      "$ref": "#/definitions/TimeType"
+///    },
+///    "type": {
+///      "type": "string",
+///      "enum": [
+///        "keg",
+///        "bottle",
+///        "cask",
+///        "tank",
+///        "firkin",
+///        "other"
+///      ]
+///    },
+///    "vessel_quantity": {
+///      "type": "number"
+///    },
+///    "vessel_volume": {
+///      "$ref": "#/definitions/VolumeType"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct PackagingVesselType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub carbonation: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_gravity: Option<GravityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_ph: Option<AcidityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end_temperature: Option<TemperatureType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub graphics: Option<PackagingGraphicType>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub package_date: Option<DateType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start_gravity: Option<GravityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start_ph: Option<AcidityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start_temperature: Option<TemperatureType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub step_time: Option<TimeType>,
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
+    pub type_: Option<PackagingVesselTypeType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vessel_quantity: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vessel_volume: Option<VolumeType>,
+}
+impl From<&PackagingVesselType> for PackagingVesselType {
+    fn from(value: &PackagingVesselType) -> Self {
+        value.clone()
+    }
+}
+///PackagingVesselTypeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "keg",
+///    "bottle",
+///    "cask",
+///    "tank",
+///    "firkin",
+///    "other"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum PackagingVesselTypeType {
+    #[serde(rename = "keg")]
+    Keg,
+    #[serde(rename = "bottle")]
+    Bottle,
+    #[serde(rename = "cask")]
+    Cask,
+    #[serde(rename = "tank")]
+    Tank,
+    #[serde(rename = "firkin")]
+    Firkin,
+    #[serde(rename = "other")]
+    Other,
+}
+impl From<&PackagingVesselTypeType> for PackagingVesselTypeType {
+    fn from(value: &PackagingVesselTypeType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for PackagingVesselTypeType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Keg => write!(f, "keg"),
+            Self::Bottle => write!(f, "bottle"),
+            Self::Cask => write!(f, "cask"),
+            Self::Tank => write!(f, "tank"),
+            Self::Firkin => write!(f, "firkin"),
+            Self::Other => write!(f, "other"),
+        }
+    }
+}
+impl std::str::FromStr for PackagingVesselTypeType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "keg" => Ok(Self::Keg),
+            "bottle" => Ok(Self::Bottle),
+            "cask" => Ok(Self::Cask),
+            "tank" => Ok(Self::Tank),
+            "firkin" => Ok(Self::Firkin),
+            "other" => Ok(Self::Other),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for PackagingVesselTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for PackagingVesselTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for PackagingVesselTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///PercentRangeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "maximum",
+///    "minimum"
+///  ],
+///  "properties": {
+///    "maximum": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "minimum": {
+///      "$ref": "#/definitions/PercentType"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct PercentRangeType {
+    pub maximum: PercentType,
+    pub minimum: PercentType,
+}
+impl From<&PercentRangeType> for PercentRangeType {
+    fn from(value: &PercentRangeType) -> Self {
+        value.clone()
+    }
+}
+///PercentType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/PercentUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct PercentType {
+    pub unit: PercentUnitType,
+    pub value: f64,
+}
+impl From<&PercentType> for PercentType {
+    fn from(value: &PercentType) -> Self {
+        value.clone()
+    }
+}
+///PercentUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "%"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum PercentUnitType {
+    #[serde(rename = "%")]
+    X,
+}
+impl From<&PercentUnitType> for PercentUnitType {
+    fn from(value: &PercentUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for PercentUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::X => write!(f, "%"),
+        }
+    }
+}
+impl std::str::FromStr for PercentUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "%" => Ok(Self::X),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for PercentUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for PercentUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for PercentUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///PressureType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/PressureUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct PressureType {
+    pub unit: PressureUnitType,
+    pub value: f64,
+}
+impl From<&PressureType> for PressureType {
+    fn from(value: &PressureType) -> Self {
+        value.clone()
+    }
+}
+///PressureUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "kPa",
+///    "psi",
+///    "bar"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum PressureUnitType {
+    #[serde(rename = "kPa")]
+    KPa,
+    #[serde(rename = "psi")]
+    Psi,
+    #[serde(rename = "bar")]
+    Bar,
+}
+impl From<&PressureUnitType> for PressureUnitType {
+    fn from(value: &PressureUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for PressureUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::KPa => write!(f, "kPa"),
+            Self::Psi => write!(f, "psi"),
+            Self::Bar => write!(f, "bar"),
+        }
+    }
+}
+impl std::str::FromStr for PressureUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "kPa" => Ok(Self::KPa),
+            "psi" => Ok(Self::Psi),
+            "bar" => Ok(Self::Bar),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for PressureUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for PressureUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for PressureUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///QualitativeRangeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "very low",
+///    "low",
+///    "medium low",
+///    "medium",
+///    "medium high",
+///    "high",
+///    "very high"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum QualitativeRangeType {
+    #[serde(rename = "very low")]
+    VeryLow,
+    #[serde(rename = "low")]
+    Low,
+    #[serde(rename = "medium low")]
+    MediumLow,
+    #[serde(rename = "medium")]
+    Medium,
+    #[serde(rename = "medium high")]
+    MediumHigh,
+    #[serde(rename = "high")]
+    High,
+    #[serde(rename = "very high")]
+    VeryHigh,
+}
+impl From<&QualitativeRangeType> for QualitativeRangeType {
+    fn from(value: &QualitativeRangeType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for QualitativeRangeType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::VeryLow => write!(f, "very low"),
+            Self::Low => write!(f, "low"),
+            Self::MediumLow => write!(f, "medium low"),
+            Self::Medium => write!(f, "medium"),
+            Self::MediumHigh => write!(f, "medium high"),
+            Self::High => write!(f, "high"),
+            Self::VeryHigh => write!(f, "very high"),
+        }
+    }
+}
+impl std::str::FromStr for QualitativeRangeType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "very low" => Ok(Self::VeryLow),
+            "low" => Ok(Self::Low),
+            "medium low" => Ok(Self::MediumLow),
+            "medium" => Ok(Self::Medium),
+            "medium high" => Ok(Self::MediumHigh),
+            "high" => Ok(Self::High),
+            "very high" => Ok(Self::VeryHigh),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for QualitativeRangeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for QualitativeRangeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for QualitativeRangeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///RecipeStyleType defines style information stored in a recipe record
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "RecipeStyleType defines style information stored in a recipe record",
+///  "type": "object",
+///  "allOf": [
+///    {
+///      "$ref": "#/definitions/StyleBase"
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct RecipeStyleType(pub StyleBase);
+impl ::std::ops::Deref for RecipeStyleType {
+    type Target = StyleBase;
+    fn deref(&self) -> &StyleBase {
+        &self.0
+    }
+}
+impl From<RecipeStyleType> for StyleBase {
+    fn from(value: RecipeStyleType) -> Self {
+        value.0
+    }
+}
+impl From<&RecipeStyleType> for RecipeStyleType {
+    fn from(value: &RecipeStyleType) -> Self {
+        value.clone()
+    }
+}
+impl From<StyleBase> for RecipeStyleType {
+    fn from(value: StyleBase) -> Self {
+        Self(value)
+    }
+}
+///RecipeType composes the information stored in a beerjson recipe.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "RecipeType composes the information stored in a beerjson recipe.",
+///  "type": "object",
+///  "required": [
+///    "author",
+///    "batch_size",
+///    "efficiency",
+///    "ingredients",
+///    "name",
+///    "type"
+///  ],
+///  "properties": {
+///    "alcohol_by_volume": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "apparent_attenuation": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "author": {
+///      "type": "string"
+///    },
+///    "batch_size": {
+///      "$ref": "#/definitions/VolumeType"
+///    },
+///    "beer_pH": {
+///      "$ref": "#/definitions/AcidityType"
+///    },
+///    "boil": {
+///      "$ref": "#/definitions/BoilProcedureType"
+///    },
+///    "calories_per_pint": {
+///      "type": "number"
+///    },
+///    "carbonation": {
+///      "description": "The final carbonation of the beer when packaged or served.",
+///      "type": "number"
+///    },
+///    "coauthor": {
+///      "type": "string"
+///    },
+///    "color_estimate": {
+///      "$ref": "#/definitions/ColorType"
+///    },
+///    "created": {
+///      "$ref": "#/definitions/DateType"
+///    },
+///    "efficiency": {
+///      "$ref": "#/definitions/EfficiencyType"
+///    },
+///    "fermentation": {
+///      "$ref": "#/definitions/FermentationProcedureType"
+///    },
+///    "final_gravity": {
+///      "$ref": "#/definitions/GravityType"
+///    },
+///    "ibu_estimate": {
+///      "$ref": "#/definitions/IBUEstimateType"
+///    },
+///    "ingredients": {
+///      "$ref": "#/definitions/IngredientsType"
+///    },
+///    "mash": {
+///      "$ref": "#/definitions/MashProcedureType"
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "notes": {
+///      "type": "string"
+///    },
+///    "original_gravity": {
+///      "$ref": "#/definitions/GravityType"
+///    },
+///    "packaging": {
+///      "$ref": "#/definitions/PackagingProcedureType"
+///    },
+///    "style": {
+///      "$ref": "#/definitions/RecipeStyleType"
+///    },
+///    "taste": {
+///      "$ref": "#/definitions/TasteType"
+///    },
+///    "type": {
+///      "type": "string",
+///      "enum": [
+///        "cider",
+///        "kombucha",
+///        "soda",
+///        "other",
+///        "mead",
+///        "wine",
+///        "extract",
+///        "partial mash",
+///        "all grain"
+///      ]
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct RecipeType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub alcohol_by_volume: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub apparent_attenuation: Option<PercentType>,
+    pub author: String,
+    pub batch_size: VolumeType,
+    #[serde(rename = "beer_pH", default, skip_serializing_if = "Option::is_none")]
+    pub beer_p_h: Option<AcidityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub boil: Option<BoilProcedureType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub calories_per_pint: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub carbonation: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub coauthor: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub color_estimate: Option<ColorType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created: Option<DateType>,
+    pub efficiency: EfficiencyType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fermentation: Option<FermentationProcedureType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub final_gravity: Option<GravityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ibu_estimate: Option<IbuEstimateType>,
+    pub ingredients: IngredientsType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mash: Option<MashProcedureType>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub original_gravity: Option<GravityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub packaging: Option<PackagingProcedureType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style: Option<RecipeStyleType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub taste: Option<TasteType>,
+    #[serde(rename = "type")]
+    pub type_: RecipeTypeType,
+}
+impl From<&RecipeType> for RecipeType {
+    fn from(value: &RecipeType) -> Self {
+        value.clone()
+    }
+}
+///RecipeTypeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "cider",
+///    "kombucha",
+///    "soda",
+///    "other",
+///    "mead",
+///    "wine",
+///    "extract",
+///    "partial mash",
+///    "all grain"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum RecipeTypeType {
+    #[serde(rename = "cider")]
+    Cider,
+    #[serde(rename = "kombucha")]
+    Kombucha,
+    #[serde(rename = "soda")]
+    Soda,
+    #[serde(rename = "other")]
+    Other,
+    #[serde(rename = "mead")]
+    Mead,
+    #[serde(rename = "wine")]
+    Wine,
+    #[serde(rename = "extract")]
+    Extract,
+    #[serde(rename = "partial mash")]
+    PartialMash,
+    #[serde(rename = "all grain")]
+    AllGrain,
+}
+impl From<&RecipeTypeType> for RecipeTypeType {
+    fn from(value: &RecipeTypeType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for RecipeTypeType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Cider => write!(f, "cider"),
+            Self::Kombucha => write!(f, "kombucha"),
+            Self::Soda => write!(f, "soda"),
+            Self::Other => write!(f, "other"),
+            Self::Mead => write!(f, "mead"),
+            Self::Wine => write!(f, "wine"),
+            Self::Extract => write!(f, "extract"),
+            Self::PartialMash => write!(f, "partial mash"),
+            Self::AllGrain => write!(f, "all grain"),
+        }
+    }
+}
+impl std::str::FromStr for RecipeTypeType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "cider" => Ok(Self::Cider),
+            "kombucha" => Ok(Self::Kombucha),
+            "soda" => Ok(Self::Soda),
+            "other" => Ok(Self::Other),
+            "mead" => Ok(Self::Mead),
+            "wine" => Ok(Self::Wine),
+            "extract" => Ok(Self::Extract),
+            "partial mash" => Ok(Self::PartialMash),
+            "all grain" => Ok(Self::AllGrain),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for RecipeTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for RecipeTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for RecipeTypeType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///Specific heat is the measurement of the amount of heat required to raise a given mass one degree..
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Specific heat is the measurement of the amount of heat required to raise a given mass one degree..",
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/SpecificHeatUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct SpecificHeatType {
+    pub unit: SpecificHeatUnitType,
+    pub value: f64,
+}
+impl From<&SpecificHeatType> for SpecificHeatType {
+    fn from(value: &SpecificHeatType) -> Self {
+        value.clone()
+    }
+}
+///SpecificHeatUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "Cal/(g C)",
+///    "J/(kg K)",
+///    "BTU/(lb F)"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum SpecificHeatUnitType {
+    #[serde(rename = "Cal/(g C)")]
+    CalGC,
+    #[serde(rename = "J/(kg K)")]
+    JKgK,
+    #[serde(rename = "BTU/(lb F)")]
+    BtuLbF,
+}
+impl From<&SpecificHeatUnitType> for SpecificHeatUnitType {
+    fn from(value: &SpecificHeatUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for SpecificHeatUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::CalGC => write!(f, "Cal/(g C)"),
+            Self::JKgK => write!(f, "J/(kg K)"),
+            Self::BtuLbF => write!(f, "BTU/(lb F)"),
+        }
+    }
+}
+impl std::str::FromStr for SpecificHeatUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "Cal/(g C)" => Ok(Self::CalGC),
+            "J/(kg K)" => Ok(Self::JKgK),
+            "BTU/(lb F)" => Ok(Self::BtuLbF),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for SpecificHeatUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for SpecificHeatUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for SpecificHeatUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///Specific volume is the inverse of density, with units of volume over mass, ie qt/lb or L/kg. Commonly used for mash thickness.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Specific volume is the inverse of density, with units of volume over mass, ie qt/lb or L/kg. Commonly used for mash thickness.",
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/SpecificVolumeUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct SpecificVolumeType {
+    pub unit: SpecificVolumeUnitType,
+    pub value: f64,
+}
+impl From<&SpecificVolumeType> for SpecificVolumeType {
+    fn from(value: &SpecificVolumeType) -> Self {
+        value.clone()
+    }
+}
+///SpecificVolumeUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "qt/lb",
+///    "gal/lb",
+///    "gal/oz",
+///    "l/g",
+///    "l/kg",
+///    "floz/oz",
+///    "m^3/kg",
+///    "ft^3/lb"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum SpecificVolumeUnitType {
+    #[serde(rename = "qt/lb")]
+    QtLb,
+    #[serde(rename = "gal/lb")]
+    GalLb,
+    #[serde(rename = "gal/oz")]
+    GalOz,
+    #[serde(rename = "l/g")]
+    LG,
+    #[serde(rename = "l/kg")]
+    LKg,
+    #[serde(rename = "floz/oz")]
+    FlozOz,
+    #[serde(rename = "m^3/kg")]
+    M3Kg,
+    #[serde(rename = "ft^3/lb")]
+    Ft3Lb,
+}
+impl From<&SpecificVolumeUnitType> for SpecificVolumeUnitType {
+    fn from(value: &SpecificVolumeUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for SpecificVolumeUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::QtLb => write!(f, "qt/lb"),
+            Self::GalLb => write!(f, "gal/lb"),
+            Self::GalOz => write!(f, "gal/oz"),
+            Self::LG => write!(f, "l/g"),
+            Self::LKg => write!(f, "l/kg"),
+            Self::FlozOz => write!(f, "floz/oz"),
+            Self::M3Kg => write!(f, "m^3/kg"),
+            Self::Ft3Lb => write!(f, "ft^3/lb"),
+        }
+    }
+}
+impl std::str::FromStr for SpecificVolumeUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "qt/lb" => Ok(Self::QtLb),
+            "gal/lb" => Ok(Self::GalLb),
+            "gal/oz" => Ok(Self::GalOz),
+            "l/g" => Ok(Self::LG),
+            "l/kg" => Ok(Self::LKg),
+            "floz/oz" => Ok(Self::FlozOz),
+            "m^3/kg" => Ok(Self::M3Kg),
+            "ft^3/lb" => Ok(Self::Ft3Lb),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for SpecificVolumeUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for SpecificVolumeUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for SpecificVolumeUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///The descriptive base type for both style guideline records, and recipe style provisions. Provides unique properties to identify individual styles
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The descriptive base type for both style guideline records, and recipe style provisions. Provides unique properties to identify individual styles",
+///  "type": "object",
+///  "required": [
+///    "category",
+///    "name",
+///    "style_guide",
+///    "type"
+///  ],
+///  "properties": {
+///    "category": {
+///      "type": "string"
+///    },
+///    "category_number": {
+///      "type": "integer"
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "style_guide": {
+///      "type": "string"
+///    },
+///    "style_letter": {
+///      "type": "string",
+///      "maxLength": 1,
+///      "minLength": 1,
+///      "pattern": "[A-Z ]"
+///    },
+///    "type": {
+///      "$ref": "#/definitions/StyleCategories"
+///    }
+///  }
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct StyleBase {
+    pub category: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub category_number: Option<i64>,
+    pub name: String,
+    pub style_guide: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style_letter: Option<StyleBaseStyleLetter>,
+    #[serde(rename = "type")]
+    pub type_: StyleCategories,
+}
+impl From<&StyleBase> for StyleBase {
+    fn from(value: &StyleBase) -> Self {
+        value.clone()
+    }
+}
+///StyleBaseStyleLetter
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "maxLength": 1,
+///  "minLength": 1,
+///  "pattern": "[A-Z ]"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct StyleBaseStyleLetter(String);
+impl ::std::ops::Deref for StyleBaseStyleLetter {
+    type Target = String;
+    fn deref(&self) -> &String {
+        &self.0
+    }
+}
+impl From<StyleBaseStyleLetter> for String {
+    fn from(value: StyleBaseStyleLetter) -> Self {
+        value.0
+    }
+}
+impl From<&StyleBaseStyleLetter> for StyleBaseStyleLetter {
+    fn from(value: &StyleBaseStyleLetter) -> Self {
+        value.clone()
+    }
+}
+impl ::std::str::FromStr for StyleBaseStyleLetter {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        if value.len() > 1usize {
+            return Err("longer than 1 characters".into());
+        }
+        if value.len() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        if regress::Regex::new("[A-Z ]").unwrap().find(value).is_none() {
+            return Err("doesn't match pattern \"[A-Z ]\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for StyleBaseStyleLetter {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&String> for StyleBaseStyleLetter {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<String> for StyleBaseStyleLetter {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for StyleBaseStyleLetter {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///StyleCategories
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "beer",
+///    "cider",
+///    "kombucha",
+///    "mead",
+///    "other",
+///    "soda",
+///    "wine"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum StyleCategories {
+    #[serde(rename = "beer")]
+    Beer,
+    #[serde(rename = "cider")]
+    Cider,
+    #[serde(rename = "kombucha")]
+    Kombucha,
+    #[serde(rename = "mead")]
+    Mead,
+    #[serde(rename = "other")]
+    Other,
+    #[serde(rename = "soda")]
+    Soda,
+    #[serde(rename = "wine")]
+    Wine,
+}
+impl From<&StyleCategories> for StyleCategories {
+    fn from(value: &StyleCategories) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for StyleCategories {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Beer => write!(f, "beer"),
+            Self::Cider => write!(f, "cider"),
+            Self::Kombucha => write!(f, "kombucha"),
+            Self::Mead => write!(f, "mead"),
+            Self::Other => write!(f, "other"),
+            Self::Soda => write!(f, "soda"),
+            Self::Wine => write!(f, "wine"),
+        }
+    }
+}
+impl std::str::FromStr for StyleCategories {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "beer" => Ok(Self::Beer),
+            "cider" => Ok(Self::Cider),
+            "kombucha" => Ok(Self::Kombucha),
+            "mead" => Ok(Self::Mead),
+            "other" => Ok(Self::Other),
+            "soda" => Ok(Self::Soda),
+            "wine" => Ok(Self::Wine),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for StyleCategories {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for StyleCategories {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for StyleCategories {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///StyleType provide information for Style categorization
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "StyleType provide information for Style categorization",
+///  "type": "object",
+///  "allOf": [
+///    {
+///      "$ref": "#/definitions/StyleBase"
+///    },
+///    {
+///      "properties": {
+///        "alcohol_by_volume": {
+///          "$ref": "#/definitions/PercentRangeType"
+///        },
+///        "appearance": {
+///          "type": "string"
+///        },
+///        "aroma": {
+///          "type": "string"
+///        },
+///        "carbonation": {
+///          "$ref": "#/definitions/CarbonationRangeType"
+///        },
+///        "color": {
+///          "$ref": "#/definitions/ColorRangeType"
+///        },
+///        "examples": {
+///          "type": "string"
+///        },
+///        "final_gravity": {
+///          "$ref": "#/definitions/GravityRangeType"
+///        },
+///        "flavor": {
+///          "type": "string"
+///        },
+///        "ingredients": {
+///          "type": "string"
+///        },
+///        "international_bitterness_units": {
+///          "$ref": "#/definitions/BitternessRangeType"
+///        },
+///        "mouthfeel": {
+///          "type": "string"
+///        },
+///        "notes": {
+///          "type": "string"
+///        },
+///        "original_gravity": {
+///          "$ref": "#/definitions/GravityRangeType"
+///        },
+///        "overall_impression": {
+///          "type": "string"
+///        }
+///      }
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct StyleType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub alcohol_by_volume: Option<PercentRangeType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub appearance: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub aroma: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub carbonation: Option<CarbonationRangeType>,
+    pub category: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub category_number: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub color: Option<ColorRangeType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub examples: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub final_gravity: Option<GravityRangeType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub flavor: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ingredients: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub international_bitterness_units: Option<BitternessRangeType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub mouthfeel: Option<String>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub original_gravity: Option<GravityRangeType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub overall_impression: Option<String>,
+    pub style_guide: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style_letter: Option<StyleTypeStyleLetter>,
+    #[serde(rename = "type")]
+    pub type_: StyleCategories,
+}
+impl From<&StyleType> for StyleType {
+    fn from(value: &StyleType) -> Self {
+        value.clone()
+    }
+}
+///StyleTypeStyleLetter
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "maxLength": 1,
+///  "minLength": 1,
+///  "pattern": "[A-Z ]"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Serialize, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct StyleTypeStyleLetter(String);
+impl ::std::ops::Deref for StyleTypeStyleLetter {
+    type Target = String;
+    fn deref(&self) -> &String {
+        &self.0
+    }
+}
+impl From<StyleTypeStyleLetter> for String {
+    fn from(value: StyleTypeStyleLetter) -> Self {
+        value.0
+    }
+}
+impl From<&StyleTypeStyleLetter> for StyleTypeStyleLetter {
+    fn from(value: &StyleTypeStyleLetter) -> Self {
+        value.clone()
+    }
+}
+impl ::std::str::FromStr for StyleTypeStyleLetter {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        if value.len() > 1usize {
+            return Err("longer than 1 characters".into());
+        }
+        if value.len() < 1usize {
+            return Err("shorter than 1 characters".into());
+        }
+        if regress::Regex::new("[A-Z ]").unwrap().find(value).is_none() {
+            return Err("doesn't match pattern \"[A-Z ]\"".into());
+        }
+        Ok(Self(value.to_string()))
+    }
+}
+impl ::std::convert::TryFrom<&str> for StyleTypeStyleLetter {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<&String> for StyleTypeStyleLetter {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl ::std::convert::TryFrom<String> for StyleTypeStyleLetter {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl<'de> ::serde::Deserialize<'de> for StyleTypeStyleLetter {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: ::serde::Deserializer<'de>,
+    {
+        String::deserialize(deserializer)?
+            .parse()
+            .map_err(|e: self::error::ConversionError| {
+                <D::Error as ::serde::de::Error>::custom(e.to_string())
+            })
+    }
+}
+///TasteType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "notes",
+///    "rating"
+///  ],
+///  "properties": {
+///    "notes": {
+///      "type": "string"
+///    },
+///    "rating": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct TasteType {
+    pub notes: String,
+    pub rating: f64,
+}
+impl From<&TasteType> for TasteType {
+    fn from(value: &TasteType) -> Self {
+        value.clone()
+    }
+}
+///TemperatureRangeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "maximum",
+///    "minimum"
+///  ],
+///  "properties": {
+///    "maximum": {
+///      "$ref": "#/definitions/TemperatureType"
+///    },
+///    "minimum": {
+///      "$ref": "#/definitions/TemperatureType"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct TemperatureRangeType {
+    pub maximum: TemperatureType,
+    pub minimum: TemperatureType,
+}
+impl From<&TemperatureRangeType> for TemperatureRangeType {
+    fn from(value: &TemperatureRangeType) -> Self {
+        value.clone()
+    }
+}
+///TemperatureType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/TemperatureUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct TemperatureType {
+    pub unit: TemperatureUnitType,
+    pub value: f64,
+}
+impl From<&TemperatureType> for TemperatureType {
+    fn from(value: &TemperatureType) -> Self {
+        value.clone()
+    }
+}
+///TemperatureUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "C",
+///    "F"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum TemperatureUnitType {
+    C,
+    F,
+}
+impl From<&TemperatureUnitType> for TemperatureUnitType {
+    fn from(value: &TemperatureUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for TemperatureUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::C => write!(f, "C"),
+            Self::F => write!(f, "F"),
+        }
+    }
+}
+impl std::str::FromStr for TemperatureUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "C" => Ok(Self::C),
+            "F" => Ok(Self::F),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for TemperatureUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for TemperatureUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for TemperatureUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///TimeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/TimeUnitType"
+///    },
+///    "value": {
+///      "type": "integer"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct TimeType {
+    pub unit: TimeUnitType,
+    pub value: i64,
+}
+impl From<&TimeType> for TimeType {
+    fn from(value: &TimeType) -> Self {
+        value.clone()
+    }
+}
+///TimeUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "sec",
+///    "min",
+///    "hr",
+///    "day",
+///    "week"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum TimeUnitType {
+    #[serde(rename = "sec")]
+    Sec,
+    #[serde(rename = "min")]
+    Min,
+    #[serde(rename = "hr")]
+    Hr,
+    #[serde(rename = "day")]
+    Day,
+    #[serde(rename = "week")]
+    Week,
+}
+impl From<&TimeUnitType> for TimeUnitType {
+    fn from(value: &TimeUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for TimeUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Sec => write!(f, "sec"),
+            Self::Min => write!(f, "min"),
+            Self::Hr => write!(f, "hr"),
+            Self::Day => write!(f, "day"),
+            Self::Week => write!(f, "week"),
+        }
+    }
+}
+impl std::str::FromStr for TimeUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "sec" => Ok(Self::Sec),
+            "min" => Ok(Self::Min),
+            "hr" => Ok(Self::Hr),
+            "day" => Ok(Self::Day),
+            "week" => Ok(Self::Week),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for TimeUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for TimeUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for TimeUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///The timing object fully describes the timing of an addition with options for basis on time, gravity, or pH at any process step.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The timing object fully describes the timing of an addition with options for basis on time, gravity, or pH at any process step.",
+///  "type": "object",
+///  "properties": {
+///    "continuous": {
+///      "description": "A continuous addition is spread out evenly and added during the entire process step, eg 60 minute IPA by dogfish head takes all ofthe hop additions and adds them throughout the entire boil.",
+///      "type": "boolean"
+///    },
+///    "duration": {
+///      "$ref": "#/definitions/TimeType"
+///    },
+///    "pH": {
+///      "$ref": "#/definitions/AcidityType"
+///    },
+///    "specific_gravity": {
+///      "$ref": "#/definitions/GravityType"
+///    },
+///    "step": {
+///      "description": "Used to indicate what step this ingredient timing addition is referencing. EG A value of 2 for add_to_fermentation would mean to add during the second fermentation step.",
+///      "type": "integer"
+///    },
+///    "time": {
+///      "$ref": "#/definitions/TimeType"
+///    },
+///    "use": {
+///      "$ref": "#/definitions/UseType"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct TimingType {
+    ///A continuous addition is spread out evenly and added during the entire process step, eg 60 minute IPA by dogfish head takes all ofthe hop additions and adds them throughout the entire boil.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub continuous: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub duration: Option<TimeType>,
+    #[serde(rename = "pH", default, skip_serializing_if = "Option::is_none")]
+    pub p_h: Option<AcidityType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub specific_gravity: Option<GravityType>,
+    ///Used to indicate what step this ingredient timing addition is referencing. EG A value of 2 for add_to_fermentation would mean to add during the second fermentation step.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub step: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub time: Option<TimeType>,
+    #[serde(rename = "use", default, skip_serializing_if = "Option::is_none")]
+    pub use_: Option<UseType>,
+}
+impl From<&TimingType> for TimingType {
+    fn from(value: &TimingType) -> Self {
+        value.clone()
+    }
+}
+///UnitType is used where unitless amounts are required, such as 1 apple, or 1 yeast packet.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "UnitType is used where unitless amounts are required, such as 1 apple, or 1 yeast packet.",
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/UnitUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct UnitType {
+    pub unit: UnitUnitType,
+    pub value: f64,
+}
+impl From<&UnitType> for UnitType {
+    fn from(value: &UnitType) -> Self {
+        value.clone()
+    }
+}
+///UnitUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "1",
+///    "unit",
+///    "each",
+///    "dimensionless",
+///    "pkg"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum UnitUnitType {
+    #[serde(rename = "1")]
+    _1,
+    #[serde(rename = "unit")]
+    Unit,
+    #[serde(rename = "each")]
+    Each,
+    #[serde(rename = "dimensionless")]
+    Dimensionless,
+    #[serde(rename = "pkg")]
+    Pkg,
+}
+impl From<&UnitUnitType> for UnitUnitType {
+    fn from(value: &UnitUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for UnitUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::_1 => write!(f, "1"),
+            Self::Unit => write!(f, "unit"),
+            Self::Each => write!(f, "each"),
+            Self::Dimensionless => write!(f, "dimensionless"),
+            Self::Pkg => write!(f, "pkg"),
+        }
+    }
+}
+impl std::str::FromStr for UnitUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "1" => Ok(Self::_1),
+            "unit" => Ok(Self::Unit),
+            "each" => Ok(Self::Each),
+            "dimensionless" => Ok(Self::Dimensionless),
+            "pkg" => Ok(Self::Pkg),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for UnitUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for UnitUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for UnitUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///Differentiates the specific process type when this ingredient addition is used.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Differentiates the specific process type when this ingredient addition is used.",
+///  "type": "string",
+///  "enum": [
+///    "add_to_mash",
+///    "add_to_boil",
+///    "add_to_fermentation",
+///    "add_to_package"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum UseType {
+    #[serde(rename = "add_to_mash")]
+    AddToMash,
+    #[serde(rename = "add_to_boil")]
+    AddToBoil,
+    #[serde(rename = "add_to_fermentation")]
+    AddToFermentation,
+    #[serde(rename = "add_to_package")]
+    AddToPackage,
+}
+impl From<&UseType> for UseType {
+    fn from(value: &UseType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for UseType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::AddToMash => write!(f, "add_to_mash"),
+            Self::AddToBoil => write!(f, "add_to_boil"),
+            Self::AddToFermentation => write!(f, "add_to_fermentation"),
+            Self::AddToPackage => write!(f, "add_to_package"),
+        }
+    }
+}
+impl std::str::FromStr for UseType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "add_to_mash" => Ok(Self::AddToMash),
+            "add_to_boil" => Ok(Self::AddToBoil),
+            "add_to_fermentation" => Ok(Self::AddToFermentation),
+            "add_to_package" => Ok(Self::AddToPackage),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for UseType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for UseType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for UseType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///VarietyInformation collects the attributes of a hop variety to store as record information.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "VarietyInformation collects the attributes of a hop variety to store as record information.",
+///  "type": "object",
+///  "allOf": [
+///    {
+///      "$ref": "#/definitions/HopVarietyBase"
+///    },
+///    {
+///      "properties": {
+///        "inventory": {
+///          "$ref": "#/definitions/HopInventoryType"
+///        },
+///        "notes": {
+///          "type": "string"
+///        },
+///        "oil_content": {
+///          "$ref": "#/definitions/OilContentType"
+///        },
+///        "percent_lost": {
+///          "$ref": "#/definitions/PercentType"
+///        },
+///        "substitutes": {
+///          "type": "string"
+///        },
+///        "type": {
+///          "type": "string",
+///          "enum": [
+///            "aroma",
+///            "bittering",
+///            "flavor",
+///            "aroma/bittering",
+///            "bittering/flavor",
+///            "aroma/flavor",
+///            "aroma/bittering/flavor"
+///          ]
+///        }
+///      }
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct VarietyInformation {
+    pub alpha_acid: PercentType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub beta_acid: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub form: Option<VarietyInformationForm>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inventory: Option<HopInventoryType>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub oil_content: Option<OilContentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub origin: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub percent_lost: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub substitutes: Option<String>,
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
+    pub type_: Option<VarietyInformationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub year: Option<String>,
+}
+impl From<&VarietyInformation> for VarietyInformation {
+    fn from(value: &VarietyInformation) -> Self {
+        value.clone()
+    }
+}
+///VarietyInformationForm
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "extract",
+///    "leaf",
+///    "leaf (wet)",
+///    "pellet",
+///    "powder",
+///    "plug"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum VarietyInformationForm {
+    #[serde(rename = "extract")]
+    Extract,
+    #[serde(rename = "leaf")]
+    Leaf,
+    #[serde(rename = "leaf (wet)")]
+    LeafWet,
+    #[serde(rename = "pellet")]
+    Pellet,
+    #[serde(rename = "powder")]
+    Powder,
+    #[serde(rename = "plug")]
+    Plug,
+}
+impl From<&VarietyInformationForm> for VarietyInformationForm {
+    fn from(value: &VarietyInformationForm) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for VarietyInformationForm {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Extract => write!(f, "extract"),
+            Self::Leaf => write!(f, "leaf"),
+            Self::LeafWet => write!(f, "leaf (wet)"),
+            Self::Pellet => write!(f, "pellet"),
+            Self::Powder => write!(f, "powder"),
+            Self::Plug => write!(f, "plug"),
+        }
+    }
+}
+impl std::str::FromStr for VarietyInformationForm {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "extract" => Ok(Self::Extract),
+            "leaf" => Ok(Self::Leaf),
+            "leaf (wet)" => Ok(Self::LeafWet),
+            "pellet" => Ok(Self::Pellet),
+            "powder" => Ok(Self::Powder),
+            "plug" => Ok(Self::Plug),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for VarietyInformationForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for VarietyInformationForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for VarietyInformationForm {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///VarietyInformationType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "aroma",
+///    "bittering",
+///    "flavor",
+///    "aroma/bittering",
+///    "bittering/flavor",
+///    "aroma/flavor",
+///    "aroma/bittering/flavor"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum VarietyInformationType {
+    #[serde(rename = "aroma")]
+    Aroma,
+    #[serde(rename = "bittering")]
+    Bittering,
+    #[serde(rename = "flavor")]
+    Flavor,
+    #[serde(rename = "aroma/bittering")]
+    AromaBittering,
+    #[serde(rename = "bittering/flavor")]
+    BitteringFlavor,
+    #[serde(rename = "aroma/flavor")]
+    AromaFlavor,
+    #[serde(rename = "aroma/bittering/flavor")]
+    AromaBitteringFlavor,
+}
+impl From<&VarietyInformationType> for VarietyInformationType {
+    fn from(value: &VarietyInformationType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for VarietyInformationType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Aroma => write!(f, "aroma"),
+            Self::Bittering => write!(f, "bittering"),
+            Self::Flavor => write!(f, "flavor"),
+            Self::AromaBittering => write!(f, "aroma/bittering"),
+            Self::BitteringFlavor => write!(f, "bittering/flavor"),
+            Self::AromaFlavor => write!(f, "aroma/flavor"),
+            Self::AromaBitteringFlavor => write!(f, "aroma/bittering/flavor"),
+        }
+    }
+}
+impl std::str::FromStr for VarietyInformationType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "aroma" => Ok(Self::Aroma),
+            "bittering" => Ok(Self::Bittering),
+            "flavor" => Ok(Self::Flavor),
+            "aroma/bittering" => Ok(Self::AromaBittering),
+            "bittering/flavor" => Ok(Self::BitteringFlavor),
+            "aroma/flavor" => Ok(Self::AromaFlavor),
+            "aroma/bittering/flavor" => Ok(Self::AromaBitteringFlavor),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for VarietyInformationType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for VarietyInformationType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for VarietyInformationType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///VersionType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "number"
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct VersionType(pub f64);
+impl ::std::ops::Deref for VersionType {
+    type Target = f64;
+    fn deref(&self) -> &f64 {
+        &self.0
+    }
+}
+impl From<VersionType> for f64 {
+    fn from(value: VersionType) -> Self {
+        value.0
+    }
+}
+impl From<&VersionType> for VersionType {
+    fn from(value: &VersionType) -> Self {
+        value.clone()
+    }
+}
+impl From<f64> for VersionType {
+    fn from(value: f64) -> Self {
+        Self(value)
+    }
+}
+impl std::str::FromStr for VersionType {
+    type Err = <f64 as std::str::FromStr>::Err;
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        Ok(Self(value.parse()?))
+    }
+}
+impl std::convert::TryFrom<&str> for VersionType {
+    type Error = <f64 as std::str::FromStr>::Err;
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for VersionType {
+    type Error = <f64 as std::str::FromStr>::Err;
+    fn try_from(value: &String) -> Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for VersionType {
+    type Error = <f64 as std::str::FromStr>::Err;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        value.parse()
+    }
+}
+impl ::std::fmt::Display for VersionType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+///Viscosity of fluids
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Viscosity of fluids",
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/ViscosityUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct ViscosityType {
+    pub unit: ViscosityUnitType,
+    pub value: f64,
+}
+impl From<&ViscosityType> for ViscosityType {
+    fn from(value: &ViscosityType) -> Self {
+        value.clone()
+    }
+}
+///ViscosityUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "cP",
+///    "mPa-s"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum ViscosityUnitType {
+    #[serde(rename = "cP")]
+    CP,
+    #[serde(rename = "mPa-s")]
+    MPaS,
+}
+impl From<&ViscosityUnitType> for ViscosityUnitType {
+    fn from(value: &ViscosityUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for ViscosityUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::CP => write!(f, "cP"),
+            Self::MPaS => write!(f, "mPa-s"),
+        }
+    }
+}
+impl std::str::FromStr for ViscosityUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "cP" => Ok(Self::CP),
+            "mPa-s" => Ok(Self::MPaS),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for ViscosityUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for ViscosityUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for ViscosityUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///VolumeType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "object",
+///  "required": [
+///    "unit",
+///    "value"
+///  ],
+///  "properties": {
+///    "unit": {
+///      "$ref": "#/definitions/VolumeUnitType"
+///    },
+///    "value": {
+///      "type": "number"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct VolumeType {
+    pub unit: VolumeUnitType,
+    pub value: f64,
+}
+impl From<&VolumeType> for VolumeType {
+    fn from(value: &VolumeType) -> Self {
+        value.clone()
+    }
+}
+///VolumeUnitType
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "type": "string",
+///  "enum": [
+///    "ml",
+///    "l",
+///    "tsp",
+///    "tbsp",
+///    "floz",
+///    "cup",
+///    "pt",
+///    "qt",
+///    "gal",
+///    "bbl",
+///    "ifloz",
+///    "ipt",
+///    "iqt",
+///    "igal",
+///    "ibbl"
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(
+    ::serde::Deserialize,
+    ::serde::Serialize,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    Ord,
+    PartialEq,
+    PartialOrd
+)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub enum VolumeUnitType {
+    #[serde(rename = "ml")]
+    Ml,
+    #[serde(rename = "l")]
+    L,
+    #[serde(rename = "tsp")]
+    Tsp,
+    #[serde(rename = "tbsp")]
+    Tbsp,
+    #[serde(rename = "floz")]
+    Floz,
+    #[serde(rename = "cup")]
+    Cup,
+    #[serde(rename = "pt")]
+    Pt,
+    #[serde(rename = "qt")]
+    Qt,
+    #[serde(rename = "gal")]
+    Gal,
+    #[serde(rename = "bbl")]
+    Bbl,
+    #[serde(rename = "ifloz")]
+    Ifloz,
+    #[serde(rename = "ipt")]
+    Ipt,
+    #[serde(rename = "iqt")]
+    Iqt,
+    #[serde(rename = "igal")]
+    Igal,
+    #[serde(rename = "ibbl")]
+    Ibbl,
+}
+impl From<&VolumeUnitType> for VolumeUnitType {
+    fn from(value: &VolumeUnitType) -> Self {
+        value.clone()
+    }
+}
+impl ::std::fmt::Display for VolumeUnitType {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        match *self {
+            Self::Ml => write!(f, "ml"),
+            Self::L => write!(f, "l"),
+            Self::Tsp => write!(f, "tsp"),
+            Self::Tbsp => write!(f, "tbsp"),
+            Self::Floz => write!(f, "floz"),
+            Self::Cup => write!(f, "cup"),
+            Self::Pt => write!(f, "pt"),
+            Self::Qt => write!(f, "qt"),
+            Self::Gal => write!(f, "gal"),
+            Self::Bbl => write!(f, "bbl"),
+            Self::Ifloz => write!(f, "ifloz"),
+            Self::Ipt => write!(f, "ipt"),
+            Self::Iqt => write!(f, "iqt"),
+            Self::Igal => write!(f, "igal"),
+            Self::Ibbl => write!(f, "ibbl"),
+        }
+    }
+}
+impl std::str::FromStr for VolumeUnitType {
+    type Err = self::error::ConversionError;
+    fn from_str(value: &str) -> Result<Self, self::error::ConversionError> {
+        match value {
+            "ml" => Ok(Self::Ml),
+            "l" => Ok(Self::L),
+            "tsp" => Ok(Self::Tsp),
+            "tbsp" => Ok(Self::Tbsp),
+            "floz" => Ok(Self::Floz),
+            "cup" => Ok(Self::Cup),
+            "pt" => Ok(Self::Pt),
+            "qt" => Ok(Self::Qt),
+            "gal" => Ok(Self::Gal),
+            "bbl" => Ok(Self::Bbl),
+            "ifloz" => Ok(Self::Ifloz),
+            "ipt" => Ok(Self::Ipt),
+            "iqt" => Ok(Self::Iqt),
+            "igal" => Ok(Self::Igal),
+            "ibbl" => Ok(Self::Ibbl),
+            _ => Err("invalid value".into()),
+        }
+    }
+}
+impl std::convert::TryFrom<&str> for VolumeUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &str) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<&String> for VolumeUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: &String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+impl std::convert::TryFrom<String> for VolumeUnitType {
+    type Error = self::error::ConversionError;
+    fn try_from(value: String) -> Result<Self, self::error::ConversionError> {
+        value.parse()
+    }
+}
+///WaterAdditionType collects the attributes of each water addition for use in a recipe
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "WaterAdditionType collects the attributes of each water addition for use in a recipe",
+///  "type": "object",
+///  "allOf": [
+///    {
+///      "$ref": "#/definitions/WaterBase"
+///    },
+///    {
+///      "properties": {
+///        "amount": {
+///          "$ref": "#/definitions/VolumeType"
+///        }
+///      }
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct WaterAdditionType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub amount: Option<VolumeType>,
+    pub bicarbonate: ConcentrationType,
+    pub calcium: ConcentrationType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub carbonate: Option<ConcentrationType>,
+    pub chloride: ConcentrationType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub flouride: Option<ConcentrationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub iron: Option<ConcentrationType>,
+    pub magnesium: ConcentrationType,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nitrate: Option<ConcentrationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nitrite: Option<ConcentrationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub potassium: Option<ConcentrationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    pub sodium: ConcentrationType,
+    pub sulfate: ConcentrationType,
+}
+impl From<&WaterAdditionType> for WaterAdditionType {
+    fn from(value: &WaterAdditionType) -> Self {
+        value.clone()
+    }
+}
+///WaterBase provides unique properties to identify individual records of  brewing water.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "WaterBase provides unique properties to identify individual records of  brewing water.",
+///  "type": "object",
+///  "required": [
+///    "bicarbonate",
+///    "calcium",
+///    "chloride",
+///    "magnesium",
+///    "name",
+///    "sodium",
+///    "sulfate"
+///  ],
+///  "properties": {
+///    "bicarbonate": {
+///      "$ref": "#/definitions/ConcentrationType"
+///    },
+///    "calcium": {
+///      "$ref": "#/definitions/ConcentrationType"
+///    },
+///    "carbonate": {
+///      "$ref": "#/definitions/ConcentrationType"
+///    },
+///    "chloride": {
+///      "$ref": "#/definitions/ConcentrationType"
+///    },
+///    "flouride": {
+///      "$ref": "#/definitions/ConcentrationType"
+///    },
+///    "iron": {
+///      "$ref": "#/definitions/ConcentrationType"
+///    },
+///    "magnesium": {
+///      "$ref": "#/definitions/ConcentrationType"
+///    },
+///    "name": {
+///      "type": "string"
+///    },
+///    "nitrate": {
+///      "$ref": "#/definitions/ConcentrationType"
+///    },
+///    "nitrite": {
+///      "$ref": "#/definitions/ConcentrationType"
+///    },
+///    "potassium": {
+///      "$ref": "#/definitions/ConcentrationType"
+///    },
+///    "producer": {
+///      "type": "string"
+///    },
+///    "sodium": {
+///      "$ref": "#/definitions/ConcentrationType"
+///    },
+///    "sulfate": {
+///      "$ref": "#/definitions/ConcentrationType"
+///    }
+///  }
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct WaterBase {
+    pub bicarbonate: ConcentrationType,
+    pub calcium: ConcentrationType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub carbonate: Option<ConcentrationType>,
+    pub chloride: ConcentrationType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub flouride: Option<ConcentrationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub iron: Option<ConcentrationType>,
+    pub magnesium: ConcentrationType,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nitrate: Option<ConcentrationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nitrite: Option<ConcentrationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub potassium: Option<ConcentrationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    pub sodium: ConcentrationType,
+    pub sulfate: ConcentrationType,
+}
+impl From<&WaterBase> for WaterBase {
+    fn from(value: &WaterBase) -> Self {
+        value.clone()
+    }
+}
+///WaterType collects the attributes of a brewing water to store as record information
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "WaterType collects the attributes of a brewing water to store as record information",
+///  "type": "object",
+///  "allOf": [
+///    {
+///      "$ref": "#/definitions/WaterBase"
+///    },
+///    {
+///      "properties": {
+///        "notes": {
+///          "type": "string"
+///        },
+///        "pH": {
+///          "type": "number"
+///        }
+///      }
+///    }
+///  ]
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+pub struct WaterType {
+    pub bicarbonate: ConcentrationType,
+    pub calcium: ConcentrationType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub carbonate: Option<ConcentrationType>,
+    pub chloride: ConcentrationType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub flouride: Option<ConcentrationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub iron: Option<ConcentrationType>,
+    pub magnesium: ConcentrationType,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nitrate: Option<ConcentrationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nitrite: Option<ConcentrationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
+    #[serde(rename = "pH", default, skip_serializing_if = "Option::is_none")]
+    pub p_h: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub potassium: Option<ConcentrationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub producer: Option<String>,
+    pub sodium: ConcentrationType,
+    pub sulfate: ConcentrationType,
+}
+impl From<&WaterType> for WaterType {
+    fn from(value: &WaterType) -> Self {
+        value.clone()
+    }
+}
+///The potential yield of the fermentable ingredient, supporting SG, or percentage. eg 1.037 or 80% are valid yield types.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "The potential yield of the fermentable ingredient, supporting SG, or percentage. eg 1.037 or 80% are valid yield types.",
+///  "type": "object",
+///  "minProperties": 1,
+///  "properties": {
+///    "coarse_grind": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "fine_coarse_difference": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "fine_grind": {
+///      "$ref": "#/definitions/PercentType"
+///    },
+///    "potential": {
+///      "$ref": "#/definitions/GravityType"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct YieldType {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub coarse_grind: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fine_coarse_difference: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fine_grind: Option<PercentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub potential: Option<GravityType>,
+}
+impl From<&YieldType> for YieldType {
+    fn from(value: &YieldType) -> Self {
+        value.clone()
+    }
+}
+///Zymocide, also known as killer yeast properties, is common among wine yeast. There are also some ale and brett yeasts that are immune to some zymocidic properties, these are known as killer neutral.
+///
+/// <details><summary>JSON schema</summary>
+///
+/// ```json
+///{
+///  "description": "Zymocide, also known as killer yeast properties, is common among wine yeast. There are also some ale and brett yeasts that are immune to some zymocidic properties, these are known as killer neutral.",
+///  "type": "object",
+///  "properties": {
+///    "klus": {
+///      "type": "boolean"
+///    },
+///    "neutral": {
+///      "type": "boolean"
+///    },
+///    "no1": {
+///      "type": "boolean"
+///    },
+///    "no2": {
+///      "type": "boolean"
+///    },
+///    "no28": {
+///      "type": "boolean"
+///    }
+///  },
+///  "additionalProperties": false
+///}
+/// ```
+/// </details>
+#[derive(::serde::Deserialize, ::serde::Serialize, Clone, Debug)]
+#[cfg_attr(feature = "wasm", derive(Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[cfg_attr(feature = "crdt", derive(autosurgeon::Hydrate, autosurgeon::Reconcile))]
+#[serde(deny_unknown_fields)]
+pub struct Zymocide {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub klus: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub neutral: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub no1: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub no2: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub no28: Option<bool>,
+}
+impl From<&Zymocide> for Zymocide {
+    fn from(value: &Zymocide) -> Self {
+        value.clone()
+    }
+}
+
+    

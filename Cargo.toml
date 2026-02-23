@@ -1,0 +1,6 @@
+[workspace]
+members = ["core", "persistence", "brewdio-wasm", "brewdio-tui"]
+resolver = "2"
+
+[patch.crates-io]
+indexed_db_futures = { path = "patches/indexed_db_futures" }

@@ -1,0 +1,16 @@
+[package]
+name = "brewdio-tui"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "brewdio"
+path = "src/main.rs"
+
+[dependencies]
+brewdio-core = { package = "core", path = "../core", features = ["crdt"] }
+persistence = { path = "../persistence", features = ["native"] }
+ratatui = "0.29"
+crossterm = "0.28"
+directories = "6"
+rusqlite = { version = "0.34", features = ["bundled"] }
