@@ -29,7 +29,6 @@ const MAX_VISUAL_VOL = 15;
 const TANK_WIDTH = 120;
 const CYLINDER_HEIGHT = 133; // Scaled to 2/3 of original 200
 const CONE_DROP = 47; // Scaled to 2/3 of original 70
-const TOP_MARGIN = 30; // Space for tank labels at top
 const BASELINE_Y = 170; // Position where tanks sit
 const LOSS_AREA_HEIGHT = 100; // Reserved space below tanks for loss visualization
 const SVG_HEIGHT = 350; // Increased to accommodate labels at top and controls at bottom

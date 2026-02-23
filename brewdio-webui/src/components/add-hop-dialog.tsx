@@ -180,7 +180,7 @@ export function AddHopDialog({
                 <Select
                   value={field.state.value}
                   onValueChange={(newValue) => {
-                    field.handleChange(newValue);
+                    field.handleChange(newValue as typeof field.state.value);
 
                     // Reset time field to sensible defaults when switching types
                     const currentTime = form.getFieldValue("time");
@@ -249,7 +249,7 @@ export function AddHopDialog({
                   <Label htmlFor={field.name}>Unit</Label>
                   <Select
                     value={field.state.value}
-                    onValueChange={field.handleChange}
+                    onValueChange={(v) => field.handleChange(v as typeof field.state.value)}
                   >
                     <SelectTrigger id={field.name}>
                       <SelectValue />

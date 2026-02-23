@@ -107,9 +107,6 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
     [label]
   );
 
-  const arcPoint = (angle: number, radius: number) =>
-    polarToCartesian(cx, cy, radius, angle);
-
   // 1. Calculate Needle Angle
   const clampedValue = Math.min(Math.max(value, min), max);
   const ratio = (clampedValue - min) / (max - min);

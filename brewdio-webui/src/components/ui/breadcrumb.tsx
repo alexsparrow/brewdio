@@ -2,7 +2,6 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { ChevronRight, MoreHorizontal } from "lucide-react"
 import { Link } from '@tanstack/react-router'
-
 import { cn } from "@/lib/utils"
 
 function Breadcrumb({ ...props }: React.ComponentProps<"nav">) {
@@ -45,7 +44,7 @@ function BreadcrumbLink({
     <Comp
       data-slot="breadcrumb-link"
       className={cn("hover:text-foreground transition-colors", className)}
-      {...props}
+      {...(props as any)}
     />
   )
 }

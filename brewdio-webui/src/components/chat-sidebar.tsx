@@ -9,11 +9,11 @@ import { cn } from '@/lib/utils';
 import { useChat } from '@/lib/ai/use-chat';
 import { createOpenAIProvider } from '@/lib/ai/providers/openai';
 import { Conversation, ConversationContent, ConversationScrollButton } from './ui/shadcn-io/ai/conversation';
-import { Message, MessageAvatar, MessageContent } from './ui/shadcn-io/ai/message';
+import { Message, MessageContent } from './ui/shadcn-io/ai/message';
 import { Response } from './ui/shadcn-io/ai/response';
 import { PromptInput, PromptInputTextarea, PromptInputToolbar, PromptInputSubmit } from './ui/shadcn-io/ai/prompt-input';
 import { type ToolSet } from 'ai';
-import { Tool, ToolHeader, ToolContent, ToolInput, ToolOutput } from './ui/shadcn-io/ai/tool';
+import { Tool, ToolHeader, ToolContent, ToolInput } from './ui/shadcn-io/ai/tool';
 import { globalTools } from '@/lib/ai-tools/global-tools';
 import { createRecipeTools } from '@/lib/ai-tools/recipe-tools';
 

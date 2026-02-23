@@ -29,6 +29,7 @@ interface ComboboxProps {
   searchPlaceholder?: string;
   emptyText?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 export function Combobox({

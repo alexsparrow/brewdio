@@ -15,7 +15,7 @@ interface ScrewProps {
  * Decorative screw component for retro panel aesthetic.
  * Positions itself absolutely in one of four corners.
  */
-export const Screw: React.FC<ScrewProps> = ({ tl, tr, bl, br }) => {
+export const Screw: React.FC<ScrewProps> = ({ tl, tr, bl }) => {
   const classes = `absolute w-3 h-3 rounded-full bg-gray-400 dark:bg-gray-700 border border-gray-500 dark:border-gray-900 shadow-inner flex items-center justify-center`;
   const pos = tl ? 'top-2 left-2' : tr ? 'top-2 right-2' : bl ? 'bottom-2 left-2' : 'bottom-2 right-2';
 

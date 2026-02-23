@@ -7,7 +7,6 @@ import {
   FlaskConical,
   Code,
   Beaker,
-  Droplets,
   FileText,
   GitBranch,
   Flame,
@@ -141,7 +140,7 @@ function RecipeMenuItems({
           {showBatches && (
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <Link to={`${baseRoute}/batches`} params={params}>
+                <Link to={`${baseRoute}/batches` as string} params={params}>
                   <Beaker />
                   <span>Batches</span>
                 </Link>
@@ -153,7 +152,7 @@ function RecipeMenuItems({
           {showJsonEditor && (
             <SidebarMenuItem>
               <SidebarMenuButton asChild>
-                <Link to={`${baseRoute}/json`} params={params}>
+                <Link to={`${baseRoute}/json` as string} params={params}>
                   <Code />
                   <span>JSON Editor</span>
                 </Link>

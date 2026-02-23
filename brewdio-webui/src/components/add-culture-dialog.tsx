@@ -189,7 +189,7 @@ export function AddCultureDialog({
                   <Label htmlFor={field.name}>Unit</Label>
                   <Select
                     value={field.state.value}
-                    onValueChange={field.handleChange}
+                    onValueChange={(v) => field.handleChange(v as typeof field.state.value)}
                   >
                     <SelectTrigger id={field.name}>
                       <SelectValue />

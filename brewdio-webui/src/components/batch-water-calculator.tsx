@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { WaterFlowVisualization } from './water-flow-visualization';
 import { calculateWaterVolumes, equipmentToStages } from '@/lib/water-calculations';
 import type { BatchDocument } from '@/lib/db/batches';

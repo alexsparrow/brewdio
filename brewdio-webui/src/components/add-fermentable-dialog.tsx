@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useSettings } from "@/lib/db/settings";
 import { useRecipeEdit } from "@/contexts/recipe-edit-context";
-import type { FermentableAdditionType, FermentableType, MassUnitType } from "brewdio-wasm";
+import type { FermentableAdditionType, MassUnitType } from "brewdio-wasm";
 import {
   Dialog,
   DialogContent,
@@ -191,7 +191,7 @@ export function AddFermentableDialog({
                   <Label htmlFor={field.name}>Unit</Label>
                   <Select
                     value={field.state.value}
-                    onValueChange={field.handleChange}
+                    onValueChange={(v) => field.handleChange(v as typeof field.state.value)}
                   >
                     <SelectTrigger id={field.name}>
                       <SelectValue />
