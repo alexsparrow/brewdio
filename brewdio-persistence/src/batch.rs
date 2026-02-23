@@ -203,6 +203,39 @@ pub fn create_batch_from_recipe(
     create_batch(conn, name, recipe_id, &json)
 }
 
+pub fn count_batches_for_recipe(
+    conn: &(impl Connection + ?Sized),
+    recipe_id: &str,
+) -> Result<usize, DbError> {
+    let ids = conn.query_map(
+        "SELECT id FROM batch WHERE recipe_id = ?1",
+        &[Value::Text(recipe_id)],
+        |row| row.get_text(0),
+    )?;
+    Ok(ids.len())
+}
+
+// --- Sync-related functions ---
+
+pub fn list_all_batch_ids(conn: &(impl Connection + ?Sized)) -> Result<Vec<String>, DbError> {
+    conn.query_map("SELECT id FROM batch", &[], |row| row.get_text(0))
+}
+
+pub fn list_dirty_batches(conn: &(impl Connection + ?Sized)) -> Result<Vec<BatchRow>, DbError> {
+    conn.query_map(
+        "SELECT id, name, recipe_id, data, am_data, is_deleted, is_dirty FROM batch WHERE is_dirty = TRUE",
+        &[],
+        row_from_query,
+    )
+}
+
+pub fn clear_dirty_batch(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
+    conn.execute(
+        "UPDATE batch SET is_dirty = FALSE WHERE id = ?1",
+        &[Value::Text(id)],
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

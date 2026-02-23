@@ -6,13 +6,15 @@ use ratatui::{
     Frame,
 };
 
-use crate::app::{App, BatchSizeDialogStep, CultureDialogStep, FermentableDialogStep, HopDialogStep, HomeTab, Screen, Tab, VitalDisplay, CULTURE_UNITS, MASS_UNITS, VOLUME_UNITS, USE_TYPES, format_hop_timing, use_type_label};
+use crate::app::{App, BatchSizeDialogStep, CultureDialogStep, FermentableDialogStep, HopDialogStep, HomeTab, NotesTarget, Screen, Tab, VitalDisplay, CULTURE_UNITS, MASS_UNITS, VOLUME_UNITS, USE_TYPES, format_hop_timing, use_type_label};
 use brewdio_core::beerjson_types::{CultureAdditionTypeAmount, FermentableAdditionTypeAmount, HopAdditionTypeAmount, UseType};
+
 
 pub fn draw(frame: &mut Frame, app: &App) {
     match &app.screen {
         Screen::Home => draw_home(frame, app),
         Screen::RecipeEdit { .. } => draw_recipe_edit(frame, app),
+        Screen::BatchEdit { .. } => draw_batch_edit(frame, app),
     }
 }
 
@@ -71,7 +73,9 @@ fn draw_home(frame: &mut Frame, app: &App) {
             Paragraph::new(Line::from(spans))
         }
         HomeTab::Batches => Paragraph::new(Line::from(vec![
-            Span::styled(" [d]", Style::default().fg(Color::Cyan)),
+            Span::styled(" [Enter]", Style::default().fg(Color::Cyan)),
+            Span::raw(" open  "),
+            Span::styled("[d]", Style::default().fg(Color::Cyan)),
             Span::raw("elete  "),
             Span::styled("[Tab]", Style::default().fg(Color::Cyan)),
             Span::raw(" next  "),
@@ -229,6 +233,19 @@ fn draw_confirm_delete(frame: &mut Frame, recipe_name: &str, area: Rect) {
 }
 
 fn draw_batches_tab(frame: &mut Frame, app: &App, area: Rect) {
+    let block = Block::default().borders(Borders::ALL).title(" Batches ");
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+
+    if app.batches.is_empty() {
+        let empty = Paragraph::new(Line::from(Span::styled(
+            "  No batches yet",
+            Style::default().fg(Color::DarkGray),
+        )));
+        frame.render_widget(empty, inner);
+        return;
+    }
+
     let items: Vec<ListItem> = app
         .batches
         .iter()
@@ -246,15 +263,31 @@ fn draw_batches_tab(frame: &mut Frame, app: &App, area: Rect) {
             } else {
                 Style::default()
             };
-            ListItem::new(Line::from(Span::styled(
-                format!("{}{}  {}  {}", prefix, b.name, b.recipe_name, b.brew_date),
-                style,
-            )))
+            let dim_style = if i == app.batch_list_index {
+                style
+            } else {
+                Style::default().fg(Color::DarkGray)
+            };
+
+            let recipe_part = format!("({})", b.recipe_name);
+            let total_width = inner.width as usize;
+            // prefix(3) + name + 2 spaces + recipe_part + brew_date
+            let used = 3 + b.name.len() + 2 + recipe_part.len() + b.brew_date.len();
+            let padding = if total_width > used { total_width - used } else { 1 };
+
+            ListItem::new(Line::from(vec![
+                Span::styled(prefix, style),
+                Span::styled(b.name.clone(), style),
+                Span::styled("  ", Style::default()),
+                Span::styled(recipe_part, dim_style),
+                Span::styled(" ".repeat(padding), Style::default()),
+                Span::styled(b.brew_date.clone(), dim_style),
+            ]))
         })
         .collect();
 
-    let list = List::new(items).block(Block::default().borders(Borders::ALL).title(" Batches "));
-    frame.render_widget(list, area);
+    let list = List::new(items);
+    frame.render_widget(list, inner);
 }
 
 fn draw_settings_tab(frame: &mut Frame, app: &App, area: Rect) {
@@ -292,7 +325,7 @@ fn draw_settings_tab(frame: &mut Frame, app: &App, area: Rect) {
 }
 
 fn draw_recipe_edit(frame: &mut Frame, app: &App) {
-    // Header has 3 rows (Name, Style, Batch) + 2 border = 5
+    // Header has 4 rows (Name, Style, Batch, Notes) + 2 border = 6
     // Vitals: 5 vitals × 2 lines + 2 border = 12
     // Top row height is driven by vitals
     let top_height = 12;
@@ -372,31 +405,135 @@ fn draw_recipe_edit(frame: &mut Frame, app: &App) {
                 " [←/→] change unit, [Enter] confirm, [Esc] cancel"
             }
         }
+    } else if app.notes_editor.is_some() {
+        " [F2] save  [Esc] cancel"
+    } else if app.active_tab == Tab::History {
+        " [j/k] navigate  [n]ame  [s]tyle  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
+    } else if app.active_tab == Tab::Batches {
+        " [Enter] open  [j/k] navigate  [n]ame  [s]tyle  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
     } else if app.active_tab == Tab::Fermentables || app.active_tab == Tab::Hops || app.active_tab == Tab::Cultures {
-        " [a]dd  [Enter] edit  [d]elete  [j/k] navigate  [n]ame  [s]tyle  [v]ol  [1-5] tabs  [Esc] back"
+        " [a]dd  [Enter] edit  [d]elete  [j/k] navigate  [n]ame  [s]tyle  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
     } else {
-        " [n]ame  [s]tyle  [v]ol  [b]rew  [1-5] tabs  [Esc] back"
+        " [n]ame  [s]tyle  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
     };
     let help = Paragraph::new(Line::from(Span::raw(help_text)))
         .block(Block::default().borders(Borders::ALL));
     frame.render_widget(help, outer[3]);
+
+    // Notes popup overlay
+    if app.notes_editor.is_some() {
+        draw_notes_popup(frame, app);
+    }
+}
+
+fn draw_batch_edit(frame: &mut Frame, app: &App) {
+    let top_height = 12;
+
+    let outer = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(1),
+            Constraint::Length(top_height),
+            Constraint::Min(3),
+            Constraint::Length(3),
+        ])
+        .split(frame.area());
+
+    draw_status_bar(frame, app, outer[0]);
+
+    let cols = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Min(20), Constraint::Length(34)])
+        .split(outer[1]);
+
+    draw_header(frame, app, cols[0]);
+    draw_vitals_panel(frame, app, cols[1]);
+    draw_tab_content(frame, app, outer[2]);
+
+    let help_text = if app.editing_name {
+        " Type to edit, [Enter] confirm, [Esc] cancel"
+    } else if app.editing_brew_date {
+        " Type date (YYYY-MM-DD), [Enter] confirm, [Esc] cancel"
+    } else if app.style_selector.is_some() {
+        " Type to search, [↑/↓] navigate, [Enter] confirm, [Esc] cancel"
+    } else if app.fermentable_dialog.is_some() {
+        match app.fermentable_dialog.as_ref().unwrap().step {
+            FermentableDialogStep::SelectFermentable => {
+                " Type to search, [↑/↓] navigate, [Enter] confirm, [Esc] cancel"
+            }
+            FermentableDialogStep::EnterAmount => " Type amount, [Enter] confirm, [Esc] cancel",
+            FermentableDialogStep::SelectUnit => {
+                " [←/→] change unit, [Enter] confirm, [Esc] cancel"
+            }
+        }
+    } else if app.batch_size_dialog.is_some() {
+        match app.batch_size_dialog.as_ref().unwrap().step {
+            BatchSizeDialogStep::EnterValue => " Type volume, [Enter] confirm, [Esc] cancel",
+            BatchSizeDialogStep::SelectUnit => {
+                " [←/→] change unit, [Enter] confirm, [Esc] cancel"
+            }
+        }
+    } else if app.hop_dialog.is_some() {
+        match app.hop_dialog.as_ref().unwrap().step {
+            HopDialogStep::SelectHop => {
+                " Type to search, [↑/↓] navigate, [Enter] confirm, [Esc] cancel"
+            }
+            HopDialogStep::EnterAmount => " Type amount, [Enter] confirm, [Esc] cancel",
+            HopDialogStep::SelectUnit => {
+                " [←/→] change unit, [Enter] confirm, [Esc] cancel"
+            }
+            HopDialogStep::SelectUse => {
+                " [←/→] change use, [Enter] confirm, [Esc] cancel"
+            }
+            HopDialogStep::EnterTime => " Type time, [Enter] confirm, [Esc] cancel",
+        }
+    } else if app.culture_dialog.is_some() {
+        match app.culture_dialog.as_ref().unwrap().step {
+            CultureDialogStep::SelectCulture => {
+                " Type to search, [↑/↓] navigate, [Enter] confirm, [Esc] cancel"
+            }
+            CultureDialogStep::EnterAmount => " Type amount, [Enter] confirm, [Esc] cancel",
+            CultureDialogStep::SelectUnit => {
+                " [←/→] change unit, [Enter] confirm, [Esc] cancel"
+            }
+        }
+    } else if app.notes_editor.is_some() {
+        " [F2] save  [Esc] cancel"
+    } else if app.active_tab == Tab::History {
+        " [j/k] navigate  [n]ame  [e]date  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
+    } else if app.active_tab == Tab::Fermentables || app.active_tab == Tab::Hops || app.active_tab == Tab::Cultures {
+        " [a]dd  [Enter] edit  [d]elete  [j/k] navigate  [n]ame  [e]date  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
+    } else {
+        " [n]ame  [e]date  [v]ol  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
+    };
+    let help = Paragraph::new(Line::from(Span::raw(help_text)))
+        .block(Block::default().borders(Borders::ALL));
+    frame.render_widget(help, outer[3]);
+
+    // Notes popup overlay
+    if app.notes_editor.is_some() {
+        draw_notes_popup(frame, app);
+    }
 }
 
 fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
-    let block = Block::default().borders(Borders::ALL).title(" Recipe ");
+    let is_batch = matches!(app.screen, Screen::BatchEdit { .. });
+    let title = if is_batch { " Batch " } else { " Recipe " };
+    let block = Block::default().borders(Borders::ALL).title(title);
 
     let inner = block.inner(area);
     frame.render_widget(block, area);
 
+    let row_count = if is_batch { 5 } else { 4 };
+    let mut constraints: Vec<Constraint> = (0..row_count).map(|_| Constraint::Length(1)).collect();
+    constraints.push(Constraint::Min(0));
+
     let rows = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Length(1),
-            Constraint::Length(1),
-            Constraint::Length(1),
-            Constraint::Min(0),
-        ])
+        .constraints(constraints)
         .split(inner);
+
+    let mut row_idx = 0;
 
     // Name row
     let name_style = if app.editing_name {
@@ -413,7 +550,8 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
         Span::styled(" Name:  ", Style::default().fg(Color::DarkGray)),
         Span::styled(name_display, name_style),
     ]);
-    frame.render_widget(Paragraph::new(name_line), rows[0]);
+    frame.render_widget(Paragraph::new(name_line), rows[row_idx]);
+    row_idx += 1;
 
     // Style row
     if let Some(ref selector) = app.style_selector {
@@ -427,21 +565,84 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
                 Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD),
             ),
         ]);
-        frame.render_widget(Paragraph::new(style_line), rows[1]);
+        frame.render_widget(Paragraph::new(style_line), rows[row_idx]);
     } else {
         let style_line = Line::from(vec![
             Span::styled(" Style: ", Style::default().fg(Color::DarkGray)),
             Span::raw(app.style_name()),
         ]);
-        frame.render_widget(Paragraph::new(style_line), rows[1]);
+        frame.render_widget(Paragraph::new(style_line), rows[row_idx]);
     }
+    row_idx += 1;
 
     // Batch size row
     let batch_line = Line::from(vec![
         Span::styled(" Batch: ", Style::default().fg(Color::DarkGray)),
         Span::raw(app.batch_size_display()),
     ]);
-    frame.render_widget(Paragraph::new(batch_line), rows[2]);
+    frame.render_widget(Paragraph::new(batch_line), rows[row_idx]);
+    row_idx += 1;
+
+    // Brew date row (batch edit only)
+    if is_batch {
+        let date_style = if app.editing_brew_date {
+            Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)
+        } else {
+            Style::default()
+        };
+        let date_display = if app.editing_brew_date {
+            format!("{}▏", app.brew_date_input)
+        } else {
+            app.brew_date_input.clone()
+        };
+        let date_line = Line::from(vec![
+            Span::styled(" Date:  ", Style::default().fg(Color::DarkGray)),
+            Span::styled(date_display, date_style),
+        ]);
+        frame.render_widget(Paragraph::new(date_line), rows[row_idx]);
+        row_idx += 1;
+    }
+
+    // Notes row
+    let notes_text = if is_batch {
+        if app.batch_notes_text.is_empty() {
+            "(none)".to_string()
+        } else {
+            let first_line = app.batch_notes_text.lines().next().unwrap_or("");
+            let max_len = inner.width.saturating_sub(10) as usize;
+            if first_line.len() > max_len {
+                format!("{}...", &first_line[..max_len.saturating_sub(3)])
+            } else if app.batch_notes_text.lines().count() > 1 {
+                format!("{}...", first_line)
+            } else {
+                first_line.to_string()
+            }
+        }
+    } else {
+        let notes = app
+            .current_doc
+            .as_ref()
+            .and_then(|d| d.recipe.notes.as_deref())
+            .unwrap_or("");
+        if notes.is_empty() {
+            "(none)".to_string()
+        } else {
+            let first_line = notes.lines().next().unwrap_or("");
+            let max_len = inner.width.saturating_sub(10) as usize;
+            if first_line.len() > max_len {
+                format!("{}...", &first_line[..max_len.saturating_sub(3)])
+            } else if notes.lines().count() > 1 {
+                format!("{}...", first_line)
+            } else {
+                first_line.to_string()
+            }
+        }
+    };
+    let notes_line = Line::from(vec![
+        Span::styled(" Notes: ", Style::default().fg(Color::DarkGray)),
+        Span::styled(notes_text, Style::default().fg(Color::DarkGray)),
+    ]);
+    frame.render_widget(Paragraph::new(notes_line), rows[row_idx]);
 
     // Overlay batch size dialog if active
     if app.batch_size_dialog.is_some() {
@@ -635,8 +836,45 @@ fn draw_status_bar(frame: &mut Frame, app: &App, area: Rect) {
                 Tab::Cultures,
                 Tab::Water,
                 Tab::Mash,
+                Tab::Batches,
+                Tab::History,
             ];
             for (i, tab) in recipe_tabs.iter().enumerate() {
+                let is_active = *tab == app.active_tab;
+                let label = format!(" [{}]{} ", i + 1, tab.label());
+                if is_active {
+                    spans.push(Span::styled(
+                        label,
+                        Style::default()
+                            .bg(active_bg)
+                            .fg(active_fg)
+                            .add_modifier(Modifier::BOLD),
+                    ));
+                } else {
+                    spans.push(Span::styled(
+                        label,
+                        Style::default().bg(bg).fg(inactive_fg),
+                    ));
+                }
+                spans.push(Span::styled(" ", bar_style));
+            }
+        }
+        Screen::BatchEdit { .. } => {
+            spans.push(Span::styled(
+                " Batch ",
+                Style::default().bg(view_bg).fg(view_fg).add_modifier(Modifier::BOLD),
+            ));
+            spans.push(Span::styled(" ", Style::default()));
+
+            let batch_tabs = [
+                Tab::Fermentables,
+                Tab::Hops,
+                Tab::Cultures,
+                Tab::Water,
+                Tab::Mash,
+                Tab::History,
+            ];
+            for (i, tab) in batch_tabs.iter().enumerate() {
                 let is_active = *tab == app.active_tab;
                 let label = format!(" [{}]{} ", i + 1, tab.label());
                 if is_active {
@@ -703,6 +941,8 @@ fn draw_tab_content(frame: &mut Frame, app: &App, area: Rect) {
         Tab::Fermentables => draw_fermentables_tab(frame, app, area),
         Tab::Hops => draw_hops_tab(frame, app, area),
         Tab::Cultures => draw_cultures_tab(frame, app, area),
+        Tab::Batches => draw_recipe_batches_tab(frame, app, area),
+        Tab::History => draw_history_tab(frame, app, area),
         _ => {
             let content = Paragraph::new(Line::from(Span::styled(
                 "  (coming soon)",
@@ -716,6 +956,191 @@ fn draw_tab_content(frame: &mut Frame, app: &App, area: Rect) {
             frame.render_widget(content, area);
         }
     }
+}
+
+fn draw_recipe_batches_tab(frame: &mut Frame, app: &App, area: Rect) {
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(" Batches ");
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+
+    if app.recipe_batches.is_empty() {
+        let empty = Paragraph::new(Line::from(Span::styled(
+            "  No batches yet. Press [b] to brew.",
+            Style::default().fg(Color::DarkGray),
+        )));
+        frame.render_widget(empty, inner);
+    } else {
+        let items: Vec<ListItem> = app
+            .recipe_batches
+            .iter()
+            .enumerate()
+            .map(|(i, b)| {
+                let prefix = if i == app.recipe_batch_list_index {
+                    " ► "
+                } else {
+                    "   "
+                };
+                let style = if i == app.recipe_batch_list_index {
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default()
+                };
+                let dim_style = if i == app.recipe_batch_list_index {
+                    style
+                } else {
+                    Style::default().fg(Color::DarkGray)
+                };
+
+                let total_width = inner.width as usize;
+                // prefix(3) + name + brew_date
+                let used = 3 + b.name.len() + b.brew_date.len();
+                let padding = if total_width > used { total_width - used } else { 1 };
+
+                ListItem::new(Line::from(vec![
+                    Span::styled(prefix, style),
+                    Span::styled(b.name.clone(), style),
+                    Span::styled(" ".repeat(padding), Style::default()),
+                    Span::styled(b.brew_date.clone(), dim_style),
+                ]))
+            })
+            .collect();
+
+        let list = List::new(items);
+        frame.render_widget(list, inner);
+    }
+}
+
+fn draw_history_tab(frame: &mut Frame, app: &App, area: Rect) {
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(" History ");
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+
+    if app.history_loading {
+        let loading = Paragraph::new(Line::from(Span::styled(
+            "  Loading history...",
+            Style::default().fg(Color::DarkGray),
+        )));
+        frame.render_widget(loading, inner);
+        return;
+    }
+
+    if app.history_entries.is_empty() {
+        let empty = Paragraph::new(Line::from(Span::styled(
+            "  No history available",
+            Style::default().fg(Color::DarkGray),
+        )));
+        frame.render_widget(empty, inner);
+        return;
+    }
+
+    let visible_height = inner.height as usize;
+    // Show most recent first
+    let reversed: Vec<_> = app.history_entries.iter().rev().collect();
+    let total = reversed.len();
+
+    // Ensure scroll doesn't exceed bounds
+    let scroll = app.history_scroll.min(total.saturating_sub(1));
+
+    // Viewport: show entries starting at scroll position
+    let end = (scroll + visible_height).min(total);
+    let visible = &reversed[scroll..end];
+
+    let items: Vec<ListItem> = visible
+        .iter()
+        .enumerate()
+        .map(|(i, entry)| {
+            let is_selected = i + scroll == app.history_scroll;
+
+            let prefix = if is_selected { " \u{25ba} " } else { "   " };
+
+            // Format timestamp: YYYY-MM-DD HH:MM:SS from epoch millis
+            let ts = format_timestamp(entry.change.timestamp);
+
+            // Actor ID: first 8 hex chars
+            let actor = if entry.change.actor_id.len() >= 8 {
+                &entry.change.actor_id[..8]
+            } else {
+                &entry.change.actor_id
+            };
+
+            let style = if is_selected {
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD)
+            } else {
+                Style::default()
+            };
+            let dim_style = if is_selected {
+                style
+            } else {
+                Style::default().fg(Color::DarkGray)
+            };
+
+            ListItem::new(Line::from(vec![
+                Span::styled(prefix, style),
+                Span::styled(ts, dim_style),
+                Span::styled("  ", Style::default()),
+                Span::styled(actor.to_string(), Style::default().fg(Color::DarkGray)),
+                Span::styled("  ", Style::default()),
+                Span::styled(entry.summary.clone(), style),
+            ]))
+        })
+        .collect();
+
+    let list = List::new(items);
+    frame.render_widget(list, inner);
+}
+
+fn format_timestamp(epoch_millis: i64) -> String {
+    if epoch_millis == 0 {
+        return "                   ".to_string();
+    }
+    let total_secs = epoch_millis / 1000;
+    let secs_of_day = ((total_secs % 86400) + 86400) % 86400;
+    let hours = secs_of_day / 3600;
+    let minutes = (secs_of_day % 3600) / 60;
+    let seconds = secs_of_day % 60;
+
+    let days_since_epoch = total_secs / 86400;
+    let mut days = days_since_epoch;
+    let mut year = 1970i64;
+    loop {
+        let days_in_year = if year % 4 == 0 && (year % 100 != 0 || year % 400 == 0) {
+            366
+        } else {
+            365
+        };
+        if days < days_in_year {
+            break;
+        }
+        days -= days_in_year;
+        year += 1;
+    }
+    let leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+    let month_days = [
+        31,
+        if leap { 29 } else { 28 },
+        31, 30, 31, 30, 31, 31, 30, 31, 30, 31,
+    ];
+    let mut month = 12;
+    for (i, &md) in month_days.iter().enumerate() {
+        if days < md {
+            month = i + 1;
+            break;
+        }
+        days -= md;
+    }
+    let day = days + 1;
+    format!(
+        "{:04}-{:02}-{:02} {:02}:{:02}:{:02}",
+        year, month, day, hours, minutes, seconds
+    )
 }
 
 fn draw_fermentables_tab(frame: &mut Frame, app: &App, area: Rect) {
@@ -1670,6 +2095,53 @@ fn draw_vitals_panel(frame: &mut Frame, app: &App, area: Rect) {
         let bar_line = draw_range_bar(vital, bar_width);
         frame.render_widget(Paragraph::new(bar_line), rows[row_base + 1]);
     }
+}
+
+fn draw_notes_popup(frame: &mut Frame, app: &App) {
+    let editor = match app.notes_editor.as_ref() {
+        Some(e) => e,
+        None => return,
+    };
+
+    let area = frame.area();
+    let popup_width = (area.width * 3 / 4).max(40).min(area.width.saturating_sub(4));
+    let popup_height = (area.height * 3 / 4).max(10).min(area.height.saturating_sub(2));
+    let popup_area = centered_rect(popup_width, popup_height, area);
+
+    // Clear background
+    frame.render_widget(
+        Paragraph::new("").style(Style::default().bg(Color::Black)),
+        popup_area,
+    );
+
+    let title = match app.notes_target {
+        NotesTarget::Recipe => " Recipe Notes ",
+        NotesTarget::Batch => " Batch Notes ",
+    };
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(title)
+        .style(Style::default().bg(Color::Black));
+    let inner = block.inner(popup_area);
+    frame.render_widget(block, popup_area);
+
+    // Split inner: editor area + hint bar
+    let rows = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(1), Constraint::Length(1)])
+        .split(inner);
+
+    frame.render_widget(editor, rows[0]);
+
+    frame.render_widget(
+        Paragraph::new(Line::from(vec![
+            Span::styled(" [F2]", Style::default().fg(Color::Cyan)),
+            Span::raw(" save  "),
+            Span::styled("[Esc]", Style::default().fg(Color::Cyan)),
+            Span::raw(" cancel"),
+        ])),
+        rows[1],
+    );
 }
 
 fn draw_range_bar(vital: &VitalDisplay, bar_width: u16) -> Line<'static> {

@@ -11,15 +11,15 @@ use tokio_tungstenite::connect_async;
 use tokio_tungstenite::tungstenite::Message;
 
 use crate::db;
-use crate::protocol::SyncMessage;
+use crate::protocol::{DocType, SyncMessage};
 use crate::sync::SyncSession;
 
 const PEER_ID: &str = "server";
 const DIRTY_CHECK_INTERVAL: Duration = Duration::from_secs(2);
 const RECONNECT_DELAY: Duration = Duration::from_secs(5);
 
-/// Persistent sync sessions keyed by recipe ID, kept alive for the connection.
-type Sessions = HashMap<String, SyncSession>;
+/// Persistent sync sessions keyed by (DocType, doc_id), kept alive for the connection.
+type Sessions = HashMap<(DocType, String), SyncSession>;
 
 /// Spawn a background sync worker that connects to the given WebSocket server URL.
 /// Returns a `JoinHandle` for the spawned task.
@@ -61,12 +61,18 @@ async fn connect_and_sync(
     }
 
     // --- Hello handshake ---
-    let local_ids = {
+    let (local_recipe_ids, local_batch_ids, local_settings_ids) = {
         let c = conn.lock().unwrap_or_else(|e| e.into_inner());
-        db::list_all_recipe_ids(&*c)?
+        (
+            db::list_all_doc_ids(&*c, DocType::Recipe)?,
+            db::list_all_doc_ids(&*c, DocType::Batch)?,
+            db::list_all_doc_ids(&*c, DocType::Settings)?,
+        )
     };
     let hello = SyncMessage::Hello {
-        recipe_ids: local_ids.clone(),
+        recipe_ids: local_recipe_ids.clone(),
+        batch_ids: local_batch_ids.clone(),
+        settings_ids: local_settings_ids.clone(),
     };
     ws_tx
         .send(Message::Text(serde_json::to_string(&hello)?.into()))
@@ -85,35 +91,51 @@ async fn connect_and_sync(
         }
     };
 
-    let server_ids: HashSet<String> = match server_hello {
-        SyncMessage::Hello { recipe_ids } => recipe_ids.into_iter().collect(),
+    let (server_recipe_ids, server_batch_ids, server_settings_ids) = match server_hello {
+        SyncMessage::Hello {
+            recipe_ids,
+            batch_ids,
+            settings_ids,
+        } => (
+            recipe_ids.into_iter().collect::<HashSet<_>>(),
+            batch_ids.into_iter().collect::<HashSet<_>>(),
+            settings_ids.into_iter().collect::<HashSet<_>>(),
+        ),
         _ => return Err("Expected Hello from server".into()),
     };
-    let local_id_set: HashSet<String> = local_ids.into_iter().collect();
 
     // Handshake complete — mark as connected
     connected.store(true, Ordering::Relaxed);
 
-    // Send NewDoc for recipes only we have
-    for id in local_id_set.difference(&server_ids) {
-        let row = {
-            let c = conn.lock().unwrap_or_else(|e| e.into_inner());
-            db::get_recipe(&*c, id)?
-        };
-        if let Some(row) = row {
-            let msg = SyncMessage::NewDoc {
-                recipe_id: id.clone(),
-                am_data: row.am_data,
+    // Send NewDoc for docs only we have
+    let local_sets: [(DocType, HashSet<String>, &HashSet<String>); 3] = [
+        (DocType::Recipe, local_recipe_ids.into_iter().collect(), &server_recipe_ids),
+        (DocType::Batch, local_batch_ids.into_iter().collect(), &server_batch_ids),
+        (DocType::Settings, local_settings_ids.into_iter().collect(), &server_settings_ids),
+    ];
+
+    for (doc_type, local_ids, server_ids) in &local_sets {
+        for id in local_ids.difference(server_ids) {
+            let am_data = {
+                let c = conn.lock().unwrap_or_else(|e| e.into_inner());
+                db::get_doc_am_data(&*c, *doc_type, id)?
             };
-            ws_tx
-                .send(Message::Text(serde_json::to_string(&msg)?.into()))
-                .await?;
-            let c = conn.lock().unwrap_or_else(|e| e.into_inner());
-            db::clear_dirty(&*c, id)?;
+            if let Some(am_data) = am_data {
+                let msg = SyncMessage::NewDoc {
+                    doc_type: *doc_type,
+                    doc_id: id.clone(),
+                    am_data,
+                };
+                ws_tx
+                    .send(Message::Text(serde_json::to_string(&msg)?.into()))
+                    .await?;
+                let c = conn.lock().unwrap_or_else(|e| e.into_inner());
+                db::clear_dirty_doc(&*c, *doc_type, id)?;
+            }
         }
     }
 
-    // Server initiates sync for shared recipes; client just responds.
+    // Server initiates sync for shared docs; client just responds.
     // --- Steady-state loop ---
     let mut dirty_interval = tokio::time::interval(DIRTY_CHECK_INTERVAL);
 
@@ -134,51 +156,51 @@ async fn connect_and_sync(
             _ = dirty_interval.tick() => {
                 let dirty = {
                     let c = conn.lock().unwrap_or_else(|e| e.into_inner());
-                    db::list_dirty_recipes(&*c)?
+                    db::list_dirty_docs(&*c)?
                 };
-                for row in &dirty {
-                    send_sync_for_recipe(conn, &mut sessions, &mut ws_tx, &row.id).await?;
+                for (doc_type, id) in &dirty {
+                    send_sync_for_doc(conn, &mut sessions, &mut ws_tx, *doc_type, id).await?;
                 }
             }
         }
     }
 }
 
-/// Get or create a persistent SyncSession for a recipe.
+/// Get or create a persistent SyncSession for a document.
 fn get_or_create_session<'a>(
     conn: &Arc<Mutex<rusqlite::Connection>>,
     sessions: &'a mut Sessions,
-    recipe_id: &str,
+    doc_type: DocType,
+    doc_id: &str,
 ) -> Option<&'a mut SyncSession> {
-    if !sessions.contains_key(recipe_id) {
-        let row = {
+    let key = (doc_type, doc_id.to_string());
+    if !sessions.contains_key(&key) {
+        let am_data = {
             let c = conn.lock().unwrap_or_else(|e| e.into_inner());
-            db::get_recipe(&*c, recipe_id).ok().flatten()
+            db::get_doc_am_data(&*c, doc_type, doc_id).ok().flatten()
         };
-        if let Some(row) = row {
-            sessions.insert(
-                recipe_id.to_string(),
-                SyncSession::from_doc_bytes(&row.am_data),
-            );
+        if let Some(am_data) = am_data {
+            sessions.insert(key.clone(), SyncSession::from_doc_bytes(&am_data));
         } else {
             return None;
         }
     }
-    sessions.get_mut(recipe_id)
+    sessions.get_mut(&key)
 }
 
-/// Generate and send a sync message for a single recipe using a persistent session.
-async fn send_sync_for_recipe<S>(
+/// Generate and send a sync message for a single document using a persistent session.
+async fn send_sync_for_doc<S>(
     conn: &Arc<Mutex<rusqlite::Connection>>,
     sessions: &mut Sessions,
     ws_tx: &mut S,
-    recipe_id: &str,
+    doc_type: DocType,
+    doc_id: &str,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>>
 where
     S: SinkExt<Message> + Unpin,
     S::Error: std::error::Error + Send + Sync + 'static,
 {
-    let session = match get_or_create_session(conn, sessions, recipe_id) {
+    let session = match get_or_create_session(conn, sessions, doc_type, doc_id) {
         Some(s) => s,
         None => return Ok(()),
     };
@@ -186,7 +208,7 @@ where
     // Merge latest DB state into the session (picks up local edits)
     let am_data = {
         let c = conn.lock().unwrap_or_else(|e| e.into_inner());
-        db::get_recipe(&*c, recipe_id)?.map(|r| r.am_data)
+        db::get_doc_am_data(&*c, doc_type, doc_id)?
     };
     if let Some(am_data) = am_data {
         session.merge_doc(&am_data);
@@ -194,7 +216,8 @@ where
 
     if let Some(sync_msg_bytes) = session.generate_sync_message() {
         let msg = SyncMessage::SyncDoc {
-            recipe_id: recipe_id.to_string(),
+            doc_type,
+            doc_id: doc_id.to_string(),
             data: sync_msg_bytes,
         };
         ws_tx
@@ -204,7 +227,7 @@ where
 
     {
         let c = conn.lock().unwrap_or_else(|e| e.into_inner());
-        db::clear_dirty(&*c, recipe_id)?;
+        db::clear_dirty_doc(&*c, doc_type, doc_id)?;
     }
 
     Ok(())
@@ -224,17 +247,24 @@ where
     let msg: SyncMessage = serde_json::from_str(text)?;
 
     match msg {
-        SyncMessage::NewDoc { recipe_id, am_data } => {
+        SyncMessage::NewDoc {
+            doc_type,
+            doc_id,
+            am_data,
+        } => {
             let c = conn.lock().unwrap_or_else(|e| e.into_inner());
-            db::apply_remote_merge(&*c, &recipe_id, &am_data)?;
-            // Create a session for this newly received recipe
+            db::apply_remote_merge_doc(&*c, doc_type, &doc_id, &am_data)?;
             sessions.insert(
-                recipe_id,
+                (doc_type, doc_id),
                 SyncSession::from_doc_bytes(&am_data),
             );
         }
-        SyncMessage::SyncDoc { recipe_id, data } => {
-            let session = match get_or_create_session(conn, sessions, &recipe_id) {
+        SyncMessage::SyncDoc {
+            doc_type,
+            doc_id,
+            data,
+        } => {
+            let session = match get_or_create_session(conn, sessions, doc_type, &doc_id) {
                 Some(s) => s,
                 None => return Ok(()),
             };
@@ -243,7 +273,8 @@ where
 
             if let Some(reply_bytes) = &reply {
                 let reply_msg = SyncMessage::SyncDoc {
-                    recipe_id: recipe_id.clone(),
+                    doc_type,
+                    doc_id: doc_id.clone(),
                     data: reply_bytes.clone(),
                 };
                 ws_tx
@@ -254,9 +285,9 @@ where
             // Save the merged doc to DB
             let saved = session.save_doc();
             let c = conn.lock().unwrap_or_else(|e| e.into_inner());
-            db::apply_remote_merge(&*c, &recipe_id, &saved)?;
+            db::apply_remote_merge_doc(&*c, doc_type, &doc_id, &saved)?;
             if reply.is_none() {
-                db::clear_dirty(&*c, &recipe_id)?;
+                db::clear_dirty_doc(&*c, doc_type, &doc_id)?;
             }
         }
         SyncMessage::Hello { .. } => {

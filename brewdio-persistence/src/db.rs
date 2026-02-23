@@ -1,8 +1,11 @@
 use brewdio_core::beerjson_types::RecipeType;
 
+use crate::batch::{self, BatchDocument};
 use crate::connection::{Connection, DbError, Value};
-use crate::automerge::{dump_automerge_structure, extract_fields_from_automerge, hydrate_from_automerge, reconcile_to_automerge};
+use crate::automerge::{extract_fields_from_automerge, extract_string_field_from_automerge, hydrate_from_automerge, reconcile_to_automerge};
+use crate::protocol::DocType;
 use crate::recipe::{RecipeDocument, RecipeRow};
+use crate::settings::{self, SettingsDocument};
 
 fn row_from_query(row: &dyn crate::connection::Row) -> RecipeRow {
     RecipeRow {
@@ -234,10 +237,8 @@ pub fn apply_remote_merge(
                 )?;
             }
         }
-        Err(e) => {
-            eprintln!("[sync] hydration failed for {}: {}", recipe_id, e);
-            eprintln!("[sync] automerge document structure for {}:\n{}", recipe_id, dump_automerge_structure(am_data, 4));
-            eprintln!("[sync] extracting fields manually for {}", recipe_id);
+        Err(_) => {
+            // Fallback: extract name/is_deleted directly from automerge doc
             let (name, is_deleted) = extract_fields_from_automerge(am_data);
             if existing.is_some() {
                 conn.execute(
@@ -251,6 +252,176 @@ pub fn apply_remote_merge(
                 )?;
             }
         }
+    }
+
+    Ok(())
+}
+
+// --- Generic sync dispatch functions ---
+
+/// Get `am_data` for any document type by ID.
+pub fn get_doc_am_data(
+    conn: &(impl Connection + ?Sized),
+    doc_type: DocType,
+    id: &str,
+) -> Result<Option<Vec<u8>>, DbError> {
+    match doc_type {
+        DocType::Recipe => get_recipe(conn, id).map(|r| r.map(|r| r.am_data)),
+        DocType::Batch => batch::get_batch(conn, id).map(|r| r.map(|r| r.am_data)),
+        DocType::Settings => settings::get_settings(conn).map(|r| {
+            r.map(|r| r.am_data).filter(|am| !am.is_empty())
+        }),
+    }
+}
+
+/// Clear the dirty flag for any document type.
+pub fn clear_dirty_doc(
+    conn: &(impl Connection + ?Sized),
+    doc_type: DocType,
+    id: &str,
+) -> Result<(), DbError> {
+    match doc_type {
+        DocType::Recipe => clear_dirty(conn, id),
+        DocType::Batch => batch::clear_dirty_batch(conn, id),
+        DocType::Settings => settings::clear_dirty_settings(conn, id),
+    }
+}
+
+/// List all dirty documents across all types.
+pub fn list_dirty_docs(
+    conn: &(impl Connection + ?Sized),
+) -> Result<Vec<(DocType, String)>, DbError> {
+    let mut result = Vec::new();
+    for row in list_dirty_recipes(conn)? {
+        result.push((DocType::Recipe, row.id));
+    }
+    for row in batch::list_dirty_batches(conn)? {
+        result.push((DocType::Batch, row.id));
+    }
+    for row in settings::list_dirty_settings(conn)? {
+        result.push((DocType::Settings, row.id));
+    }
+    Ok(result)
+}
+
+/// List all document IDs for a given type (including deleted).
+pub fn list_all_doc_ids(
+    conn: &(impl Connection + ?Sized),
+    doc_type: DocType,
+) -> Result<Vec<String>, DbError> {
+    match doc_type {
+        DocType::Recipe => list_all_recipe_ids(conn),
+        DocType::Batch => batch::list_all_batch_ids(conn),
+        DocType::Settings => settings::list_all_settings_ids(conn),
+    }
+}
+
+/// Apply a remotely-merged Automerge document, dispatching to the right type.
+pub fn apply_remote_merge_doc(
+    conn: &(impl Connection + ?Sized),
+    doc_type: DocType,
+    id: &str,
+    am_data: &[u8],
+) -> Result<(), DbError> {
+    match doc_type {
+        DocType::Recipe => apply_remote_merge(conn, id, am_data),
+        DocType::Batch => apply_remote_merge_batch(conn, id, am_data),
+        DocType::Settings => apply_remote_merge_settings(conn, id, am_data),
+    }
+}
+
+/// Apply a remotely-merged Automerge batch document.
+pub fn apply_remote_merge_batch(
+    conn: &(impl Connection + ?Sized),
+    batch_id: &str,
+    am_data: &[u8],
+) -> Result<(), DbError> {
+    let existing = batch::get_batch(conn, batch_id)?;
+
+    match hydrate_from_automerge::<BatchDocument>(am_data) {
+        Ok(doc) => {
+            let data_json =
+                serde_json::to_string(&doc.data).expect("Failed to serialize batch data");
+            if existing.is_some() {
+                conn.execute(
+                    "UPDATE batch SET name = ?1, data = ?2, am_data = ?3, is_deleted = ?4 WHERE id = ?5",
+                    &[
+                        Value::Text(&doc.name),
+                        Value::Text(&data_json),
+                        Value::Blob(am_data),
+                        Value::Bool(doc.is_deleted),
+                        Value::Text(batch_id),
+                    ],
+                )?;
+            } else {
+                conn.execute(
+                    "INSERT INTO batch (id, name, recipe_id, data, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, ?6, FALSE)",
+                    &[
+                        Value::Text(batch_id),
+                        Value::Text(&doc.name),
+                        Value::Text(&doc.recipe_id),
+                        Value::Text(&data_json),
+                        Value::Blob(am_data),
+                        Value::Bool(doc.is_deleted),
+                    ],
+                )?;
+            }
+        }
+        Err(_) => {
+            if existing.is_some() {
+                conn.execute(
+                    "UPDATE batch SET am_data = ?1 WHERE id = ?2",
+                    &[Value::Blob(am_data), Value::Text(batch_id)],
+                )?;
+            } else {
+                conn.execute(
+                    "INSERT INTO batch (id, name, recipe_id, data, am_data, is_deleted, is_dirty) VALUES (?1, '', '', '{}', ?2, FALSE, FALSE)",
+                    &[Value::Text(batch_id), Value::Blob(am_data)],
+                )?;
+            }
+        }
+    }
+
+    Ok(())
+}
+
+/// Apply a remotely-merged Automerge settings document.
+pub fn apply_remote_merge_settings(
+    conn: &(impl Connection + ?Sized),
+    settings_id: &str,
+    am_data: &[u8],
+) -> Result<(), DbError> {
+    let existing = settings::get_settings(conn)?;
+
+    // Try full hydration first; on failure, extract `data` field directly from the
+    // automerge doc (handles schema changes like removed `is_dirty` field).
+    let data_str = match hydrate_from_automerge::<SettingsDocument>(am_data) {
+        Ok(doc) => doc.data,
+        Err(_) => {
+            // Fallback: extract the "data" key directly from the automerge doc
+            // (handles schema changes like removed fields)
+            extract_string_field_from_automerge(am_data, "data").unwrap_or_else(|| {
+                // If we already have good data, keep it rather than overwriting with empty
+                if let Some(ref row) = existing {
+                    if row.data != "{}" {
+                        return row.data.clone();
+                    }
+                }
+                "{}".to_string()
+            })
+        }
+    };
+
+    if existing.is_some() {
+        conn.execute(
+            "UPDATE settings SET data = ?1, am_data = ?2 WHERE id = ?3",
+            &[Value::Text(&data_str), Value::Blob(am_data), Value::Text(settings_id)],
+        )?;
+    } else {
+        conn.execute(
+            "INSERT INTO settings (id, data, am_data, is_dirty) VALUES (?1, ?2, ?3, FALSE)",
+            &[Value::Text(settings_id), Value::Text(&data_str), Value::Blob(am_data)],
+        )?;
     }
 
     Ok(())

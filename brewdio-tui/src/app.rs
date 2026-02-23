@@ -7,13 +7,17 @@ use brewdio_core::beerjson_types::{
     RecipeType, RecipeTypeType, TimeType, TimeUnitType, TimingType, UnitType, UnitUnitType,
     UseType, VolumeType, VolumeUnitType,
 };
-use brewdio_persistence::batch;
+use brewdio_persistence::automerge::HistoryEntry;
+use brewdio_persistence::batch::{self, BatchData};
 use brewdio_persistence::db;
 use brewdio_persistence::recipe::RecipeDocument;
 use brewdio_persistence::settings;
 use rusqlite::Connection;
 use serde_json::Value as JsonValue;
+use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
+use ratatui::style::{Color, Style};
+use tui_textarea::TextArea;
 
 use brewdio_core::units;
 
@@ -170,6 +174,7 @@ fn fermentable_type_to_addition_type(t: &FermentableTypeType) -> FermentableAddi
 pub enum Screen {
     Home,
     RecipeEdit { recipe_id: String },
+    BatchEdit { batch_id: String },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -221,6 +226,8 @@ pub enum Tab {
     Cultures,
     Water,
     Mash,
+    Batches,
+    History,
 }
 
 impl Tab {
@@ -231,6 +238,8 @@ impl Tab {
             Tab::Cultures => "Cultures",
             Tab::Water => "Water",
             Tab::Mash => "Mash",
+            Tab::Batches => "Batches",
+            Tab::History => "History",
         }
     }
 
@@ -242,16 +251,20 @@ impl Tab {
             Tab::Cultures => 2,
             Tab::Water => 3,
             Tab::Mash => 4,
+            Tab::Batches => 5,
+            Tab::History => 6,
         }
     }
 }
 
-const ALL_TABS: [Tab; 5] = [
+const ALL_TABS: [Tab; 7] = [
     Tab::Fermentables,
     Tab::Hops,
     Tab::Cultures,
     Tab::Water,
     Tab::Mash,
+    Tab::Batches,
+    Tab::History,
 ];
 
 pub struct StyleRange {
@@ -329,7 +342,31 @@ pub struct App {
     pub culture_list_index: usize,
     pub culture_dialog: Option<CultureDialog>,
     pub batch_size_dialog: Option<BatchSizeDialog>,
+    // Batches tab in recipe edit
+    pub recipe_batches: Vec<BatchListItem>,
+    pub recipe_batch_list_index: usize,
+    // Batch edit state
+    pub current_batch_id: Option<String>,
+    pub current_batch_data: Option<BatchData>,
+    pub batch_notes_text: String,
+    // Brew date editing (batch edit only)
+    pub editing_brew_date: bool,
+    pub brew_date_input: String,
+    // Notes editor (shared popup for recipe and batch notes)
+    pub notes_editor: Option<TextArea<'static>>,
+    pub notes_target: NotesTarget,
+    // History tab state
+    pub history_entries: Vec<HistoryEntry>,
+    pub history_scroll: usize,
+    pub history_loading: bool,
+    history_rx: Option<mpsc::Receiver<Vec<HistoryEntry>>>,
     pub should_quit: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum NotesTarget {
+    Recipe,
+    Batch,
 }
 
 impl App {
@@ -362,6 +399,19 @@ impl App {
             culture_list_index: 0,
             culture_dialog: None,
             batch_size_dialog: None,
+            recipe_batches: Vec::new(),
+            recipe_batch_list_index: 0,
+            current_batch_id: None,
+            current_batch_data: None,
+            batch_notes_text: String::new(),
+            editing_brew_date: false,
+            brew_date_input: String::new(),
+            notes_editor: None,
+            notes_target: NotesTarget::Recipe,
+            history_entries: Vec::new(),
+            history_scroll: 0,
+            history_loading: false,
+            history_rx: None,
             should_quit: false,
         };
         app.refresh_recipes();
@@ -419,9 +469,12 @@ impl App {
     }
 
     pub fn refresh_settings(&mut self) {
-        let saved: serde_json::Map<String, JsonValue> = settings::get_settings(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()))
+        let existing = settings::get_settings(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()))
             .ok()
-            .flatten()
+            .flatten();
+
+        let saved: serde_json::Map<String, JsonValue> = existing
+            .as_ref()
             .and_then(|row| serde_json::from_str(&row.data).ok())
             .unwrap_or_default();
 
@@ -441,6 +494,15 @@ impl App {
                 }
             })
             .collect();
+
+        // Ensure settings are persisted with valid am_data (needed for sync)
+        let needs_save = match existing {
+            None => true,
+            Some(ref row) => row.am_data.is_empty() || row.data == "{}",
+        };
+        if needs_save {
+            self.save_setting_value();
+        }
     }
 
     pub fn save_setting_value(&mut self) {
@@ -531,23 +593,39 @@ impl App {
         {
             let equipment_list = brewdio_core::data::equipment();
             if let Some(equip) = equipment_list.first() {
-                let name = format!("{} — Batch", doc.name);
-                let _ = batch::create_batch_from_recipe(
-                    &*self.conn.lock().unwrap_or_else(|e| e.into_inner()),
+                let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
+                let count = batch::count_batches_for_recipe(&*conn, recipe_id).unwrap_or(0);
+                let name = format!("{} Batch {}", doc.name, count + 1);
+                let result = batch::create_batch_from_recipe(
+                    &*conn,
                     &name,
                     recipe_id,
                     &doc.recipe,
                     equip,
                 );
+                drop(conn);
+                if let Ok(row) = result {
+                    let batch_id = row.id.clone();
+                    self.save_current();
+                    self.open_batch(&batch_id);
+                }
             }
         }
     }
 
     pub fn open_recipe(&mut self, id: &str) {
-        if let Ok(Some(row)) = db::get_recipe(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), id) {
+        let row = {
+            let c = self.conn.lock().unwrap_or_else(|e| e.into_inner());
+            db::get_recipe(&*c, id).ok().flatten()
+        };
+        if let Some(row) = row {
             if let Ok(doc) = row.to_document() {
                 self.name_input = doc.name.clone();
                 self.current_doc = Some(doc);
+                self.history_entries.clear();
+                self.history_scroll = 0;
+                self.history_loading = false;
+                self.history_rx = None;
                 self.screen = Screen::RecipeEdit {
                     recipe_id: id.to_string(),
                 };
@@ -555,6 +633,8 @@ impl App {
                 self.style_selector = None;
                 self.edit_focus = EditFocus::Name;
                 self.active_tab = Tab::Fermentables;
+                self.recipe_batch_list_index = 0;
+                self.refresh_recipe_batches();
             }
         }
     }
@@ -573,16 +653,213 @@ impl App {
         {
             let _ = db::update_recipe(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), recipe_id, &doc.name, &doc.recipe);
         }
+        if self.active_tab == Tab::History {
+            self.refresh_history();
+        }
     }
 
     pub fn back_to_list(&mut self) {
         self.save_current();
         self.screen = Screen::Home;
         self.current_doc = None;
+        self.history_entries.clear();
+        self.history_loading = false;
+        self.history_rx = None;
         self.editing_name = false;
         self.style_selector = None;
         self.refresh_recipes();
         self.refresh_batches();
+    }
+
+    pub fn open_batch(&mut self, batch_id: &str) {
+        if let Ok(Some(row)) =
+            batch::get_batch(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), batch_id)
+        {
+            if let Ok(data) = row.to_data() {
+                // Build a virtual RecipeDocument from the batch's recipe copy
+                let doc = RecipeDocument {
+                    id: batch_id.to_string(),
+                    name: row.name.clone(),
+                    recipe: data.recipe.clone(),
+                    is_deleted: false,
+                };
+                self.name_input = row.name.clone();
+                self.brew_date_input = format_epoch_millis(data.brew_date);
+                self.current_doc = Some(doc);
+                self.history_entries.clear();
+                self.history_scroll = 0;
+                self.history_loading = false;
+                self.history_rx = None;
+                self.current_batch_id = Some(batch_id.to_string());
+                self.current_batch_data = Some(data.clone());
+                self.batch_notes_text = data.notes.clone().unwrap_or_default();
+                self.screen = Screen::BatchEdit {
+                    batch_id: batch_id.to_string(),
+                };
+                self.editing_name = false;
+                self.editing_brew_date = false;
+                self.style_selector = None;
+                self.edit_focus = EditFocus::Name;
+                self.active_tab = Tab::Fermentables;
+            }
+        }
+    }
+
+    pub fn save_current_batch(&mut self) {
+        if let (
+            Screen::BatchEdit { ref batch_id },
+            Some(ref doc),
+            Some(ref mut batch_data),
+        ) = (&self.screen, &self.current_doc, &mut self.current_batch_data)
+        {
+            batch_data.recipe = doc.recipe.clone();
+            batch_data.notes = if self.batch_notes_text.is_empty() {
+                None
+            } else {
+                Some(self.batch_notes_text.clone())
+            };
+            batch_data.updated_at = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as u64;
+            let data_json = serde_json::to_string(&batch_data).unwrap_or_default();
+            let _ = batch::update_batch(
+                &*self.conn.lock().unwrap_or_else(|e| e.into_inner()),
+                batch_id,
+                &doc.name,
+                &data_json,
+            );
+        }
+        if self.active_tab == Tab::History {
+            self.refresh_history();
+        }
+    }
+
+    pub fn back_from_batch(&mut self) {
+        self.save_current_batch();
+        self.screen = Screen::Home;
+        self.current_doc = None;
+        self.history_entries.clear();
+        self.history_loading = false;
+        self.history_rx = None;
+        self.current_batch_id = None;
+        self.current_batch_data = None;
+        self.editing_name = false;
+        self.style_selector = None;
+        self.refresh_recipes();
+        self.refresh_batches();
+    }
+
+    pub fn open_recipe_from_batch(&mut self) {
+        let recipe_id = self.current_batch_id.as_ref().and_then(|bid| {
+            let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
+            batch::get_batch(&*conn, bid).ok().flatten().map(|r| r.recipe_id)
+        });
+        if let Some(rid) = recipe_id {
+            self.save_current_batch();
+            self.current_doc = None;
+            self.current_batch_id = None;
+            self.current_batch_data = None;
+            self.editing_name = false;
+            self.style_selector = None;
+            self.open_recipe(&rid);
+        }
+    }
+
+    pub fn refresh_recipe_batches(&mut self) {
+        if let Screen::RecipeEdit { ref recipe_id } = self.screen {
+            let recipe_id = recipe_id.clone();
+            if let Ok(rows) =
+                batch::list_batches(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()))
+            {
+                self.recipe_batches = rows
+                    .into_iter()
+                    .filter(|r| r.recipe_id == recipe_id)
+                    .map(|r| {
+                        let (recipe_name, brew_date) = r
+                            .to_data()
+                            .map(|d| (d.recipe.name.clone(), format_epoch_millis(d.brew_date)))
+                            .unwrap_or_else(|_| ("(unknown)".to_string(), String::new()));
+                        BatchListItem {
+                            id: r.id,
+                            name: r.name,
+                            recipe_name,
+                            brew_date,
+                        }
+                    })
+                    .collect();
+            }
+        }
+    }
+
+    pub fn open_notes_editor(&mut self, target: NotesTarget) {
+        let text = match target {
+            NotesTarget::Recipe => self
+                .current_doc
+                .as_ref()
+                .and_then(|d| d.recipe.notes.clone())
+                .unwrap_or_default(),
+            NotesTarget::Batch => self.batch_notes_text.clone(),
+        };
+        let lines: Vec<String> = if text.is_empty() {
+            vec![String::new()]
+        } else {
+            text.lines().map(String::from).collect()
+        };
+        let mut ta = TextArea::new(lines);
+        ta.set_style(Style::default().bg(Color::Black));
+        ta.set_cursor_line_style(Style::default().bg(Color::Black));
+        ta.set_cursor_style(Style::default().bg(Color::White).fg(Color::Black));
+        self.notes_editor = Some(ta);
+        self.notes_target = target;
+    }
+
+    pub fn save_notes(&mut self) {
+        if let Some(editor) = self.notes_editor.take() {
+            let text = editor.lines().join("\n");
+            match self.notes_target {
+                NotesTarget::Recipe => {
+                    if let Some(ref mut doc) = self.current_doc {
+                        doc.recipe.notes = if text.is_empty() {
+                            None
+                        } else {
+                            Some(text)
+                        };
+                    }
+                    self.save_current();
+                }
+                NotesTarget::Batch => {
+                    self.batch_notes_text = text;
+                    self.save_current_batch();
+                }
+            }
+        }
+    }
+
+    pub fn cancel_notes(&mut self) {
+        self.notes_editor = None;
+    }
+
+    pub fn start_edit_brew_date(&mut self) {
+        self.editing_brew_date = true;
+    }
+
+    pub fn confirm_brew_date(&mut self) {
+        if let Some(millis) = parse_date_to_epoch_millis(&self.brew_date_input) {
+            if let Some(ref mut data) = self.current_batch_data {
+                data.brew_date = millis;
+            }
+            self.editing_brew_date = false;
+            self.save_current_batch();
+        }
+        // If parse fails, stay in editing mode
+    }
+
+    pub fn cancel_brew_date(&mut self) {
+        if let Some(ref data) = self.current_batch_data {
+            self.brew_date_input = format_epoch_millis(data.brew_date);
+        }
+        self.editing_brew_date = false;
     }
 
     pub fn confirm_name(&mut self) {
@@ -591,7 +868,10 @@ impl App {
             doc.recipe.name = self.name_input.clone();
         }
         self.editing_name = false;
-        self.save_current();
+        match self.screen {
+            Screen::BatchEdit { .. } => self.save_current_batch(),
+            _ => self.save_current(),
+        }
     }
 
     pub fn cancel_name(&mut self) {
@@ -1067,6 +1347,64 @@ impl App {
     pub fn set_tab(&mut self, n: usize) {
         if n < ALL_TABS.len() {
             self.active_tab = ALL_TABS[n];
+            if self.active_tab == Tab::Batches {
+                self.refresh_recipe_batches();
+            }
+            if self.active_tab == Tab::History {
+                self.refresh_history();
+            }
+        }
+    }
+
+    /// Kick off an async history refresh on a background thread.
+    /// Results are picked up by `poll_history()` in the event loop.
+    pub fn refresh_history(&mut self) {
+        // Read am_data from DB (fast) on main thread, then spawn computation
+        let am_data = match &self.screen {
+            Screen::RecipeEdit { ref recipe_id } => {
+                let c = self.conn.lock().unwrap_or_else(|e| e.into_inner());
+                db::get_recipe(&*c, recipe_id)
+                    .ok()
+                    .flatten()
+                    .map(|row| row.am_data)
+            }
+            Screen::BatchEdit { ref batch_id } => {
+                let c = self.conn.lock().unwrap_or_else(|e| e.into_inner());
+                batch::get_batch(&*c, batch_id)
+                    .ok()
+                    .flatten()
+                    .map(|row| row.am_data)
+            }
+            _ => None,
+        };
+
+        let Some(am_data) = am_data else { return };
+        let is_recipe = matches!(self.screen, Screen::RecipeEdit { .. });
+
+        let (tx, rx) = mpsc::channel();
+        self.history_rx = Some(rx);
+        self.history_loading = true;
+
+        std::thread::spawn(move || {
+            let entries = if is_recipe {
+                brewdio_persistence::automerge::get_recipe_history(&am_data)
+            } else {
+                brewdio_persistence::automerge::get_batch_history(&am_data)
+            };
+            let _ = tx.send(entries);
+        });
+    }
+
+    /// Non-blocking check for completed history computation.
+    /// Call this from the event loop.
+    pub fn poll_history(&mut self) {
+        if let Some(ref rx) = self.history_rx {
+            if let Ok(entries) = rx.try_recv() {
+                self.history_entries = entries;
+                self.history_scroll = 0;
+                self.history_loading = false;
+                self.history_rx = None;
+            }
         }
     }
 
@@ -1232,6 +1570,35 @@ fn format_amount(value: f64) -> String {
         let s = format!("{:.2}", value);
         s.trim_end_matches('0').trim_end_matches('.').to_string()
     }
+}
+
+fn parse_date_to_epoch_millis(s: &str) -> Option<u64> {
+    let parts: Vec<&str> = s.split('-').collect();
+    if parts.len() != 3 {
+        return None;
+    }
+    let year: i64 = parts[0].parse().ok()?;
+    let month: usize = parts[1].parse().ok()?;
+    let day: i64 = parts[2].parse().ok()?;
+    if month < 1 || month > 12 || day < 1 || day > 31 {
+        return None;
+    }
+    let mut days: i64 = 0;
+    for y in 1970..year {
+        let leap = y % 4 == 0 && (y % 100 != 0 || y % 400 == 0);
+        days += if leap { 366 } else { 365 };
+    }
+    let leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+    let month_days = [
+        31,
+        if leap { 29 } else { 28 },
+        31, 30, 31, 30, 31, 31, 30, 31, 30, 31,
+    ];
+    for m in 0..(month - 1) {
+        days += month_days[m] as i64;
+    }
+    days += day - 1;
+    Some((days as u64) * 86400 * 1000)
 }
 
 fn default_recipe() -> RecipeType {

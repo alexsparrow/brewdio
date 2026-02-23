@@ -15,7 +15,8 @@ use crossterm::{
 };
 use ratatui::{backend::CrosstermBackend, Terminal};
 
-use app::{App, BatchSizeDialogStep, CultureDialogStep, FermentableDialogStep, HopDialogStep, HomeTab, Screen, Tab, CULTURE_UNITS, MASS_UNITS, VOLUME_UNITS, USE_TYPES};
+use crossterm::event::KeyEvent;
+use app::{App, BatchSizeDialogStep, CultureDialogStep, FermentableDialogStep, HopDialogStep, HomeTab, NotesTarget, Screen, Tab, CULTURE_UNITS, MASS_UNITS, VOLUME_UNITS, USE_TYPES};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Resolve DB path
@@ -72,6 +73,9 @@ fn run_loop(
     loop {
         terminal.draw(|f| ui::draw(f, app))?;
 
+        // Check for async history results
+        app.poll_history();
+
         if event::poll(Duration::from_millis(100))? {
             if let Event::Key(key) = event::read()? {
                 if key.kind != KeyEventKind::Press {
@@ -79,7 +83,8 @@ fn run_loop(
                 }
                 match &app.screen {
                     Screen::Home => handle_home_input(app, key.code),
-                    Screen::RecipeEdit { .. } => handle_edit_input(app, key.code),
+                    Screen::RecipeEdit { .. } => handle_edit_input(app, key),
+                    Screen::BatchEdit { .. } => handle_batch_edit_input(app, key),
                 }
             }
         }
@@ -91,33 +96,35 @@ fn run_loop(
 }
 
 fn handle_home_input(app: &mut App, key: KeyCode) {
-    // Tab switching (all tabs)
-    match key {
-        KeyCode::Tab => {
-            app.home_tab = app.home_tab.next();
-            return;
+    // Tab switching (all tabs) — disabled while editing a setting value
+    if !app.editing_setting {
+        match key {
+            KeyCode::Tab => {
+                app.home_tab = app.home_tab.next();
+                return;
+            }
+            KeyCode::BackTab => {
+                app.home_tab = app.home_tab.prev();
+                return;
+            }
+            KeyCode::Char('1') => {
+                app.home_tab = HomeTab::Recipes;
+                return;
+            }
+            KeyCode::Char('2') => {
+                app.home_tab = HomeTab::Batches;
+                return;
+            }
+            KeyCode::Char('3') => {
+                app.home_tab = HomeTab::Settings;
+                return;
+            }
+            KeyCode::Char('q') => {
+                app.should_quit = true;
+                return;
+            }
+            _ => {}
         }
-        KeyCode::BackTab => {
-            app.home_tab = app.home_tab.prev();
-            return;
-        }
-        KeyCode::Char('1') => {
-            app.home_tab = HomeTab::Recipes;
-            return;
-        }
-        KeyCode::Char('2') => {
-            app.home_tab = HomeTab::Batches;
-            return;
-        }
-        KeyCode::Char('3') => {
-            app.home_tab = HomeTab::Settings;
-            return;
-        }
-        KeyCode::Char('q') if !app.editing_setting => {
-            app.should_quit = true;
-            return;
-        }
-        _ => {}
     }
 
     match app.home_tab {
@@ -162,6 +169,12 @@ fn handle_recipes_tab_input(app: &mut App, key: KeyCode) {
 
 fn handle_batches_tab_input(app: &mut App, key: KeyCode) {
     match key {
+        KeyCode::Enter => {
+            if !app.batches.is_empty() {
+                let id = app.batches[app.batch_list_index].id.clone();
+                app.open_batch(&id);
+            }
+        }
         KeyCode::Char('d') => app.delete_selected_batch(),
         KeyCode::Char('j') | KeyCode::Down => {
             if !app.batches.is_empty() && app.batch_list_index < app.batches.len() - 1 {
@@ -225,9 +238,17 @@ fn handle_settings_tab_input(app: &mut App, key: KeyCode) {
     }
 }
 
-fn handle_edit_input(app: &mut App, key: KeyCode) {
+fn handle_edit_input(app: &mut App, key: KeyEvent) {
+    // Notes editor intercepts all input
+    if app.notes_editor.is_some() {
+        handle_notes_editor(app, key);
+        return;
+    }
+
+    let key_code = key.code;
+
     if app.editing_name {
-        match key {
+        match key_code {
             KeyCode::Enter => app.confirm_name(),
             KeyCode::Esc => app.cancel_name(),
             KeyCode::Backspace => {
@@ -242,7 +263,7 @@ fn handle_edit_input(app: &mut App, key: KeyCode) {
     }
 
     if let Some(ref mut selector) = app.style_selector {
-        match selector.handle_key(key) {
+        match selector.handle_key(key_code) {
             search_selector::SearchAction::Confirm(idx) => app.confirm_style(idx),
             search_selector::SearchAction::Cancel => app.cancel_style(),
             search_selector::SearchAction::Nothing => {}
@@ -252,44 +273,148 @@ fn handle_edit_input(app: &mut App, key: KeyCode) {
 
     // Fermentable dialog
     if app.fermentable_dialog.is_some() {
-        handle_fermentable_dialog(app, key);
+        handle_fermentable_dialog(app, key_code);
         return;
     }
 
     // Hop dialog
     if app.hop_dialog.is_some() {
-        handle_hop_dialog(app, key);
+        handle_hop_dialog(app, key_code);
         return;
     }
 
     // Culture dialog
     if app.culture_dialog.is_some() {
-        handle_culture_dialog(app, key);
+        handle_culture_dialog(app, key_code);
         return;
     }
 
     // Batch size dialog
     if app.batch_size_dialog.is_some() {
-        handle_batch_size_dialog(app, key);
+        handle_batch_size_dialog(app, key_code);
         return;
     }
 
     // Normal edit mode — global keys first
-    match key {
+    match key_code {
         KeyCode::Esc | KeyCode::Char('q') => { app.back_to_list(); return; }
         KeyCode::Char('n') => { app.editing_name = true; return; }
         KeyCode::Char('s') => { app.open_style_selector(); return; }
         KeyCode::Char('v') => { app.open_batch_size_dialog(); return; }
         KeyCode::Char('b') => { app.create_batch_from_current(); return; }
+        KeyCode::Char('o') => { app.open_notes_editor(NotesTarget::Recipe); return; }
         KeyCode::Char('1') => { app.set_tab(0); return; }
         KeyCode::Char('2') => { app.set_tab(1); return; }
         KeyCode::Char('3') => { app.set_tab(2); return; }
         KeyCode::Char('4') => { app.set_tab(3); return; }
         KeyCode::Char('5') => { app.set_tab(4); return; }
+        KeyCode::Char('6') => { app.set_tab(5); return; }
+        KeyCode::Char('7') => { app.set_tab(6); return; }
         _ => {}
     }
 
     // Tab-specific keys
+    handle_ingredient_tab_keys(app, key_code);
+}
+
+fn handle_batch_edit_input(app: &mut App, key: KeyEvent) {
+    // Notes editor intercepts all input
+    if app.notes_editor.is_some() {
+        handle_notes_editor(app, key);
+        return;
+    }
+
+    let key_code = key.code;
+
+    if app.editing_name {
+        match key_code {
+            KeyCode::Enter => app.confirm_name(),
+            KeyCode::Esc => app.cancel_name(),
+            KeyCode::Backspace => {
+                app.name_input.pop();
+            }
+            KeyCode::Char(c) => {
+                app.name_input.push(c);
+            }
+            _ => {}
+        }
+        return;
+    }
+
+    if app.editing_brew_date {
+        match key_code {
+            KeyCode::Enter => app.confirm_brew_date(),
+            KeyCode::Esc => app.cancel_brew_date(),
+            KeyCode::Backspace => {
+                app.brew_date_input.pop();
+            }
+            KeyCode::Char(c) if c.is_ascii_digit() || c == '-' => {
+                app.brew_date_input.push(c);
+            }
+            _ => {}
+        }
+        return;
+    }
+
+    if let Some(ref mut selector) = app.style_selector {
+        match selector.handle_key(key_code) {
+            search_selector::SearchAction::Confirm(idx) => app.confirm_style(idx),
+            search_selector::SearchAction::Cancel => app.cancel_style(),
+            search_selector::SearchAction::Nothing => {}
+        }
+        return;
+    }
+
+    if app.fermentable_dialog.is_some() {
+        handle_fermentable_dialog(app, key_code);
+        return;
+    }
+    if app.hop_dialog.is_some() {
+        handle_hop_dialog(app, key_code);
+        return;
+    }
+    if app.culture_dialog.is_some() {
+        handle_culture_dialog(app, key_code);
+        return;
+    }
+    if app.batch_size_dialog.is_some() {
+        handle_batch_size_dialog(app, key_code);
+        return;
+    }
+
+    match key_code {
+        KeyCode::Esc | KeyCode::Char('q') => { app.back_from_batch(); return; }
+        KeyCode::Char('r') => { app.open_recipe_from_batch(); return; }
+        KeyCode::Char('n') => { app.editing_name = true; return; }
+        KeyCode::Char('e') => { app.start_edit_brew_date(); return; }
+        KeyCode::Char('s') => { app.open_style_selector(); return; }
+        KeyCode::Char('v') => { app.open_batch_size_dialog(); return; }
+        KeyCode::Char('o') => { app.open_notes_editor(NotesTarget::Batch); return; }
+        KeyCode::Char('1') => { app.set_tab(0); return; }
+        KeyCode::Char('2') => { app.set_tab(1); return; }
+        KeyCode::Char('3') => { app.set_tab(2); return; }
+        KeyCode::Char('4') => { app.set_tab(3); return; }
+        KeyCode::Char('5') => { app.set_tab(4); return; }
+        KeyCode::Char('6') => { app.set_tab(6); return; }
+        _ => {}
+    }
+
+    handle_ingredient_tab_keys(app, key_code);
+}
+
+fn handle_notes_editor(app: &mut App, key: KeyEvent) {
+    match key.code {
+        KeyCode::Esc => app.cancel_notes(),
+        KeyCode::F(2) => app.save_notes(),
+        _ => {
+            if let Some(ref mut editor) = app.notes_editor {
+                editor.input(key);
+            }
+        }
+    }
+}
+
+fn handle_ingredient_tab_keys(app: &mut App, key: KeyCode) {
     if app.active_tab == Tab::Fermentables {
         match key {
             KeyCode::Char('a') => app.open_add_fermentable(),
@@ -346,6 +471,45 @@ fn handle_edit_input(app: &mut App, key: KeyCode) {
             KeyCode::Char('k') | KeyCode::Up => {
                 if app.culture_list_index > 0 {
                     app.culture_list_index -= 1;
+                }
+            }
+            _ => {}
+        }
+    } else if app.active_tab == Tab::Batches {
+        match key {
+            KeyCode::Char('j') | KeyCode::Down => {
+                if !app.recipe_batches.is_empty()
+                    && app.recipe_batch_list_index < app.recipe_batches.len() - 1
+                {
+                    app.recipe_batch_list_index += 1;
+                }
+            }
+            KeyCode::Char('k') | KeyCode::Up => {
+                if app.recipe_batch_list_index > 0 {
+                    app.recipe_batch_list_index -= 1;
+                }
+            }
+            KeyCode::Enter => {
+                if !app.recipe_batches.is_empty() {
+                    let batch_id = app.recipe_batches[app.recipe_batch_list_index].id.clone();
+                    app.save_current();
+                    app.open_batch(&batch_id);
+                }
+            }
+            _ => {}
+        }
+    } else if app.active_tab == Tab::History {
+        match key {
+            KeyCode::Char('j') | KeyCode::Down => {
+                if !app.history_entries.is_empty()
+                    && app.history_scroll < app.history_entries.len() - 1
+                {
+                    app.history_scroll += 1;
+                }
+            }
+            KeyCode::Char('k') | KeyCode::Up => {
+                if app.history_scroll > 0 {
+                    app.history_scroll -= 1;
                 }
             }
             _ => {}

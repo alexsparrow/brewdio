@@ -2,6 +2,9 @@ use automerge::{AutoCommit, ChangeHash, ObjType, ReadDoc, ScalarValue, Value};
 use autosurgeon::{hydrate, reconcile};
 use serde::{Deserialize, Serialize};
 
+use crate::batch::BatchDocument;
+use crate::recipe::RecipeDocument;
+
 /// Create or update an Automerge document from a reconcilable value.
 /// If `existing` bytes are provided, loads and reconciles into that doc (preserving history).
 /// Otherwise creates a new doc.
@@ -18,6 +21,22 @@ pub fn reconcile_to_automerge<T: autosurgeon::Reconcile>(doc: &T, existing: Opti
 pub fn hydrate_from_automerge<T: autosurgeon::Hydrate>(bytes: &[u8]) -> Result<T, autosurgeon::HydrateError> {
     let am_doc = AutoCommit::load(bytes).expect("Failed to load Automerge document");
     hydrate(&am_doc)
+}
+
+/// Extract a single string field by key from an Automerge document.
+/// Returns None if the key is missing or not a string.
+pub fn extract_string_field_from_automerge(bytes: &[u8], key: &str) -> Option<String> {
+    let doc = AutoCommit::load(bytes).ok()?;
+    doc.get(automerge::ROOT, key)
+        .ok()
+        .flatten()
+        .and_then(|(v, _)| match v {
+            Value::Scalar(s) => match s.as_ref() {
+                ScalarValue::Str(s) => Some(s.to_string()),
+                _ => None,
+            },
+            _ => None,
+        })
 }
 
 /// Extract `name` and `is_deleted` directly from an Automerge document
@@ -132,6 +151,14 @@ pub struct ChangeEntry {
     pub num_ops: usize,
     pub seq: u64,
     pub deps: Vec<String>,
+    pub actor_id: String,
+}
+
+/// A history entry combining a change with a human-readable diff summary.
+#[derive(Debug, Clone)]
+pub struct HistoryEntry {
+    pub change: ChangeEntry,
+    pub summary: String,
 }
 
 /// Read the full history of changes from Automerge binary data.
@@ -148,6 +175,7 @@ pub fn get_change_history(bytes: &[u8]) -> Vec<ChangeEntry> {
             num_ops: c.len(),
             seq: c.seq(),
             deps: c.deps().iter().map(ChangeHash::to_string).collect(),
+            actor_id: c.actor_id().to_string(),
         })
         .collect()
 }
@@ -177,6 +205,212 @@ pub fn hydrate_at_change<T: autosurgeon::Hydrate>(
     }
 
     hydrate(&partial)
+}
+
+/// Build history entries for a recipe document with field-level diffs.
+/// Uses incremental change application (O(n)) instead of replaying from scratch per entry.
+pub fn get_recipe_history(bytes: &[u8]) -> Vec<HistoryEntry> {
+    let mut am_doc = AutoCommit::load(bytes).expect("Failed to load Automerge document");
+    let changes = am_doc.get_changes(&[]);
+
+    let mut entries = Vec::with_capacity(changes.len());
+    let mut partial = AutoCommit::new();
+    let mut prev_doc: Option<RecipeDocument> = None;
+
+    for (i, change) in changes.iter().enumerate() {
+        let ce = ChangeEntry {
+            hash: change.hash().to_string(),
+            timestamp: change.timestamp(),
+            message: change.message().cloned(),
+            num_ops: change.len(),
+            seq: change.seq(),
+            deps: change.deps().iter().map(ChangeHash::to_string).collect(),
+            actor_id: change.actor_id().to_string(),
+        };
+
+        partial
+            .apply_changes(std::iter::once(change.clone()))
+            .expect("Failed to apply change");
+
+        let summary = if i == 0 {
+            let curr: Option<RecipeDocument> = hydrate(&partial).ok();
+            prev_doc = curr;
+            "Created".to_string()
+        } else {
+            let curr: Option<RecipeDocument> = hydrate(&partial).ok();
+            let s = match (&prev_doc, &curr) {
+                (Some(prev), Some(curr)) => diff_recipe(prev, curr),
+                _ => format!("{} operation(s)", ce.num_ops),
+            };
+            prev_doc = curr;
+            s
+        };
+
+        entries.push(HistoryEntry { change: ce, summary });
+    }
+    entries
+}
+
+/// Build history entries for a batch document with field-level diffs.
+/// Uses incremental change application (O(n)) instead of replaying from scratch per entry.
+pub fn get_batch_history(bytes: &[u8]) -> Vec<HistoryEntry> {
+    let mut am_doc = AutoCommit::load(bytes).expect("Failed to load Automerge document");
+    let changes = am_doc.get_changes(&[]);
+
+    let mut entries = Vec::with_capacity(changes.len());
+    let mut partial = AutoCommit::new();
+    let mut prev_doc: Option<BatchDocument> = None;
+
+    for (i, change) in changes.iter().enumerate() {
+        let ce = ChangeEntry {
+            hash: change.hash().to_string(),
+            timestamp: change.timestamp(),
+            message: change.message().cloned(),
+            num_ops: change.len(),
+            seq: change.seq(),
+            deps: change.deps().iter().map(ChangeHash::to_string).collect(),
+            actor_id: change.actor_id().to_string(),
+        };
+
+        partial
+            .apply_changes(std::iter::once(change.clone()))
+            .expect("Failed to apply change");
+
+        let summary = if i == 0 {
+            let curr: Option<BatchDocument> = hydrate(&partial).ok();
+            prev_doc = curr;
+            "Created".to_string()
+        } else {
+            let curr: Option<BatchDocument> = hydrate(&partial).ok();
+            let s = match (&prev_doc, &curr) {
+                (Some(prev), Some(curr)) => diff_batch(prev, curr),
+                _ => format!("{} operation(s)", ce.num_ops),
+            };
+            prev_doc = curr;
+            s
+        };
+
+        entries.push(HistoryEntry { change: ce, summary });
+    }
+    entries
+}
+
+fn diff_recipe(prev: &RecipeDocument, curr: &RecipeDocument) -> String {
+    let mut diffs = Vec::new();
+
+    if prev.name != curr.name {
+        diffs.push(format!("Renamed to \"{}\"", curr.name));
+    }
+    if prev.is_deleted != curr.is_deleted {
+        if curr.is_deleted {
+            diffs.push("Deleted".to_string());
+        } else {
+            diffs.push("Restored".to_string());
+        }
+    }
+
+    let prev_bs = format!("{} {:?}", prev.recipe.batch_size.value, prev.recipe.batch_size.unit);
+    let curr_bs = format!("{} {:?}", curr.recipe.batch_size.value, curr.recipe.batch_size.unit);
+    if prev_bs != curr_bs {
+        diffs.push("Changed batch size".to_string());
+    }
+
+    diff_ingredient_counts(
+        prev.recipe.ingredients.fermentable_additions.len(),
+        curr.recipe.ingredients.fermentable_additions.len(),
+        "fermentable",
+        &mut diffs,
+    );
+    diff_ingredient_counts(
+        prev.recipe.ingredients.hop_additions.len(),
+        curr.recipe.ingredients.hop_additions.len(),
+        "hop",
+        &mut diffs,
+    );
+    diff_ingredient_counts(
+        prev.recipe.ingredients.culture_additions.len(),
+        curr.recipe.ingredients.culture_additions.len(),
+        "culture",
+        &mut diffs,
+    );
+
+    let prev_style = prev.recipe.style.as_ref().map(|s| s.0.name.as_str());
+    let curr_style = curr.recipe.style.as_ref().map(|s| s.0.name.as_str());
+    if prev_style != curr_style {
+        match curr_style {
+            Some(name) => diffs.push(format!("Set style to \"{}\"", name)),
+            None => diffs.push("Removed style".to_string()),
+        }
+    }
+
+    if prev.recipe.notes != curr.recipe.notes {
+        diffs.push("Updated notes".to_string());
+    }
+
+    if diffs.is_empty() {
+        "Updated".to_string()
+    } else {
+        diffs.join(", ")
+    }
+}
+
+fn diff_batch(prev: &BatchDocument, curr: &BatchDocument) -> String {
+    let mut diffs = Vec::new();
+
+    if prev.name != curr.name {
+        diffs.push(format!("Renamed to \"{}\"", curr.name));
+    }
+    if prev.is_deleted != curr.is_deleted {
+        if curr.is_deleted {
+            diffs.push("Deleted".to_string());
+        } else {
+            diffs.push("Restored".to_string());
+        }
+    }
+
+    if prev.data.brew_date != curr.data.brew_date {
+        diffs.push("Changed brew date".to_string());
+    }
+    if prev.data.notes != curr.data.notes {
+        diffs.push("Updated notes".to_string());
+    }
+
+    diff_ingredient_counts(
+        prev.data.recipe.ingredients.fermentable_additions.len(),
+        curr.data.recipe.ingredients.fermentable_additions.len(),
+        "fermentable",
+        &mut diffs,
+    );
+    diff_ingredient_counts(
+        prev.data.recipe.ingredients.hop_additions.len(),
+        curr.data.recipe.ingredients.hop_additions.len(),
+        "hop",
+        &mut diffs,
+    );
+    diff_ingredient_counts(
+        prev.data.recipe.ingredients.culture_additions.len(),
+        curr.data.recipe.ingredients.culture_additions.len(),
+        "culture",
+        &mut diffs,
+    );
+
+    if diffs.is_empty() {
+        "Updated".to_string()
+    } else {
+        diffs.join(", ")
+    }
+}
+
+fn diff_ingredient_counts(prev: usize, curr: usize, kind: &str, diffs: &mut Vec<String>) {
+    if curr > prev {
+        let n = curr - prev;
+        let plural = if n == 1 { "" } else { "s" };
+        diffs.push(format!("Added {} {}{}", n, kind, plural));
+    } else if curr < prev {
+        let n = prev - curr;
+        let plural = if n == 1 { "" } else { "s" };
+        diffs.push(format!("Removed {} {}{}", n, kind, plural));
+    }
 }
 
 #[cfg(test)]

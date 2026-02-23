@@ -6,7 +6,9 @@ use tokio::time::{sleep, timeout, Duration};
 
 use brewdio_core::beerjson_types::RecipeType;
 use brewdio_persistence::automerge::reconcile_to_automerge;
+use brewdio_persistence::batch;
 use brewdio_persistence::recipe::RecipeDocument;
+use brewdio_persistence::settings;
 use brewdio_persistence::{connection_native, db, sync_worker};
 
 fn sample_recipe() -> RecipeType {
@@ -220,4 +222,86 @@ async fn shared_recipe_sync_preserves_is_deleted() {
         let listed = db::list_recipes(&*c).unwrap();
         assert_eq!(listed.len(), 1, "Client should still list 1 recipe");
     }
+}
+
+#[tokio::test]
+async fn batch_client_to_server_sync() {
+    let server_conn = Arc::new(Mutex::new(connection_native::open(":memory:").unwrap()));
+    let client_conn = Arc::new(Mutex::new(connection_native::open(":memory:").unwrap()));
+
+    // Create a batch on the client
+    {
+        let c = client_conn.lock().unwrap();
+        let equip = &brewdio_core::data::equipment()[0];
+        batch::create_batch_from_recipe(
+            &*c,
+            "Test Batch",
+            "recipe-1",
+            &sample_recipe(),
+            equip,
+        )
+        .unwrap();
+    }
+
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let _server = brewdio_server::start_server(listener, server_conn.clone());
+
+    let url = format!("ws://{}/ws", addr);
+    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Arc::new(AtomicBool::new(false)));
+
+    let batches = timeout(Duration::from_secs(10), async {
+        loop {
+            let batches = {
+                let c = server_conn.lock().unwrap();
+                batch::list_batches(&*c).unwrap()
+            };
+            if !batches.is_empty() {
+                return batches;
+            }
+            sleep(Duration::from_millis(100)).await;
+        }
+    })
+    .await
+    .expect("Timed out waiting for batch to sync to server");
+
+    assert_eq!(batches.len(), 1);
+    assert_eq!(batches[0].name, "Test Batch");
+    assert!(!batches[0].is_deleted);
+}
+
+#[tokio::test]
+async fn settings_client_to_server_sync() {
+    let server_conn = Arc::new(Mutex::new(connection_native::open(":memory:").unwrap()));
+    let client_conn = Arc::new(Mutex::new(connection_native::open(":memory:").unwrap()));
+
+    // Save settings on the client
+    {
+        let c = client_conn.lock().unwrap();
+        settings::save_settings(&*c, r#"{"vimMode":true}"#).unwrap();
+    }
+
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let _server = brewdio_server::start_server(listener, server_conn.clone());
+
+    let url = format!("ws://{}/ws", addr);
+    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Arc::new(AtomicBool::new(false)));
+
+    let synced_settings = timeout(Duration::from_secs(10), async {
+        loop {
+            let s = {
+                let c = server_conn.lock().unwrap();
+                settings::get_settings(&*c).unwrap()
+            };
+            if let Some(row) = s {
+                return row;
+            }
+            sleep(Duration::from_millis(100)).await;
+        }
+    })
+    .await
+    .expect("Timed out waiting for settings to sync to server");
+
+    assert_eq!(synced_settings.data, r#"{"vimMode":true}"#);
 }
