@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter, Link } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useRecipe, getRecipeDb, recipeKeys } from "@/lib/db/recipes";
 import { useQueryClient } from "@tanstack/react-query";
 import { RecipeEditProvider } from "@/contexts/recipe-edit-context";
@@ -17,10 +17,9 @@ import { stores } from "@/lib/calculate";
 import { RetroCockpitDial } from "@/components/retro-cockpit-dial";
 import { GravitySightGlass } from "@/components/gravity-sight-glass";
 import { Screw } from "@/components/screw";
-import { srm_to_srgb, rgb_to_hex, color_to_srm } from "brewdio-wasm";
-import WaterCalculator from "@/components/water-calculator";
+import { srm_to_srgb, rgb_to_hex, color_to_srm, style_for_recipe } from "brewdio-wasm";
 import { GrainIcon, HopIcon, YeastIcon } from "@/components/ingredient-icons";
-import type { FermentableAdditionType, RecipeType } from "brewdio-wasm";
+import type { FermentableAdditionType, RecipeType, VolumeUnitType, TimeUnitType } from "brewdio-wasm";
 
 export const Route = createFileRoute("/recipes/$recipeId")({
   component: RecipeDetailComponent,
@@ -59,9 +58,10 @@ function RecipeDetailComponent() {
 
   // Extract style ranges if available - must be before any conditional returns
   const styleRanges = useMemo(() => {
-    if (!recipe?.recipe?.style) return null;
+    if (!recipe?.recipe) return null;
 
-    const style = recipe.recipe.style;
+    const style = style_for_recipe(recipe.recipe);
+    if (!style) return null;
 
     // Helper to convert beerjson range types to simple min/max
     const getRange = (range: any) => {
@@ -79,7 +79,7 @@ function RecipeDetailComponent() {
       color: getRange(style.color), // This is in SRM
       abv: getRange(style.alcohol_by_volume)
     };
-  }, [recipe?.recipe?.style]);
+  }, [recipe?.recipe]);
 
   const updateRecipe = (mutateFn: (r: RecipeType) => void) => {
     if (!recipe) return;
@@ -146,20 +146,20 @@ function RecipeDetailComponent() {
   const { recipe: beerRecipe } = recipe;
 
   const handleBatchSizeUpdate = (newValue: number, newUnit: string) => {
-    updateRecipe((r) => { r.batch_size = { value: newValue, unit: newUnit }; });
+    updateRecipe((r) => { r.batch_size = { value: newValue, unit: newUnit as VolumeUnitType }; });
   };
 
   const handleBoilSizeUpdate = (newValue: number, newUnit: string) => {
     updateRecipe((r) => {
       if (!r.boil) r.boil = { boil_time: { value: 60, unit: "min" } };
-      r.boil.pre_boil_size = { value: newValue, unit: newUnit };
+      r.boil.pre_boil_size = { value: newValue, unit: newUnit as VolumeUnitType };
     });
   };
 
   const handleBoilTimeUpdate = (newValue: number, newUnit: string) => {
     updateRecipe((r) => {
       if (!r.boil) r.boil = { boil_time: { value: 60, unit: "min" } };
-      r.boil.boil_time = { value: newValue, unit: newUnit };
+      r.boil.boil_time = { value: newValue, unit: newUnit as TimeUnitType };
     });
   };
 

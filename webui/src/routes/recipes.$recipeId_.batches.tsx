@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useBatches } from "@/lib/db/batches";
 import { useRecipe } from "@/lib/db/recipes";
-import { Button } from "@/components/ui/button";
 import { Beaker, Calendar, ExternalLink } from "lucide-react";
 import { DeleteBatchDialog } from "@/components/delete-batch-dialog";
 

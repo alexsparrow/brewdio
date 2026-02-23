@@ -15,9 +15,9 @@ import { stores } from "@/lib/calculate";
 import { RetroCockpitDial } from "@/components/retro-cockpit-dial";
 import { GravitySightGlass } from "@/components/gravity-sight-glass";
 import { Screw } from "@/components/screw";
-import { srm_to_srgb, rgb_to_hex, color_to_srm } from "brewdio-wasm";
+import { srm_to_srgb, rgb_to_hex, color_to_srm, style_for_recipe } from "brewdio-wasm";
 import { GrainIcon, HopIcon, YeastIcon } from "@/components/ingredient-icons";
-import type { FermentableAdditionType } from "brewdio-wasm";
+import type { FermentableAdditionType, VolumeUnitType, TimeUnitType } from "brewdio-wasm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const Route = createFileRoute("/batches/$batchId")({
@@ -76,9 +76,10 @@ function BatchDetailComponent() {
 
   // Extract style ranges if available - must be before any conditional returns
   const styleRanges = useMemo(() => {
-    if (!batch?.recipe?.style) return null;
+    if (!batch?.recipe) return null;
 
-    const style = batch.recipe.style;
+    const style = style_for_recipe(batch.recipe);
+    if (!style) return null;
 
     // Helper to convert beerjson range types to simple min/max
     const getRange = (range: any) => {
@@ -96,7 +97,7 @@ function BatchDetailComponent() {
       color: getRange(style.color), // This is in SRM
       abv: getRange(style.alcohol_by_volume)
     };
-  }, [batch?.recipe?.style]);
+  }, [batch?.recipe]);
 
   const handleRemoveFermentable = (index: number) => {
     if (!batch) return;
@@ -157,25 +158,25 @@ function BatchDetailComponent() {
 
   const handleBatchSizeUpdate = (newValue: number, newUnit: string) => {
     const recipe = structuredClone(batch.recipe);
-    recipe.batch_size = { value: newValue, unit: newUnit };
+    recipe.batch_size = { value: newValue, unit: newUnit as VolumeUnitType };
     updateBatch(() => ({ recipe }));
   };
 
   const handleBoilSizeUpdate = (newValue: number, newUnit: string) => {
     const recipe = structuredClone(batch.recipe);
     if (!recipe.boil) recipe.boil = { boil_time: { value: 60, unit: "min" } };
-    recipe.boil.pre_boil_size = { value: newValue, unit: newUnit };
+    recipe.boil.pre_boil_size = { value: newValue, unit: newUnit as VolumeUnitType };
     updateBatch(() => ({ recipe }));
   };
 
   const handleBoilTimeUpdate = (newValue: number, newUnit: string) => {
     const recipe = structuredClone(batch.recipe);
     if (!recipe.boil) recipe.boil = { boil_time: { value: 60, unit: "min" } };
-    recipe.boil.boil_time = { value: newValue, unit: newUnit };
+    recipe.boil.boil_time = { value: newValue, unit: newUnit as TimeUnitType };
     updateBatch(() => ({ recipe }));
   };
 
-  const handleEfficiencyUpdate = (newValue: number, unit: string) => {
+  const handleEfficiencyUpdate = (newValue: number, _unit: string) => {
     const recipe = structuredClone(batch.recipe);
     if (!recipe.efficiency) {
       recipe.efficiency = {
@@ -250,7 +251,8 @@ function BatchDetailComponent() {
           You are editing <strong>{batch.name}</strong>, brewed on {brewDateStr}.
           Changes will only affect this batch, not the original recipe.
           <Link
-            to={`/recipes/${batch.recipeId}`}
+            to="/recipes/$recipeId"
+            params={{ recipeId: batch.recipeId }}
             className="ml-2 underline hover:text-blue-700 dark:hover:text-blue-300"
           >
             View original recipe

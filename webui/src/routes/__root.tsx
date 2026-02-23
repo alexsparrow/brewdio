@@ -14,7 +14,6 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useRef } from "react";
 import { stores, wireCalculations } from "@/lib/calculate";
 import { OG, FG, ABV, Color, IBU } from "@/lib/calculations";
 
@@ -59,13 +58,14 @@ function RootComponent() {
   const { data: batchesData } = useBatches();
 
   // Extract recipeId from the route if we're on a recipe page
+  const matchParams = (match: { params?: Record<string, unknown> }) => match.params as Record<string, string> | undefined;
   const recipeId = routerState.location.pathname.startsWith('/recipes/')
-    ? routerState.matches.find(match => match.params?.recipeId)?.params?.recipeId as string | undefined
+    ? matchParams(routerState.matches.find(match => matchParams(match)?.recipeId) ?? {})?.recipeId
     : undefined;
 
   // Extract batchId from the route if we're on a batch page
   const batchId = routerState.location.pathname.startsWith('/batches/')
-    ? routerState.matches.find(match => match.params?.batchId)?.params?.batchId as string | undefined
+    ? matchParams(routerState.matches.find(match => matchParams(match)?.batchId) ?? {})?.batchId
     : undefined;
 
   // Find the current recipe or batch

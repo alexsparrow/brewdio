@@ -29,12 +29,10 @@
  */
 
 import { Store, Derived } from "@tanstack/store";
-import type { FermentableType, RecipeType } from "brewdio-wasm";
+import type { RecipeType } from "brewdio-wasm";
 import type { Path } from "@clickbar/dot-diver";
 import type {
   CalcDef,
-  DynamicCalculation,
-  StaticCalculation,
   RuntimeState as CalcRuntimeState,
 } from "./calculations-types";
 
@@ -124,7 +122,7 @@ export function wireCalculations(stores: Stores, defs: CalcDef[]): Unsub[] {
       fn = new Function(
         ...def.dependsOn.map((_, i) => `arg${i}`),
         `return (${def.expr})(...arguments)`
-      );
+      ) as (...args: any[]) => any;
       dependsOn = def.dependsOn;
     }
 

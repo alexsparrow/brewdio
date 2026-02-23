@@ -1,4 +1,19 @@
+use brewdio_core::beerjson_types::{EquipmentType, RecipeType};
+use serde::{Deserialize, Serialize};
+
 use crate::connection::{Connection, DbError, Value};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BatchData {
+    pub equipment_id: String,
+    pub recipe: RecipeType,
+    pub equipment: EquipmentType,
+    pub brew_date: u64,
+    pub notes: Option<String>,
+    pub created_at: u64,
+    pub updated_at: u64,
+}
 
 pub struct BatchRow {
     pub id: String,
@@ -8,6 +23,12 @@ pub struct BatchRow {
     pub am_data: Vec<u8>,
     pub is_deleted: bool,
     pub is_dirty: bool,
+}
+
+impl BatchRow {
+    pub fn to_data(&self) -> Result<BatchData, serde_json::Error> {
+        serde_json::from_str(&self.data)
+    }
 }
 
 fn row_from_query(row: &dyn crate::connection::Row) -> BatchRow {
@@ -87,6 +108,30 @@ pub fn delete_batch(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), D
     )
 }
 
+pub fn create_batch_from_recipe(
+    conn: &(impl Connection + ?Sized),
+    name: &str,
+    recipe_id: &str,
+    recipe: &RecipeType,
+    equipment: &EquipmentType,
+) -> Result<BatchRow, DbError> {
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as u64;
+    let data = BatchData {
+        equipment_id: equipment.name.clone(),
+        recipe: recipe.clone(),
+        equipment: equipment.clone(),
+        brew_date: now,
+        notes: None,
+        created_at: now,
+        updated_at: now,
+    };
+    let json = serde_json::to_string(&data).map_err(|e| DbError(e.to_string()))?;
+    create_batch(conn, name, recipe_id, &json)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -129,5 +174,64 @@ mod tests {
         let fetched = get_batch(&conn, &row.id).unwrap().unwrap();
         assert!(fetched.is_deleted);
         assert!(fetched.is_dirty);
+    }
+
+    #[test]
+    fn create_batch_from_recipe_roundtrip() {
+        use brewdio_core::data::equipment;
+
+        let conn = test_conn();
+        let equip = &equipment()[0];
+        let recipe = brewdio_core::beerjson_types::RecipeType {
+            name: "Test IPA".to_string(),
+            author: String::new(),
+            type_: brewdio_core::beerjson_types::RecipeTypeType::AllGrain,
+            batch_size: brewdio_core::beerjson_types::VolumeType {
+                unit: brewdio_core::beerjson_types::VolumeUnitType::L,
+                value: 20.0,
+            },
+            efficiency: brewdio_core::beerjson_types::EfficiencyType {
+                brewhouse: brewdio_core::beerjson_types::PercentType {
+                    unit: brewdio_core::beerjson_types::PercentUnitType::X,
+                    value: 72.0,
+                },
+                conversion: None,
+                lauter: None,
+                mash: None,
+            },
+            ingredients: brewdio_core::beerjson_types::IngredientsType {
+                fermentable_additions: Vec::new(),
+                hop_additions: Vec::new(),
+                culture_additions: Vec::new(),
+                miscellaneous_additions: Vec::new(),
+                water_additions: Vec::new(),
+            },
+            alcohol_by_volume: None,
+            apparent_attenuation: None,
+            beer_p_h: None,
+            boil: None,
+            calories_per_pint: None,
+            carbonation: None,
+            coauthor: None,
+            color_estimate: None,
+            created: None,
+            fermentation: None,
+            final_gravity: None,
+            ibu_estimate: None,
+            mash: None,
+            notes: None,
+            original_gravity: None,
+            packaging: None,
+            style: None,
+            taste: None,
+        };
+
+        let row = create_batch_from_recipe(&conn, "Batch #1", "recipe-1", &recipe, equip).unwrap();
+        assert_eq!(row.name, "Batch #1");
+
+        let data = row.to_data().unwrap();
+        assert_eq!(data.recipe.name, "Test IPA");
+        assert_eq!(data.equipment_id, equip.name);
+        assert!(data.brew_date > 0);
     }
 }

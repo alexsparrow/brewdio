@@ -144,6 +144,7 @@ dependencies = [
  "persistence",
  "ratatui",
  "rusqlite",
+ "serde_json",
 ]
 
 [[package]]

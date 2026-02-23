@@ -10,7 +10,7 @@ import { stores } from "@/lib/calculate";
 import { RetroCockpitDial } from "@/components/retro-cockpit-dial";
 import { GravitySightGlass } from "@/components/gravity-sight-glass";
 import { Screw } from "@/components/screw";
-import { srm_to_srgb, rgb_to_hex, color_to_srm } from "brewdio-wasm";
+import { srm_to_srgb, rgb_to_hex, color_to_srm, style_for_recipe } from "brewdio-wasm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info, Calendar } from "lucide-react";
 import { GrainIcon, HopIcon, YeastIcon } from "@/components/ingredient-icons";
@@ -120,34 +120,30 @@ function BatchOverviewComponent() {
 
   // Format brew date for display and input
   const brewDate = new Date(batch.brewDate);
-  const brewDateStr = brewDate.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
   const brewDateInputValue = brewDate.toISOString().split('T')[0]; // YYYY-MM-DD format for input
 
   // Extract style ranges if available
-  const styleRanges = beerRecipe.style ? {
-    og: beerRecipe.style.original_gravity ? {
-      min: beerRecipe.style.original_gravity.minimum?.value ?? null,
-      max: beerRecipe.style.original_gravity.maximum?.value ?? null
+  const fullStyle = style_for_recipe(beerRecipe);
+  const styleRanges = fullStyle ? {
+    og: fullStyle.original_gravity ? {
+      min: fullStyle.original_gravity.minimum?.value ?? null,
+      max: fullStyle.original_gravity.maximum?.value ?? null
     } : null,
-    fg: beerRecipe.style.final_gravity ? {
-      min: beerRecipe.style.final_gravity.minimum?.value ?? null,
-      max: beerRecipe.style.final_gravity.maximum?.value ?? null
+    fg: fullStyle.final_gravity ? {
+      min: fullStyle.final_gravity.minimum?.value ?? null,
+      max: fullStyle.final_gravity.maximum?.value ?? null
     } : null,
-    ibu: beerRecipe.style.international_bitterness_units ? {
-      min: beerRecipe.style.international_bitterness_units.minimum?.value ?? null,
-      max: beerRecipe.style.international_bitterness_units.maximum?.value ?? null
+    ibu: fullStyle.international_bitterness_units ? {
+      min: fullStyle.international_bitterness_units.minimum?.value ?? null,
+      max: fullStyle.international_bitterness_units.maximum?.value ?? null
     } : null,
-    color: beerRecipe.style.color ? {
-      min: beerRecipe.style.color.minimum?.value ?? null,
-      max: beerRecipe.style.color.maximum?.value ?? null
+    color: fullStyle.color ? {
+      min: fullStyle.color.minimum?.value ?? null,
+      max: fullStyle.color.maximum?.value ?? null
     } : null,
-    abv: beerRecipe.style.alcohol_by_volume ? {
-      min: beerRecipe.style.alcohol_by_volume.minimum?.value ?? null,
-      max: beerRecipe.style.alcohol_by_volume.maximum?.value ?? null
+    abv: fullStyle.alcohol_by_volume ? {
+      min: fullStyle.alcohol_by_volume.minimum?.value ?? null,
+      max: fullStyle.alcohol_by_volume.maximum?.value ?? null
     } : null
   } : null;
 

@@ -2,26 +2,83 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, Paragraph, Tabs},
+    widgets::{Block, Borders, List, ListItem, Paragraph},
     Frame,
 };
 
-use crate::app::{App, Screen, Tab};
+use crate::app::{App, BatchSizeDialogStep, FermentableDialogStep, HomeTab, Screen, Tab, VitalDisplay, MASS_UNITS, VOLUME_UNITS};
+use brewdio_core::beerjson_types::FermentableAdditionTypeAmount;
 
 pub fn draw(frame: &mut Frame, app: &App) {
     match &app.screen {
-        Screen::RecipeList => draw_recipe_list(frame, app),
+        Screen::Home => draw_home(frame, app),
         Screen::RecipeEdit { .. } => draw_recipe_edit(frame, app),
     }
 }
 
-fn draw_recipe_list(frame: &mut Frame, app: &App) {
+fn draw_home(frame: &mut Frame, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Min(3), Constraint::Length(3)])
+        .constraints([
+            Constraint::Length(1), // Status bar
+            Constraint::Min(3),   // Content
+            Constraint::Length(3), // Help bar
+        ])
         .split(frame.area());
 
-    // Recipe list
+    // Status bar
+    draw_status_bar(frame, app, chunks[0]);
+
+    // Tab content
+    match app.home_tab {
+        HomeTab::Recipes => draw_recipes_tab(frame, app, chunks[1]),
+        HomeTab::Batches => draw_batches_tab(frame, app, chunks[1]),
+        HomeTab::Settings => draw_settings_tab(frame, app, chunks[1]),
+    }
+
+    // Help bar
+    let help = match app.home_tab {
+        HomeTab::Recipes => Paragraph::new(Line::from(vec![
+            Span::styled(" [n]", Style::default().fg(Color::Cyan)),
+            Span::raw("ew  "),
+            Span::styled("[d]", Style::default().fg(Color::Cyan)),
+            Span::raw("elete  "),
+            Span::styled("[Enter]", Style::default().fg(Color::Cyan)),
+            Span::raw(" open  "),
+            Span::styled("[Tab]", Style::default().fg(Color::Cyan)),
+            Span::raw(" next  "),
+            Span::styled("[q]", Style::default().fg(Color::Cyan)),
+            Span::raw("uit"),
+        ])),
+        HomeTab::Batches => Paragraph::new(Line::from(vec![
+            Span::styled(" [d]", Style::default().fg(Color::Cyan)),
+            Span::raw("elete  "),
+            Span::styled("[Tab]", Style::default().fg(Color::Cyan)),
+            Span::raw(" next  "),
+            Span::styled("[q]", Style::default().fg(Color::Cyan)),
+            Span::raw("uit"),
+        ])),
+        HomeTab::Settings => {
+            if app.editing_setting {
+                Paragraph::new(Line::from(Span::raw(
+                    " Type to edit, [Enter] confirm, [Esc] cancel",
+                )))
+            } else {
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" [Enter]", Style::default().fg(Color::Cyan)),
+                    Span::raw(" edit  "),
+                    Span::styled("[Tab]", Style::default().fg(Color::Cyan)),
+                    Span::raw(" next  "),
+                    Span::styled("[q]", Style::default().fg(Color::Cyan)),
+                    Span::raw("uit"),
+                ]))
+            }
+        }
+    };
+    frame.render_widget(help.block(Block::default().borders(Borders::ALL)), chunks[2]);
+}
+
+fn draw_recipes_tab(frame: &mut Frame, app: &App, area: Rect) {
     let items: Vec<ListItem> = app
         .recipes
         .iter()
@@ -42,59 +99,138 @@ fn draw_recipe_list(frame: &mut Frame, app: &App) {
         })
         .collect();
 
-    let list = List::new(items).block(
-        Block::default()
-            .borders(Borders::ALL)
-            .title(" Brewdio "),
-    );
-    frame.render_widget(list, chunks[0]);
+    let list = List::new(items).block(Block::default().borders(Borders::ALL).title(" Recipes "));
+    frame.render_widget(list, area);
+}
 
-    // Help bar
-    let help = Paragraph::new(Line::from(vec![
-        Span::styled(" [n]", Style::default().fg(Color::Cyan)),
-        Span::raw("ew  "),
-        Span::styled("[d]", Style::default().fg(Color::Cyan)),
-        Span::raw("elete  "),
-        Span::styled("[Enter]", Style::default().fg(Color::Cyan)),
-        Span::raw(" open  "),
-        Span::styled("[q]", Style::default().fg(Color::Cyan)),
-        Span::raw("uit"),
-    ]))
-    .block(Block::default().borders(Borders::ALL));
-    frame.render_widget(help, chunks[1]);
+fn draw_batches_tab(frame: &mut Frame, app: &App, area: Rect) {
+    let items: Vec<ListItem> = app
+        .batches
+        .iter()
+        .enumerate()
+        .map(|(i, b)| {
+            let prefix = if i == app.batch_list_index {
+                " ► "
+            } else {
+                "   "
+            };
+            let style = if i == app.batch_list_index {
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD)
+            } else {
+                Style::default()
+            };
+            ListItem::new(Line::from(Span::styled(
+                format!("{}{}  {}  {}", prefix, b.name, b.recipe_name, b.brew_date),
+                style,
+            )))
+        })
+        .collect();
+
+    let list = List::new(items).block(Block::default().borders(Borders::ALL).title(" Batches "));
+    frame.render_widget(list, area);
+}
+
+fn draw_settings_tab(frame: &mut Frame, app: &App, area: Rect) {
+    let items: Vec<ListItem> = app
+        .settings_entries
+        .iter()
+        .enumerate()
+        .map(|(i, entry)| {
+            let prefix = if i == app.settings_index {
+                " ► "
+            } else {
+                "   "
+            };
+            let style = if i == app.settings_index {
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD)
+            } else {
+                Style::default()
+            };
+            let value_display = if i == app.settings_index && app.editing_setting {
+                format!("{}▏", app.setting_input)
+            } else {
+                entry.value.clone()
+            };
+            ListItem::new(Line::from(Span::styled(
+                format!("{}{:<24}{}", prefix, entry.key, value_display),
+                style,
+            )))
+        })
+        .collect();
+
+    let list = List::new(items).block(Block::default().borders(Borders::ALL).title(" Settings "));
+    frame.render_widget(list, area);
 }
 
 fn draw_recipe_edit(frame: &mut Frame, app: &App) {
-    let chunks = Layout::default()
+    // Header has 3 rows (Name, Style, Batch) + 2 border = 5
+    // Vitals: 5 vitals × 2 lines + 2 border = 12
+    // Top row height is driven by vitals
+    let top_height = 12;
+
+    // Split vertically: status bar, top row (header beside vitals), tab content, help bar
+    let outer = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(4), // Name + Style
-            Constraint::Length(3), // Tab bar
-            Constraint::Min(3),   // Tab content
-            Constraint::Length(3), // Help bar
+            Constraint::Length(1),          // Status bar
+            Constraint::Length(top_height), // Header + Vitals side-by-side
+            Constraint::Min(3),            // Tab content (full width)
+            Constraint::Length(3),          // Help bar
         ])
         .split(frame.area());
 
-    // Header: Name + Style
-    draw_header(frame, app, chunks[0]);
+    // Status bar
+    draw_status_bar(frame, app, outer[0]);
 
-    // Tab bar
-    draw_tabs(frame, app, chunks[1]);
+    // Split top row horizontally: left (header) | right (vitals)
+    let cols = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Min(20), Constraint::Length(34)])
+        .split(outer[1]);
 
-    // Tab content
-    draw_tab_content(frame, app, chunks[2]);
+    // Left side: header (Name + Style + Batch)
+    draw_header(frame, app, cols[0]);
+
+    // Right side: vitals panel
+    draw_vitals_panel(frame, app, cols[1]);
+
+    // Tab content (full width)
+    draw_tab_content(frame, app, outer[2]);
 
     // Help bar
     let help_text = if app.editing_name {
         " Type to edit, [Enter] confirm, [Esc] cancel"
     } else if app.style_selector.is_some() {
         " Type to search, [↑/↓] navigate, [Enter] confirm, [Esc] cancel"
+    } else if app.fermentable_dialog.is_some() {
+        match app.fermentable_dialog.as_ref().unwrap().step {
+            FermentableDialogStep::SelectFermentable => {
+                " Type to search, [↑/↓] navigate, [Enter] confirm, [Esc] cancel"
+            }
+            FermentableDialogStep::EnterAmount => " Type amount, [Enter] confirm, [Esc] cancel",
+            FermentableDialogStep::SelectUnit => {
+                " [←/→] change unit, [Enter] confirm, [Esc] cancel"
+            }
+        }
+    } else if app.batch_size_dialog.is_some() {
+        match app.batch_size_dialog.as_ref().unwrap().step {
+            BatchSizeDialogStep::EnterValue => " Type volume, [Enter] confirm, [Esc] cancel",
+            BatchSizeDialogStep::SelectUnit => {
+                " [←/→] change unit, [Enter] confirm, [Esc] cancel"
+            }
+        }
+    } else if app.active_tab == Tab::Fermentables {
+        " [a]dd  [Enter] edit  [d]elete  [j/k] navigate  [n]ame  [s]tyle  [v]ol  [1-5] tabs  [Esc] back"
     } else {
-        " [n]ame  [s]tyle  [1-5] tabs  [Esc] back"
+        " [n]ame  [s]tyle  [v]ol  [b]rew  [1-5] tabs  [Esc] back"
     };
     let help = Paragraph::new(Line::from(Span::raw(help_text)))
         .block(Block::default().borders(Borders::ALL));
-    frame.render_widget(help, chunks[3]);
+    frame.render_widget(help, outer[3]);
 }
 
 fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
@@ -105,7 +241,12 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
 
     let rows = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Length(1), Constraint::Length(1)])
+        .constraints([
+            Constraint::Length(1),
+            Constraint::Length(1),
+            Constraint::Length(1),
+            Constraint::Min(0),
+        ])
         .split(inner);
 
     // Name row
@@ -145,32 +286,238 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
         ]);
         frame.render_widget(Paragraph::new(style_line), rows[1]);
     }
+
+    // Batch size row
+    let batch_line = Line::from(vec![
+        Span::styled(" Batch: ", Style::default().fg(Color::DarkGray)),
+        Span::raw(app.batch_size_display()),
+    ]);
+    frame.render_widget(Paragraph::new(batch_line), rows[2]);
+
+    // Overlay batch size dialog if active
+    if app.batch_size_dialog.is_some() {
+        draw_batch_size_dialog(frame, app, area);
+    }
 }
 
-fn draw_tabs(frame: &mut Frame, app: &App, area: Rect) {
-    let titles: Vec<Line> = [
-        Tab::Fermentables,
-        Tab::Hops,
-        Tab::Cultures,
-        Tab::Water,
-        Tab::Mash,
-    ]
-    .iter()
-    .enumerate()
-    .map(|(i, t)| Line::from(format!("[{}]{}", i + 1, t.label())))
-    .collect();
+fn draw_batch_size_dialog(frame: &mut Frame, app: &App, area: Rect) {
+    let dialog = match app.batch_size_dialog.as_ref() {
+        Some(d) => d,
+        None => return,
+    };
 
-    let tabs = Tabs::new(titles)
-        .select(app.active_tab.index())
-        .block(Block::default().borders(Borders::ALL))
-        .highlight_style(
+    let popup_width = 44u16.min(area.width.saturating_sub(4));
+    let popup_height = match dialog.step {
+        BatchSizeDialogStep::EnterValue => 5,
+        BatchSizeDialogStep::SelectUnit => 7,
+    };
+    let popup_height = popup_height.min(area.height.saturating_sub(2));
+    let popup_area = centered_rect(popup_width, popup_height, area);
+
+    let title = match dialog.step {
+        BatchSizeDialogStep::EnterValue => " Batch Size ",
+        BatchSizeDialogStep::SelectUnit => " Batch Unit ",
+    };
+    let block = Block::default().borders(Borders::ALL).title(title);
+    let inner = block.inner(popup_area);
+    frame.render_widget(
+        Paragraph::new("").style(Style::default().bg(Color::Black)),
+        popup_area,
+    );
+    frame.render_widget(block, popup_area);
+
+    match dialog.step {
+        BatchSizeDialogStep::EnterValue => {
+            let rows = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Min(0),
+                ])
+                .split(inner);
+
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Volume: ", Style::default().fg(Color::DarkGray)),
+                    Span::styled(
+                        format!("{}▏", dialog.value_input),
+                        Style::default().fg(Color::Yellow),
+                    ),
+                ])),
+                rows[0],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    " [Enter] next  [Esc] cancel",
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[1],
+            );
+        }
+        BatchSizeDialogStep::SelectUnit => {
+            let rows = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Min(0),
+                ])
+                .split(inner);
+
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Volume: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(&dialog.value_input),
+                ])),
+                rows[0],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    "─".repeat(inner.width as usize),
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[1],
+            );
+
+            let unit_labels: Vec<String> = VOLUME_UNITS
+                .iter()
+                .enumerate()
+                .map(|(i, u)| {
+                    let label = format!("{:?}", u).to_lowercase();
+                    if i == dialog.unit_index {
+                        format!("[{}]", label)
+                    } else {
+                        format!(" {} ", label)
+                    }
+                })
+                .collect();
+
+            let mut spans = vec![Span::styled(" Unit: ", Style::default().fg(Color::DarkGray))];
+            spans.push(Span::styled("◄ ", Style::default().fg(Color::Cyan)));
+            for (i, label) in unit_labels.iter().enumerate() {
+                let style = if i == dialog.unit_index {
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default().fg(Color::DarkGray)
+                };
+                spans.push(Span::styled(label.clone(), style));
+                if i < unit_labels.len() - 1 {
+                    spans.push(Span::raw("  "));
+                }
+            }
+            spans.push(Span::styled(" ►", Style::default().fg(Color::Cyan)));
+
+            frame.render_widget(Paragraph::new(Line::from(spans)), rows[2]);
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    " [Enter] confirm  [Esc] cancel  [←/→] change",
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[3],
+            );
+        }
+    }
+}
+
+fn draw_status_bar(frame: &mut Frame, app: &App, area: Rect) {
+    let bg = Color::Rgb(200, 200, 210);
+    let bar_style = Style::default().bg(bg);
+    let inactive_fg = Color::Rgb(80, 80, 95);
+    let active_bg = Color::Rgb(50, 50, 60);
+    let active_fg = Color::Rgb(230, 230, 240);
+    let view_bg = Color::Rgb(120, 120, 140);
+    let view_fg = Color::Rgb(240, 240, 250);
+
+    let mut spans: Vec<Span> = vec![
+        Span::styled(
+            " brewdio ",
             Style::default()
+                .bg(Color::Rgb(60, 60, 70))
                 .fg(Color::Yellow)
                 .add_modifier(Modifier::BOLD),
-        )
-        .divider(Span::raw(" "));
+        ),
+        Span::styled(" ", Style::default()),
+        ];
 
-    frame.render_widget(tabs, area);
+    match &app.screen {
+        Screen::Home => {
+            spans.push(Span::styled(
+                " Home ",
+                Style::default().bg(view_bg).fg(view_fg).add_modifier(Modifier::BOLD),
+            ));
+            spans.push(Span::styled(" ", Style::default()));
+
+            let home_tabs = [HomeTab::Recipes, HomeTab::Batches, HomeTab::Settings];
+            for (i, tab) in home_tabs.iter().enumerate() {
+                let is_active = *tab == app.home_tab;
+                let label = format!(" [{}]{} ", i + 1, tab.label());
+                if is_active {
+                    spans.push(Span::styled(
+                        label,
+                        Style::default()
+                            .bg(active_bg)
+                            .fg(active_fg)
+                            .add_modifier(Modifier::BOLD),
+                    ));
+                } else {
+                    spans.push(Span::styled(
+                        label,
+                        Style::default().bg(bg).fg(inactive_fg),
+                    ));
+                }
+                spans.push(Span::styled(" ", bar_style));
+            }
+        }
+        Screen::RecipeEdit { .. } => {
+            spans.push(Span::styled(
+                " Recipe ",
+                Style::default().bg(view_bg).fg(view_fg).add_modifier(Modifier::BOLD),
+            ));
+            spans.push(Span::styled(" ", Style::default()));
+
+            let recipe_tabs = [
+                Tab::Fermentables,
+                Tab::Hops,
+                Tab::Cultures,
+                Tab::Water,
+                Tab::Mash,
+            ];
+            for (i, tab) in recipe_tabs.iter().enumerate() {
+                let is_active = *tab == app.active_tab;
+                let label = format!(" [{}]{} ", i + 1, tab.label());
+                if is_active {
+                    spans.push(Span::styled(
+                        label,
+                        Style::default()
+                            .bg(active_bg)
+                            .fg(active_fg)
+                            .add_modifier(Modifier::BOLD),
+                    ));
+                } else {
+                    spans.push(Span::styled(
+                        label,
+                        Style::default().bg(bg).fg(inactive_fg),
+                    ));
+                }
+                spans.push(Span::styled(" ", bar_style));
+            }
+        }
+    }
+
+    // Fill remaining width with background
+    let used: usize = spans.iter().map(|s| s.content.len()).sum();
+    let remaining = (area.width as usize).saturating_sub(used);
+    if remaining > 0 {
+        spans.push(Span::styled(" ".repeat(remaining), bar_style));
+    }
+
+    let line = Line::from(spans);
+    frame.render_widget(Paragraph::new(line), area);
 }
 
 fn draw_tab_content(frame: &mut Frame, app: &App, area: Rect) {
@@ -179,14 +526,387 @@ fn draw_tab_content(frame: &mut Frame, app: &App, area: Rect) {
         return;
     }
 
-    let content = Paragraph::new(Line::from(Span::styled(
-        "  (coming soon)",
-        Style::default().fg(Color::DarkGray),
-    )))
-    .block(
-        Block::default()
-            .borders(Borders::ALL)
-            .title(format!(" {} ", app.active_tab.label())),
-    );
-    frame.render_widget(content, area);
+    match app.active_tab {
+        Tab::Fermentables => draw_fermentables_tab(frame, app, area),
+        _ => {
+            let content = Paragraph::new(Line::from(Span::styled(
+                "  (coming soon)",
+                Style::default().fg(Color::DarkGray),
+            )))
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title(format!(" {} ", app.active_tab.label())),
+            );
+            frame.render_widget(content, area);
+        }
+    }
+}
+
+fn draw_fermentables_tab(frame: &mut Frame, app: &App, area: Rect) {
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(" Fermentables ");
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+
+    let additions = match app.current_doc.as_ref() {
+        Some(doc) => &doc.recipe.ingredients.fermentable_additions,
+        None => return,
+    };
+
+    if additions.is_empty() {
+        let empty = Paragraph::new(Line::from(Span::styled(
+            "  Press [a] to add a fermentable",
+            Style::default().fg(Color::DarkGray),
+        )));
+        frame.render_widget(empty, inner);
+    } else {
+        let items: Vec<ListItem> = additions
+            .iter()
+            .enumerate()
+            .map(|(i, addition)| {
+                let is_selected = i == app.fermentable_list_index;
+
+                // Color swatch
+                let srm = brewdio_core::units::color_to_srm(&addition.color);
+                let [r, g, b] = brewdio_core::olfarve::srm_to_srgb(srm, None);
+                let swatch_color = Color::Rgb(
+                    (r * 255.0) as u8,
+                    (g * 255.0) as u8,
+                    (b * 255.0) as u8,
+                );
+
+                let prefix = if is_selected { " ► " } else { "   " };
+                let (amount_val, amount_unit) = match &addition.amount {
+                    FermentableAdditionTypeAmount::MassType(m) => {
+                        (m.value, format!("{:?}", m.unit).to_lowercase())
+                    }
+                    FermentableAdditionTypeAmount::VolumeType(v) => {
+                        (v.value, format!("{:?}", v.unit).to_lowercase())
+                    }
+                };
+                let amount_str = format!("{} {}", format_amount(amount_val), amount_unit);
+                let name = &addition.name;
+
+                // Calculate padding: total width minus prefix(3) - swatch(3) - name - amount
+                let total_width = inner.width as usize;
+                let used = 3 + 3 + name.len() + amount_str.len();
+                let padding = if total_width > used {
+                    total_width - used
+                } else {
+                    1
+                };
+
+                let style = if is_selected {
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default()
+                };
+
+                ListItem::new(Line::from(vec![
+                    Span::styled(prefix, style),
+                    Span::styled("██ ", Style::default().fg(swatch_color)),
+                    Span::styled(name.clone(), style),
+                    Span::styled(" ".repeat(padding), Style::default()),
+                    Span::styled(amount_str, style),
+                ]))
+            })
+            .collect();
+
+        let list = List::new(items);
+        frame.render_widget(list, inner);
+    }
+
+    // Overlay dialog if active
+    if app.fermentable_dialog.is_some() {
+        draw_fermentable_dialog(frame, app, area);
+    }
+}
+
+fn format_amount(value: f64) -> String {
+    if value == value.floor() {
+        format!("{:.0}", value)
+    } else {
+        // Trim trailing zeros
+        let s = format!("{:.2}", value);
+        s.trim_end_matches('0').trim_end_matches('.').to_string()
+    }
+}
+
+fn draw_fermentable_dialog(frame: &mut Frame, app: &App, area: Rect) {
+    let dialog = match app.fermentable_dialog.as_ref() {
+        Some(d) => d,
+        None => return,
+    };
+
+    match dialog.step {
+        FermentableDialogStep::SelectFermentable => {
+            dialog.selector.draw(frame, area);
+        }
+        FermentableDialogStep::EnterAmount => {
+            let all = brewdio_core::data::fermentables();
+            let ferm_name = &all[dialog.selected_fermentable_index].name;
+
+            let popup_width = 50u16.min(area.width.saturating_sub(4));
+            let popup_height = 7u16.min(area.height.saturating_sub(2));
+            let popup_area = centered_rect(popup_width, popup_height, area);
+
+            let block = Block::default()
+                .borders(Borders::ALL)
+                .title(" Enter Amount ");
+            let inner = block.inner(popup_area);
+            // Clear background
+            frame.render_widget(
+                Paragraph::new("").style(Style::default().bg(Color::Black)),
+                popup_area,
+            );
+            frame.render_widget(block, popup_area);
+
+            let rows = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Min(0),
+                ])
+                .split(inner);
+
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Grain: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(ferm_name.clone()),
+                ])),
+                rows[0],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    "─".repeat(inner.width as usize),
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[1],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Amount: ", Style::default().fg(Color::DarkGray)),
+                    Span::styled(
+                        format!("{}▏", dialog.amount_input),
+                        Style::default().fg(Color::Yellow),
+                    ),
+                ])),
+                rows[2],
+            );
+        }
+        FermentableDialogStep::SelectUnit => {
+            let all = brewdio_core::data::fermentables();
+            let ferm_name = &all[dialog.selected_fermentable_index].name;
+
+            let popup_width = 50u16.min(area.width.saturating_sub(4));
+            let popup_height = 9u16.min(area.height.saturating_sub(2));
+            let popup_area = centered_rect(popup_width, popup_height, area);
+
+            let block = Block::default()
+                .borders(Borders::ALL)
+                .title(" Select Unit ");
+            let inner = block.inner(popup_area);
+            frame.render_widget(
+                Paragraph::new("").style(Style::default().bg(Color::Black)),
+                popup_area,
+            );
+            frame.render_widget(block, popup_area);
+
+            let rows = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Min(0),
+                ])
+                .split(inner);
+
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Grain: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(ferm_name.clone()),
+                ])),
+                rows[0],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Amount: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(&dialog.amount_input),
+                ])),
+                rows[1],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    "─".repeat(inner.width as usize),
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[2],
+            );
+
+            // Unit selector: < lb >
+            let unit_labels: Vec<String> = MASS_UNITS
+                .iter()
+                .enumerate()
+                .map(|(i, u)| {
+                    let label = format!("{:?}", u).to_lowercase();
+                    if i == dialog.unit_index {
+                        format!("[{}]", label)
+                    } else {
+                        format!(" {} ", label)
+                    }
+                })
+                .collect();
+
+            let mut spans = vec![Span::styled(" Unit: ", Style::default().fg(Color::DarkGray))];
+            spans.push(Span::styled("◄ ", Style::default().fg(Color::Cyan)));
+            for (i, label) in unit_labels.iter().enumerate() {
+                let style = if i == dialog.unit_index {
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default().fg(Color::DarkGray)
+                };
+                spans.push(Span::styled(label.clone(), style));
+                if i < unit_labels.len() - 1 {
+                    spans.push(Span::raw("  "));
+                }
+            }
+            spans.push(Span::styled(" ►", Style::default().fg(Color::Cyan)));
+
+            frame.render_widget(Paragraph::new(Line::from(spans)), rows[3]);
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    " [Enter] confirm  [Esc] cancel  [←/→] change unit",
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[4],
+            );
+        }
+    }
+}
+
+fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
+    let x = area.x + (area.width.saturating_sub(width)) / 2;
+    let y = area.y + (area.height.saturating_sub(height)) / 2;
+    Rect::new(x, y, width.min(area.width), height.min(area.height))
+}
+
+fn draw_vitals_panel(frame: &mut Frame, app: &App, area: Rect) {
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(" Vitals ");
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+
+    let vitals = app.compute_vitals();
+    if vitals.is_empty() {
+        return;
+    }
+
+    // Each vital uses exactly 2 lines (label + bar), no spacing between them
+    let mut constraints: Vec<Constraint> = vitals
+        .iter()
+        .flat_map(|_| [Constraint::Length(1), Constraint::Length(1)])
+        .collect();
+    constraints.push(Constraint::Min(0));
+
+    let rows = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(constraints)
+        .split(inner);
+
+    for (i, vital) in vitals.iter().enumerate() {
+        let row_base = i * 2;
+
+        // Line 1: centered label with dashes filling full width
+        let label_text = format!(" {} ", vital.label);
+        let width = inner.width as usize;
+        let pad_total = width.saturating_sub(label_text.len());
+        let pad_left = pad_total / 2;
+        let pad_right = pad_total - pad_left;
+        let label = format!(
+            "{}{}{}",
+            "─".repeat(pad_left),
+            label_text,
+            "─".repeat(pad_right),
+        );
+        let label_line = Line::from(Span::styled(
+            label,
+            Style::default().fg(Color::DarkGray),
+        ));
+        frame.render_widget(Paragraph::new(label_line), rows[row_base]);
+
+        // Line 2: value + range bar
+        let bar_width = inner.width.saturating_sub(7); // reserve space for value + space
+        let bar_line = draw_range_bar(vital, bar_width);
+        frame.render_widget(Paragraph::new(bar_line), rows[row_base + 1]);
+    }
+}
+
+fn draw_range_bar(vital: &VitalDisplay, bar_width: u16) -> Line<'static> {
+    let bar_width = bar_width as usize;
+    if bar_width == 0 {
+        return Line::from(Span::raw(vital.formatted.clone()));
+    }
+
+    // Determine value text color
+    let value_color = match &vital.style_range {
+        Some(range) => {
+            if vital.value >= range.min && vital.value <= range.max {
+                Color::Green
+            } else {
+                Color::Red
+            }
+        }
+        None => Color::Reset,
+    };
+
+    // Pad formatted value to 6 chars
+    let value_text = format!("{:<6}", vital.formatted);
+    let mut spans: Vec<Span> = vec![Span::styled(value_text, Style::default().fg(value_color))];
+
+    // Build bar characters
+    let range = vital.normal_max - vital.normal_min;
+    if range <= 0.0 {
+        return Line::from(spans);
+    }
+
+    // Find the column closest to the current value
+    let value_frac = (vital.value - vital.normal_min) / range;
+    let value_col = (value_frac * (bar_width as f64 - 1.0))
+        .round()
+        .clamp(0.0, bar_width as f64 - 1.0) as usize;
+
+    for col in 0..bar_width {
+        let col_value = vital.normal_min + (col as f64 / (bar_width as f64 - 1.0).max(1.0)) * range;
+
+        if col == value_col {
+            spans.push(Span::styled(
+                "│",
+                Style::default()
+                    .fg(Color::White)
+                    .add_modifier(Modifier::BOLD),
+            ));
+        } else if let Some(ref sr) = vital.style_range {
+            if col_value >= sr.min && col_value <= sr.max {
+                spans.push(Span::styled("▓", Style::default().fg(Color::Cyan)));
+            } else {
+                spans.push(Span::styled("░", Style::default().fg(Color::DarkGray)));
+            }
+        } else {
+            spans.push(Span::styled("░", Style::default().fg(Color::DarkGray)));
+        }
+    }
+
+    Line::from(spans)
 }

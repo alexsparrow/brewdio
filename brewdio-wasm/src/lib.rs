@@ -268,6 +268,11 @@ pub fn get_mash_profiles() -> Vec<MashProcedureType> {
     core::data::mash_profiles()
 }
 
+#[wasm_bindgen]
+pub fn style_for_recipe(recipe: RecipeType) -> Option<StyleType> {
+    core::data::style_for_recipe(&recipe)
+}
+
 // ============================================================================
 // Persistence / Sync exports
 // ============================================================================

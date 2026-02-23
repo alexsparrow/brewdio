@@ -1,4 +1,3 @@
-import React from 'react';
 import type { CalculatedStage } from '@/lib/water-calculations';
 
 // --- Constants & Layout ---

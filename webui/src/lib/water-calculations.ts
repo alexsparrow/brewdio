@@ -143,7 +143,7 @@ export function equipmentToStages(equipment: any, grainWeight: number = 0): Stag
     return getDefaultStages();
   }
 
-  return equipment.equipment_items.map((item: any, index: number) => {
+  return equipment.equipment_items.map((item: any, _index: number) => {
     const losses: Loss[] = [];
     const id = item.name.toLowerCase().replace(/\s+/g, '_');
 

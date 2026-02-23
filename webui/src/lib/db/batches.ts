@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useQuery, type QueryClient } from '@tanstack/react-query';
 import type { RecipeType, EquipmentType } from 'brewdio-wasm';
 import { getRecipeDb } from './recipes';
 
