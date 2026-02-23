@@ -2142,5 +2142,21 @@
     "value": 67
    }
   }
+ },
+ {
+  "name": "Lallemand - Voss Kveik",
+  "producer": "Lallemand",
+  "type": "kveik",
+  "form": "dry",
+  "attenuation_range": {
+   "minimum": {
+    "unit": "%",
+    "value": 76
+   },
+   "maximum": {
+    "unit": "%",
+    "value": 82
+   }
+  }
  }
 ]

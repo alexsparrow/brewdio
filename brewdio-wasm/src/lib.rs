@@ -2,14 +2,14 @@
 //! Types are automatically marshalled via tsify/wasm-bindgen.
 
 use wasm_bindgen::prelude::*;
-use core::beerjson_types::*;
-use core::water::WaterCalculatorInput;
-use core::carbonation::CarbonationInput;
-use persistence::connection_wasm::WasmConnection;
-use persistence::db;
-use persistence::batch;
-use persistence::settings;
-use persistence::sync::SyncSession as InnerSyncSession;
+use brewdio_core::beerjson_types::*;
+use brewdio_core::water::WaterCalculatorInput;
+use brewdio_core::carbonation::CarbonationInput;
+use brewdio_persistence::connection_wasm::WasmConnection;
+use brewdio_persistence::db;
+use brewdio_persistence::batch;
+use brewdio_persistence::settings;
+use brewdio_persistence::sync::SyncSession as InnerSyncSession;
 
 #[wasm_bindgen]
 extern "C" {
@@ -32,7 +32,7 @@ fn to_js<T: serde::Serialize>(value: &T) -> Result<JsValue, serde_wasm_bindgen::
 
 #[wasm_bindgen]
 pub fn calculate_abv(og: f64, fg: f64) -> f64 {
-    core::abv::calculate_abv(og, fg)
+    brewdio_core::abv::calculate_abv(og, fg)
 }
 
 // ============================================================================
@@ -45,22 +45,22 @@ pub fn calculate_og(
     batch_size: VolumeType,
     efficiency: PercentType,
 ) -> f64 {
-    core::og::calculate_og(&fermentables, &batch_size, &efficiency)
+    brewdio_core::og::calculate_og(&fermentables, &batch_size, &efficiency)
 }
 
 #[wasm_bindgen]
 pub fn calculate_fg(og: f64, cultures: Vec<CultureAdditionType>) -> f64 {
-    core::fg::calculate_fg(og, &cultures)
+    brewdio_core::fg::calculate_fg(og, &cultures)
 }
 
 #[wasm_bindgen]
 pub fn calculate_ibu(hops: Vec<HopAdditionType>, batch_size: VolumeType, og: f64) -> f64 {
-    core::ibu::calculate_ibu(&hops, &batch_size, og)
+    brewdio_core::ibu::calculate_ibu(&hops, &batch_size, og)
 }
 
 #[wasm_bindgen]
 pub fn calculate_color(fermentables: Vec<FermentableAdditionType>, batch_size: VolumeType) -> f64 {
-    core::color::calculate_color(&fermentables, &batch_size)
+    brewdio_core::color::calculate_color(&fermentables, &batch_size)
 }
 
 // ============================================================================
@@ -69,19 +69,19 @@ pub fn calculate_color(fermentables: Vec<FermentableAdditionType>, batch_size: V
 
 #[wasm_bindgen]
 pub fn srm_to_srgb(srm: f64, path_cm: Option<f64>) -> JsValue {
-    let rgb = core::olfarve::srm_to_srgb(srm, path_cm);
+    let rgb = brewdio_core::olfarve::srm_to_srgb(srm, path_cm);
     to_js(&rgb).unwrap()
 }
 
 #[wasm_bindgen]
 pub fn ebc_to_srgb(ebc: f64, path_cm: Option<f64>) -> JsValue {
-    let rgb = core::olfarve::ebc_to_srgb(ebc, path_cm);
+    let rgb = brewdio_core::olfarve::ebc_to_srgb(ebc, path_cm);
     to_js(&rgb).unwrap()
 }
 
 #[wasm_bindgen]
 pub fn rgb_to_hex(r: f64, g: f64, b: f64) -> String {
-    core::olfarve::rgb_to_hex(&[r, g, b])
+    brewdio_core::olfarve::rgb_to_hex(&[r, g, b])
 }
 
 // ============================================================================
@@ -90,13 +90,13 @@ pub fn rgb_to_hex(r: f64, g: f64, b: f64) -> String {
 
 #[wasm_bindgen]
 pub fn calculate_water(input: WaterCalculatorInput) -> JsValue {
-    let result = core::water::calculate_water(&input);
+    let result = brewdio_core::water::calculate_water(&input);
     to_js(&result).unwrap()
 }
 
 #[wasm_bindgen]
 pub fn calculate_carbonation(input: CarbonationInput) -> JsValue {
-    let result = core::carbonation::calculate_carbonation(&input);
+    let result = brewdio_core::carbonation::calculate_carbonation(&input);
     to_js(&result).unwrap()
 }
 
@@ -106,132 +106,132 @@ pub fn calculate_carbonation(input: CarbonationInput) -> JsValue {
 
 #[wasm_bindgen]
 pub fn volume_to_milliliters(volume: VolumeType) -> f64 {
-    core::units::volume_to_milliliters(&volume)
+    brewdio_core::units::volume_to_milliliters(&volume)
 }
 
 #[wasm_bindgen]
 pub fn volume_to_liters(volume: VolumeType) -> f64 {
-    core::units::volume_to_liters(&volume)
+    brewdio_core::units::volume_to_liters(&volume)
 }
 
 #[wasm_bindgen]
 pub fn volume_to_gallons(volume: VolumeType) -> f64 {
-    core::units::volume_to_gallons(&volume)
+    brewdio_core::units::volume_to_gallons(&volume)
 }
 
 #[wasm_bindgen]
 pub fn mass_to_grams(mass: MassType) -> f64 {
-    core::units::mass_to_grams(&mass)
+    brewdio_core::units::mass_to_grams(&mass)
 }
 
 #[wasm_bindgen]
 pub fn mass_to_kilograms(mass: MassType) -> f64 {
-    core::units::mass_to_kilograms(&mass)
+    brewdio_core::units::mass_to_kilograms(&mass)
 }
 
 #[wasm_bindgen]
 pub fn mass_to_pounds(mass: MassType) -> f64 {
-    core::units::mass_to_pounds(&mass)
+    brewdio_core::units::mass_to_pounds(&mass)
 }
 
 #[wasm_bindgen]
 pub fn mass_to_ounces(mass: MassType) -> f64 {
-    core::units::mass_to_ounces(&mass)
+    brewdio_core::units::mass_to_ounces(&mass)
 }
 
 #[wasm_bindgen]
 pub fn time_to_minutes(time: TimeType) -> f64 {
-    core::units::time_to_minutes(&time)
+    brewdio_core::units::time_to_minutes(&time)
 }
 
 #[wasm_bindgen]
 pub fn time_to_hours(time: TimeType) -> f64 {
-    core::units::time_to_hours(&time)
+    brewdio_core::units::time_to_hours(&time)
 }
 
 #[wasm_bindgen]
 pub fn temperature_to_celsius(temp: TemperatureType) -> f64 {
-    core::units::temperature_to_celsius(&temp)
+    brewdio_core::units::temperature_to_celsius(&temp)
 }
 
 #[wasm_bindgen]
 pub fn temperature_to_fahrenheit(temp: TemperatureType) -> f64 {
-    core::units::temperature_to_fahrenheit(&temp)
+    brewdio_core::units::temperature_to_fahrenheit(&temp)
 }
 
 #[wasm_bindgen]
 pub fn color_to_srm(color: ColorType) -> f64 {
-    core::units::color_to_srm(&color)
+    brewdio_core::units::color_to_srm(&color)
 }
 
 #[wasm_bindgen]
 pub fn srm_to_ebc(srm: f64) -> f64 {
-    core::units::srm_to_ebc(srm)
+    brewdio_core::units::srm_to_ebc(srm)
 }
 
 #[wasm_bindgen]
 pub fn ebc_to_srm(ebc: f64) -> f64 {
-    core::units::ebc_to_srm(ebc)
+    brewdio_core::units::ebc_to_srm(ebc)
 }
 
 #[wasm_bindgen]
 pub fn lovibond_to_srm(lovibond: f64) -> f64 {
-    core::units::lovibond_to_srm(lovibond)
+    brewdio_core::units::lovibond_to_srm(lovibond)
 }
 
 #[wasm_bindgen]
 pub fn srm_to_lovibond(srm: f64) -> f64 {
-    core::units::srm_to_lovibond(srm)
+    brewdio_core::units::srm_to_lovibond(srm)
 }
 
 #[wasm_bindgen]
 pub fn gravity_to_sg(gravity: GravityType) -> f64 {
-    core::units::gravity_to_sg(&gravity)
+    brewdio_core::units::gravity_to_sg(&gravity)
 }
 
 #[wasm_bindgen]
 pub fn gravity_to_plato(gravity: GravityType) -> f64 {
-    core::units::gravity_to_plato(&gravity)
+    brewdio_core::units::gravity_to_plato(&gravity)
 }
 
 #[wasm_bindgen]
 pub fn pressure_to_psi(pressure: PressureType) -> f64 {
-    core::units::pressure_to_psi(&pressure)
+    brewdio_core::units::pressure_to_psi(&pressure)
 }
 
 #[wasm_bindgen]
 pub fn pressure_to_bar(pressure: PressureType) -> f64 {
-    core::units::pressure_to_bar(&pressure)
+    brewdio_core::units::pressure_to_bar(&pressure)
 }
 
 #[wasm_bindgen]
 pub fn pressure_to_kilopascals(pressure: PressureType) -> f64 {
-    core::units::pressure_to_kilopascals(&pressure)
+    brewdio_core::units::pressure_to_kilopascals(&pressure)
 }
 
 #[wasm_bindgen]
 pub fn carbonation_to_volumes(carbonation: CarbonationType) -> f64 {
-    core::units::carbonation_to_volumes(&carbonation)
+    brewdio_core::units::carbonation_to_volumes(&carbonation)
 }
 
 #[wasm_bindgen]
 pub fn bitterness_to_ibu(bitterness: BitternessType) -> f64 {
-    core::units::bitterness_to_ibu(&bitterness)
+    brewdio_core::units::bitterness_to_ibu(&bitterness)
 }
 
 #[wasm_bindgen]
 pub fn percent_to_decimal(percent: PercentType) -> f64 {
-    core::units::percent_to_decimal(&percent)
+    brewdio_core::units::percent_to_decimal(&percent)
 }
 
 #[wasm_bindgen]
 pub fn specific_volume_to_gallons_per_kilogram(specific_volume: SpecificVolumeType) -> f64 {
-    core::units::specific_volume_to_gal_per_kg(&specific_volume)
+    brewdio_core::units::specific_volume_to_gal_per_kg(&specific_volume)
 }
 
 #[wasm_bindgen]
 pub fn specific_volume_to_l_per_kg(specific_volume: SpecificVolumeType) -> f64 {
-    core::units::specific_volume_to_l_per_kg(&specific_volume)
+    brewdio_core::units::specific_volume_to_l_per_kg(&specific_volume)
 }
 
 // ============================================================================
@@ -240,37 +240,37 @@ pub fn specific_volume_to_l_per_kg(specific_volume: SpecificVolumeType) -> f64 {
 
 #[wasm_bindgen]
 pub fn get_fermentables() -> Vec<FermentableType> {
-    core::data::fermentables()
+    brewdio_core::data::fermentables()
 }
 
 #[wasm_bindgen]
 pub fn get_hops() -> Vec<HopVarietyBase> {
-    core::data::hops()
+    brewdio_core::data::hops()
 }
 
 #[wasm_bindgen]
 pub fn get_cultures() -> Vec<CultureInformation> {
-    core::data::cultures()
+    brewdio_core::data::cultures()
 }
 
 #[wasm_bindgen]
 pub fn get_styles() -> Vec<StyleType> {
-    core::data::styles()
+    brewdio_core::data::styles()
 }
 
 #[wasm_bindgen]
 pub fn get_equipment() -> Vec<EquipmentType> {
-    core::data::equipment()
+    brewdio_core::data::equipment()
 }
 
 #[wasm_bindgen]
 pub fn get_mash_profiles() -> Vec<MashProcedureType> {
-    core::data::mash_profiles()
+    brewdio_core::data::mash_profiles()
 }
 
 #[wasm_bindgen]
 pub fn style_for_recipe(recipe: RecipeType) -> Option<StyleType> {
-    core::data::style_for_recipe(&recipe)
+    brewdio_core::data::style_for_recipe(&recipe)
 }
 
 // ============================================================================
@@ -307,7 +307,7 @@ impl SyncSession {
 
     /// Reconcile a recipe document (as JSON string) into the Automerge doc.
     pub fn reconcile_json(&mut self, recipe_json: &str) {
-        let doc: persistence::recipe::RecipeDocument =
+        let doc: brewdio_persistence::recipe::RecipeDocument =
             serde_json::from_str(recipe_json).expect("Failed to parse RecipeDocument JSON");
         self.inner.reconcile(&doc);
     }
@@ -376,7 +376,7 @@ impl SyncSession {
 /// After this call, databases opened by name will persist across page reloads.
 #[wasm_bindgen]
 pub async fn init_persistent_storage() -> Result<(), JsError> {
-    persistence::connection_wasm::install_persistent_vfs()
+    brewdio_persistence::connection_wasm::install_persistent_vfs()
         .await
         .map_err(|e| JsError::new(&e.to_string()))
 }

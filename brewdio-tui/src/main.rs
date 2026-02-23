@@ -13,7 +13,7 @@ use crossterm::{
 };
 use ratatui::{backend::CrosstermBackend, Terminal};
 
-use app::{App, BatchSizeDialogStep, FermentableDialogStep, HomeTab, Screen, Tab, MASS_UNITS, VOLUME_UNITS};
+use app::{App, BatchSizeDialogStep, CultureDialogStep, FermentableDialogStep, HopDialogStep, HomeTab, Screen, Tab, CULTURE_UNITS, MASS_UNITS, VOLUME_UNITS, USE_TYPES};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Resolve DB path
@@ -23,7 +23,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(data_dir)?;
     let db_path = data_dir.join("brewdio.db");
 
-    let conn = persistence::connection_native::open(db_path.to_str().unwrap())?;
+    let conn = brewdio_persistence::connection_native::open(db_path.to_str().unwrap())?;
     let mut app = App::new(conn);
 
     // Setup terminal
@@ -221,6 +221,18 @@ fn handle_edit_input(app: &mut App, key: KeyCode) {
         return;
     }
 
+    // Hop dialog
+    if app.hop_dialog.is_some() {
+        handle_hop_dialog(app, key);
+        return;
+    }
+
+    // Culture dialog
+    if app.culture_dialog.is_some() {
+        handle_culture_dialog(app, key);
+        return;
+    }
+
     // Batch size dialog
     if app.batch_size_dialog.is_some() {
         handle_batch_size_dialog(app, key);
@@ -259,6 +271,46 @@ fn handle_edit_input(app: &mut App, key: KeyCode) {
             KeyCode::Char('k') | KeyCode::Up => {
                 if app.fermentable_list_index > 0 {
                     app.fermentable_list_index -= 1;
+                }
+            }
+            _ => {}
+        }
+    } else if app.active_tab == Tab::Hops {
+        match key {
+            KeyCode::Char('a') => app.open_add_hop(),
+            KeyCode::Enter => app.open_edit_hop(),
+            KeyCode::Char('d') => app.delete_selected_hop(),
+            KeyCode::Char('j') | KeyCode::Down => {
+                if let Some(ref doc) = app.current_doc {
+                    let len = doc.recipe.ingredients.hop_additions.len();
+                    if len > 0 && app.hop_list_index < len - 1 {
+                        app.hop_list_index += 1;
+                    }
+                }
+            }
+            KeyCode::Char('k') | KeyCode::Up => {
+                if app.hop_list_index > 0 {
+                    app.hop_list_index -= 1;
+                }
+            }
+            _ => {}
+        }
+    } else if app.active_tab == Tab::Cultures {
+        match key {
+            KeyCode::Char('a') => app.open_add_culture(),
+            KeyCode::Enter => app.open_edit_culture(),
+            KeyCode::Char('d') => app.delete_selected_culture(),
+            KeyCode::Char('j') | KeyCode::Down => {
+                if let Some(ref doc) = app.current_doc {
+                    let len = doc.recipe.ingredients.culture_additions.len();
+                    if len > 0 && app.culture_list_index < len - 1 {
+                        app.culture_list_index += 1;
+                    }
+                }
+            }
+            KeyCode::Char('k') | KeyCode::Up => {
+                if app.culture_list_index > 0 {
+                    app.culture_list_index -= 1;
                 }
             }
             _ => {}
@@ -334,6 +386,185 @@ fn handle_fermentable_dialog(app: &mut App, key: KeyCode) {
             KeyCode::Right | KeyCode::Char('l') => {
                 let dialog = app.fermentable_dialog.as_mut().unwrap();
                 dialog.unit_index = (dialog.unit_index + 1) % MASS_UNITS.len();
+            }
+            _ => {}
+        },
+    }
+}
+
+fn handle_hop_dialog(app: &mut App, key: KeyCode) {
+    let step = app
+        .hop_dialog
+        .as_ref()
+        .map(|d| d.step.clone())
+        .unwrap();
+
+    match step {
+        HopDialogStep::SelectHop => {
+            let action = app
+                .hop_dialog
+                .as_mut()
+                .unwrap()
+                .selector
+                .handle_key(key);
+            match action {
+                search_selector::SearchAction::Confirm(idx) => {
+                    let dialog = app.hop_dialog.as_mut().unwrap();
+                    dialog.selected_hop_index = idx;
+                    dialog.step = HopDialogStep::EnterAmount;
+                }
+                search_selector::SearchAction::Cancel => {
+                    app.hop_dialog = None;
+                }
+                search_selector::SearchAction::Nothing => {}
+            }
+        }
+        HopDialogStep::EnterAmount => match key {
+            KeyCode::Enter => {
+                let dialog = app.hop_dialog.as_mut().unwrap();
+                if dialog.amount_input.parse::<f64>().is_ok() {
+                    dialog.step = HopDialogStep::SelectUnit;
+                }
+            }
+            KeyCode::Esc => {
+                app.hop_dialog = None;
+            }
+            KeyCode::Backspace => {
+                app.hop_dialog.as_mut().unwrap().amount_input.pop();
+            }
+            KeyCode::Char(c) if c.is_ascii_digit() || c == '.' => {
+                app.hop_dialog.as_mut().unwrap().amount_input.push(c);
+            }
+            _ => {}
+        },
+        HopDialogStep::SelectUnit => match key {
+            KeyCode::Enter => {
+                let dialog = app.hop_dialog.as_mut().unwrap();
+                dialog.step = HopDialogStep::SelectUse;
+            }
+            KeyCode::Esc => {
+                app.hop_dialog = None;
+            }
+            KeyCode::Left | KeyCode::Char('h') => {
+                let dialog = app.hop_dialog.as_mut().unwrap();
+                if dialog.unit_index > 0 {
+                    dialog.unit_index -= 1;
+                } else {
+                    dialog.unit_index = MASS_UNITS.len() - 1;
+                }
+            }
+            KeyCode::Right | KeyCode::Char('l') => {
+                let dialog = app.hop_dialog.as_mut().unwrap();
+                dialog.unit_index = (dialog.unit_index + 1) % MASS_UNITS.len();
+            }
+            _ => {}
+        },
+        HopDialogStep::SelectUse => match key {
+            KeyCode::Enter => {
+                let dialog = app.hop_dialog.as_mut().unwrap();
+                dialog.step = HopDialogStep::EnterTime;
+            }
+            KeyCode::Esc => {
+                app.hop_dialog = None;
+            }
+            KeyCode::Left | KeyCode::Char('h') => {
+                let dialog = app.hop_dialog.as_mut().unwrap();
+                if dialog.use_index > 0 {
+                    dialog.use_index -= 1;
+                } else {
+                    dialog.use_index = USE_TYPES.len() - 1;
+                }
+            }
+            KeyCode::Right | KeyCode::Char('l') => {
+                let dialog = app.hop_dialog.as_mut().unwrap();
+                dialog.use_index = (dialog.use_index + 1) % USE_TYPES.len();
+            }
+            _ => {}
+        },
+        HopDialogStep::EnterTime => match key {
+            KeyCode::Enter => {
+                let dialog = app.hop_dialog.as_ref().unwrap();
+                if dialog.time_input.parse::<i64>().is_ok() {
+                    app.confirm_hop_dialog();
+                }
+            }
+            KeyCode::Esc => {
+                app.hop_dialog = None;
+            }
+            KeyCode::Backspace => {
+                app.hop_dialog.as_mut().unwrap().time_input.pop();
+            }
+            KeyCode::Char(c) if c.is_ascii_digit() => {
+                app.hop_dialog.as_mut().unwrap().time_input.push(c);
+            }
+            _ => {}
+        },
+    }
+}
+
+fn handle_culture_dialog(app: &mut App, key: KeyCode) {
+    let step = app
+        .culture_dialog
+        .as_ref()
+        .map(|d| d.step.clone())
+        .unwrap();
+
+    match step {
+        CultureDialogStep::SelectCulture => {
+            let action = app
+                .culture_dialog
+                .as_mut()
+                .unwrap()
+                .selector
+                .handle_key(key);
+            match action {
+                search_selector::SearchAction::Confirm(idx) => {
+                    let dialog = app.culture_dialog.as_mut().unwrap();
+                    dialog.selected_culture_index = idx;
+                    dialog.step = CultureDialogStep::EnterAmount;
+                }
+                search_selector::SearchAction::Cancel => {
+                    app.culture_dialog = None;
+                }
+                search_selector::SearchAction::Nothing => {}
+            }
+        }
+        CultureDialogStep::EnterAmount => match key {
+            KeyCode::Enter => {
+                let dialog = app.culture_dialog.as_mut().unwrap();
+                if dialog.amount_input.parse::<f64>().is_ok() {
+                    dialog.step = CultureDialogStep::SelectUnit;
+                }
+            }
+            KeyCode::Esc => {
+                app.culture_dialog = None;
+            }
+            KeyCode::Backspace => {
+                app.culture_dialog.as_mut().unwrap().amount_input.pop();
+            }
+            KeyCode::Char(c) if c.is_ascii_digit() || c == '.' => {
+                app.culture_dialog.as_mut().unwrap().amount_input.push(c);
+            }
+            _ => {}
+        },
+        CultureDialogStep::SelectUnit => match key {
+            KeyCode::Enter => {
+                app.confirm_culture_dialog();
+            }
+            KeyCode::Esc => {
+                app.culture_dialog = None;
+            }
+            KeyCode::Left | KeyCode::Char('h') => {
+                let dialog = app.culture_dialog.as_mut().unwrap();
+                if dialog.unit_index > 0 {
+                    dialog.unit_index -= 1;
+                } else {
+                    dialog.unit_index = CULTURE_UNITS.len() - 1;
+                }
+            }
+            KeyCode::Right | KeyCode::Char('l') => {
+                let dialog = app.culture_dialog.as_mut().unwrap();
+                dialog.unit_index = (dialog.unit_index + 1) % CULTURE_UNITS.len();
             }
             _ => {}
         },

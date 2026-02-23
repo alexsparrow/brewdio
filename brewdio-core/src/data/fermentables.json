@@ -4710,5 +4710,24 @@
    "value": 4.5,
    "unit": "%"
   }
+ },
+ {
+  "name": "Joe White - Traditional Ale Malt",
+  "producer": "Joe White",
+  "type": "grain",
+  "yield": {
+   "fine_grind": {
+    "unit": "%",
+    "value": 80
+   }
+  },
+  "color": {
+   "unit": "SRM",
+   "value": 3.05
+  },
+  "moisture": {
+   "value": 4.5,
+   "unit": "%"
+  }
  }
 ]

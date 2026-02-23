@@ -1,12 +1,12 @@
-# 🍺 brewdio
+# brewdio
 
 > A **local-first** homebrewing app designed to be powerful and fun to use.
 
-brewdio is a modern, privacy-focused brewing companion that puts you in control of your recipes and brew days. Everything runs locally in your browser—no accounts, no servers, no subscriptions. Just pure brewing.
+brewdio is a modern, privacy-focused brewing companion that puts you in control of your recipes and brew days. Everything runs locally—no accounts, no servers, no subscriptions. Just pure brewing.
 
 ---
 
-## ✨ Features
+## Features
 
 ### Recipe Management
 - **BeerJSON Compliant** - Industry-standard recipe format ensures portability and future-proofing
@@ -26,7 +26,7 @@ brewdio is a modern, privacy-focused brewing companion that puts you in control 
 - **Grain Absorption** - Accurate water calculations based on your grain bill
 
 ### User Experience
-- **Local-First** - All data stored in your browser using IndexedDB
+- **Local-First** - All data stored locally using SQLite (IndexedDB-backed in the browser, native on desktop)
 - **Dark Mode** - Beautiful dark mode support for late-night brewing sessions
 - **Retro Dials** - Playful retro-cockpit gauge displays for calculated values
 - **Inline Editing** - Edit recipe values directly without cumbersome forms
@@ -34,143 +34,104 @@ brewdio is a modern, privacy-focused brewing companion that puts you in control 
 
 ---
 
-## 🛠️ Tech Stack
+## Architecture
 
-brewdio is built with modern web technologies optimized for local-first applications:
-
-### Core
-- **[Bun](https://bun.sh/)** - All-in-one JavaScript runtime and toolkit
-- **[React 19](https://react.dev/)** - UI library with cutting-edge features
-- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe development
-- **[Vite](https://vite.dev/)** - Lightning-fast development and builds
-
-### State & Data
-- **[TanStack React DB](https://tanstack.com/db)** - Local-first reactive database built on Dexie/IndexedDB
-- **[TanStack Store](https://tanstack.com/store)** - Reactive state management for calculations
-- **[TanStack Form](https://tanstack.com/form)** - Type-safe form management
-
-### Routing
-- **[TanStack Router](https://tanstack.com/router)** - File-based routing with type-safe navigation
-
-### UI & Styling
-- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
-- **[shadcn/ui](https://ui.shadcn.com/)** - High-quality, accessible components built on Radix UI
-- **[Lucide Icons](https://lucide.dev/)** - Beautiful, consistent icon set
-- **[next-themes](https://github.com/pacocoursey/next-themes)** - Seamless dark mode support
-
-### Brewing
-- **[BeerJSON](https://beerjson.org/)** - Industry-standard recipe format (v1.0.2)
-- **Custom Calculation Engine** - Brewing math implementations (Tinseth IBU, color, etc.)
-
----
-
-## 📁 Project Structure
+brewdio is a Rust workspace with a shared core compiled to both WebAssembly and native targets:
 
 ```
 brewdio/
-├── src/
-│   ├── routes/              # File-based routing (TanStack Router)
-│   │   ├── index.tsx        # Home page
-│   │   ├── recipes.$recipeId.tsx
-│   │   ├── batches.$batchId_.overview.tsx
-│   │   └── ...
-│   ├── components/          # Reusable UI components
-│   │   ├── ui/              # shadcn/ui components
-│   │   ├── recipe-header.tsx
-│   │   ├── add-hop-dialog.tsx
-│   │   └── ...
-│   ├── calculations/        # Brewing calculations
-│   │   ├── ibu.ts           # Tinseth IBU calculation
-│   │   ├── gravity.ts       # OG/FG calculations
-│   │   ├── color.ts         # SRM color calculation
-│   │   └── ...
-│   ├── lib/                 # Utility functions
-│   │   ├── actions/         # Data mutation helpers
-│   │   ├── calculate.ts     # Calculation engine
-│   │   └── ...
-│   ├── contexts/            # React contexts
-│   │   └── recipe-edit-context.tsx
-│   ├── data/                # Static data
-│   │   ├── hops.json        # Hop varieties
-│   │   ├── styles.json      # BJCP styles
-│   │   └── ...
-│   ├── db.ts                # Database schema & collections
-│   └── main.tsx             # App entry point
-├── public/                  # Static assets
-└── package.json
+├── brewdio-core/          # brewdio-core — brewing calculations & data
+│   └── src/
+│       ├── abv.rs         # ABV calculation
+│       ├── og.rs          # Original gravity
+│       ├── fg.rs          # Final gravity
+│       ├── ibu.rs         # Tinseth IBU
+│       ├── color.rs       # Morey SRM color
+│       ├── water.rs       # Water calculator
+│       ├── carbonation.rs # Carbonation calculator
+│       ├── olfarve.rs     # Beer color rendering
+│       ├── units.rs       # Unit conversions
+│       └── data/          # Ingredient & style JSON databases
+├── brewdio-persistence/   # brewdio-persistence — SQLite storage & CRDT sync
+│   └── src/
+│       ├── db.rs          # Recipe CRUD
+│       ├── batch.rs       # Batch CRUD
+│       ├── settings.rs    # User settings
+│       ├── recipe.rs      # RecipeDocument (Automerge)
+│       ├── sync.rs        # CRDT sync sessions
+│       ├── connection_native.rs  # Native SQLite (rusqlite)
+│       └── connection_wasm.rs    # WASM SQLite (sqlite-wasm-rs)
+├── brewdio-wasm/          # WASM bindings (wasm-bindgen)
+├── brewdio-wasm-test/     # WASM integration tests (bun test)
+├── brewdio-tui/           # Terminal UI (ratatui)
+├── brewdio-webui/         # brewdio-webui — React web frontend
+│   └── src/
+│       ├── routes/        # File-based routing (TanStack Router)
+│       ├── components/    # UI components (shadcn/ui)
+│       └── lib/           # Utilities & actions
+├── Cargo.toml             # Workspace root
+└── .github/workflows/     # CI (GitHub Actions)
 ```
+
+### Crates
+
+| Crate | Description |
+|-------|-------------|
+| `brewdio-core` | Brewing calculations, unit conversions, and ingredient/style data. Pure Rust, no I/O. |
+| `brewdio-persistence` | SQLite-backed recipe, batch, and settings storage with Automerge CRDT sync. Compiles to both native (rusqlite) and WASM (sqlite-wasm-rs). |
+| `brewdio-wasm` | wasm-bindgen bindings that expose core + persistence to JavaScript/TypeScript. |
+| `brewdio-tui` | Terminal UI built with ratatui for recipe and batch management from the command line. |
+
+### Web UI
+
+The `brewdio-webui/` directory is a React + TypeScript frontend that consumes `brewdio-wasm`:
+
+- **[React 19](https://react.dev/)** with **[TanStack Router](https://tanstack.com/router)**
+- **[Tailwind CSS](https://tailwindcss.com/)** + **[shadcn/ui](https://ui.shadcn.com/)**
+- **[Vite](https://vite.dev/)** for development and builds
+- Data stored in IndexedDB via the WASM SQLite layer
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
+- [Rust](https://rustup.rs/) (stable)
+- [wasm-pack](https://rustwasm.github.io/wasm-pack/)
 - [Bun](https://bun.sh/) 1.0+
 
-### Installation
+### Development
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/brewdio.git
-cd brewdio
+# Run Rust tests (excludes WASM cdylib)
+cargo test --workspace --exclude brewdio-wasm
 
-# Install dependencies
-bun install
+# Build WASM package
+wasm-pack build brewdio-wasm --target bundler
 
-# Start development server
-bun dev
+# Run WASM integration tests
+cd brewdio-wasm-test && bun install && bun test
+
+# Start web UI dev server
+cd brewdio-webui && bun install && bun dev
+
+# Build TUI
+cargo build -p brewdio-tui
 ```
-
-Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ### Building for Production
 
 ```bash
-# Build optimized production bundle
-bun run build
+# Build WASM
+wasm-pack build brewdio-wasm --target bundler
 
-# Preview production build locally
-bun preview
+# Build web UI
+cd brewdio-webui && bun install && bun run build
 ```
 
-The built files will be in the `dist/` directory, ready to deploy to any static hosting service.
-
 ---
 
-## 🌐 Local-First Philosophy
-
-brewdio embraces the **local-first** software philosophy:
-
-- **Your Data, Your Device** - Everything is stored in your browser's IndexedDB. No cloud servers, no sync issues, no privacy concerns.
-- **Offline by Default** - Works without an internet connection. Perfect for brew days in the garage or basement.
-- **No Vendor Lock-in** - Export your recipes as standard BeerJSON files and use them anywhere.
-- **Privacy First** - Zero tracking, zero telemetry, zero data collection. What you brew is your business.
-- **Instant Response** - No network latency means instant UI updates and calculations.
-
-### Data Storage
-
-All data is stored using [Dexie.js](https://dexie.org/) (a wrapper around IndexedDB):
-- **Recipes** - Your beer recipes in BeerJSON format
-- **Batches** - Brew sessions with snapshots of recipes and equipment
-- **Equipment** - Equipment profiles with loss rates and volumes
-- **Settings** - User preferences and defaults
-
----
-
-## 🍺 BeerJSON Compliance
-
-brewdio uses [BeerJSON](https://beerjson.org/) as its native recipe format. This ensures:
-
-- **Portability** - Share recipes with other BeerJSON-compatible software
-- **Future-Proof** - Industry-standard format that will be supported for years
-- **Complete Data** - Captures everything from ingredients to mash schedules
-- **Extensible** - Easy to add new fields as needed
-
-You can view and edit the raw BeerJSON using the built-in JSON editor, or use the friendly UI for common tasks.
-
----
-
-## 🧪 Brewing Calculations
+## Brewing Calculations
 
 brewdio implements proven brewing formulas:
 
@@ -180,62 +141,49 @@ brewdio implements proven brewing formulas:
 - **ABV** - Standard formula: `(OG - FG) * 131.25`
 - **SRM Color** - Morey equation for beer color prediction
 - **Water Requirements** - Equipment-aware water calculations with loss rates
+- **Carbonation** - Priming sugar and forced carbonation calculations
 
 ---
 
-## 🎨 Design Philosophy
+## BeerJSON Compliance
 
-brewdio aims to be:
+brewdio uses [BeerJSON](https://beerjson.org/) as its native recipe format. This ensures:
 
-- **Fun** - Retro gauge dials, smooth animations, and playful UI elements
-- **Powerful** - Advanced features for experienced brewers without cluttering the interface
-- **Fast** - Local-first architecture means instant response times
-- **Beautiful** - Dark mode support and attention to visual details
-- **Accessible** - Built with semantic HTML and ARIA attributes
+- **Portability** - Share recipes with other BeerJSON-compatible software
+- **Future-Proof** - Industry-standard format that will be supported for years
+- **Complete Data** - Captures everything from ingredients to mash schedules
+- **Extensible** - Easy to add new fields as needed
 
 ---
 
-## 🤝 Contributing
+## Local-First Philosophy
+
+- **Your Data, Your Device** - Everything is stored locally. No cloud servers, no sync issues, no privacy concerns.
+- **Offline by Default** - Works without an internet connection. Perfect for brew days in the garage or basement.
+- **CRDT Sync** - Optional peer-to-peer sync via Automerge for multi-device collaboration without a central server.
+- **No Vendor Lock-in** - Export your recipes as standard BeerJSON files and use them anywhere.
+- **Privacy First** - Zero tracking, zero telemetry, zero data collection.
+
+---
+
+## Contributing
 
 brewdio is a work in progress! Contributions are welcome.
 
-### Development
-
-```bash
-# Install dependencies
-bun install
-
-# Run dev server with hot reload
-bun dev
-
-# Type checking
-bun run build  # Also runs tsc -b
-
-# Linting
-bun lint
-```
-
-### Code Style
-- TypeScript strict mode enabled
-- Functional components with hooks
-- File-based routing with TanStack Router
-- Component colocation (keep related files together)
-
 ---
 
-## 📝 License
+## License
 
 This project is open source. Check the LICENSE file for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
-- **BeerJSON** - For providing an excellent standard format
+- **[BeerJSON](https://beerjson.org/)** - For providing an excellent standard format
+- **[Automerge](https://automerge.org/)** - For making local-first CRDT sync practical
 - **Brewing Community** - For sharing formulas and best practices
-- **TanStack** - For amazing local-first tooling
-- **shadcn** - For beautiful, accessible components
 
 ---
 
-**Happy Brewing! 🍻**
+**Happy Brewing!**

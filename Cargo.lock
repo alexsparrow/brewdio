@@ -135,13 +135,57 @@ dependencies = [
 ]
 
 [[package]]
+name = "brewdio-core"
+version = "0.1.0"
+dependencies = [
+ "automerge",
+ "autosurgeon",
+ "flate2",
+ "prettyplease",
+ "quote",
+ "regex",
+ "regress",
+ "reqwest",
+ "schemars",
+ "serde",
+ "serde-wasm-bindgen",
+ "serde_json",
+ "syn",
+ "tar",
+ "tsify",
+ "typify",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "brewdio-persistence"
+version = "0.1.0"
+dependencies = [
+ "automerge",
+ "autosurgeon",
+ "brewdio-core",
+ "futures-util",
+ "getrandom 0.3.4",
+ "js-sys",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sqlite-wasm-rs",
+ "tokio",
+ "tokio-tungstenite",
+ "ulid",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+]
+
+[[package]]
 name = "brewdio-tui"
 version = "0.1.0"
 dependencies = [
- "core",
+ "brewdio-core",
+ "brewdio-persistence",
  "crossterm",
  "directories",
- "persistence",
  "ratatui",
  "rusqlite",
  "serde_json",
@@ -151,9 +195,9 @@ dependencies = [
 name = "brewdio-wasm"
 version = "0.1.0"
 dependencies = [
- "core",
+ "brewdio-core",
+ "brewdio-persistence",
  "js-sys",
- "persistence",
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
@@ -240,29 +284,6 @@ name = "const-oid"
 version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a6ef517f0926dd24a1582492c791b6a4818a4d94e789a334894aa15b0d12f55c"
-
-[[package]]
-name = "core"
-version = "0.1.0"
-dependencies = [
- "automerge",
- "autosurgeon",
- "flate2",
- "prettyplease",
- "quote",
- "regex",
- "regress",
- "reqwest",
- "schemars",
- "serde",
- "serde-wasm-bindgen",
- "serde_json",
- "syn",
- "tar",
- "tsify",
- "typify",
- "wasm-bindgen",
-]
 
 [[package]]
 name = "core-foundation"
@@ -1456,27 +1477,6 @@ name = "percent-encoding"
 version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b4f627cb1b25917193a259e49bdad08f671f8d9708acfd5fe0a8c1455d87220"
-
-[[package]]
-name = "persistence"
-version = "0.1.0"
-dependencies = [
- "automerge",
- "autosurgeon",
- "core",
- "futures-util",
- "getrandom 0.3.4",
- "js-sys",
- "rusqlite",
- "serde",
- "serde_json",
- "sqlite-wasm-rs",
- "tokio",
- "tokio-tungstenite",
- "ulid",
- "wasm-bindgen",
- "wasm-bindgen-futures",
-]
 
 [[package]]
 name = "pin-project-lite"

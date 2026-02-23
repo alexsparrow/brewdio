@@ -4,7 +4,8 @@
       "WebFetch(domain:www.shadcn.io)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(grep -r \"brewdio-wasm-test\" /Users/alex/projects/brewdio --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.js\" --include=\"*.json\" 2>/dev/null | grep -v \"node_modules\" | grep -v \"target/\")"
     ],
     "deny": [],
     "ask": []

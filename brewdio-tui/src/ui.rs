@@ -6,8 +6,8 @@ use ratatui::{
     Frame,
 };
 
-use crate::app::{App, BatchSizeDialogStep, FermentableDialogStep, HomeTab, Screen, Tab, VitalDisplay, MASS_UNITS, VOLUME_UNITS};
-use brewdio_core::beerjson_types::FermentableAdditionTypeAmount;
+use crate::app::{App, BatchSizeDialogStep, CultureDialogStep, FermentableDialogStep, HopDialogStep, HomeTab, Screen, Tab, VitalDisplay, CULTURE_UNITS, MASS_UNITS, VOLUME_UNITS, USE_TYPES, format_hop_timing, use_type_label};
+use brewdio_core::beerjson_types::{CultureAdditionTypeAmount, FermentableAdditionTypeAmount, HopAdditionTypeAmount, UseType};
 
 pub fn draw(frame: &mut Frame, app: &App) {
     match &app.screen {
@@ -223,7 +223,31 @@ fn draw_recipe_edit(frame: &mut Frame, app: &App) {
                 " [←/→] change unit, [Enter] confirm, [Esc] cancel"
             }
         }
-    } else if app.active_tab == Tab::Fermentables {
+    } else if app.hop_dialog.is_some() {
+        match app.hop_dialog.as_ref().unwrap().step {
+            HopDialogStep::SelectHop => {
+                " Type to search, [↑/↓] navigate, [Enter] confirm, [Esc] cancel"
+            }
+            HopDialogStep::EnterAmount => " Type amount, [Enter] confirm, [Esc] cancel",
+            HopDialogStep::SelectUnit => {
+                " [←/→] change unit, [Enter] confirm, [Esc] cancel"
+            }
+            HopDialogStep::SelectUse => {
+                " [←/→] change use, [Enter] confirm, [Esc] cancel"
+            }
+            HopDialogStep::EnterTime => " Type time, [Enter] confirm, [Esc] cancel",
+        }
+    } else if app.culture_dialog.is_some() {
+        match app.culture_dialog.as_ref().unwrap().step {
+            CultureDialogStep::SelectCulture => {
+                " Type to search, [↑/↓] navigate, [Enter] confirm, [Esc] cancel"
+            }
+            CultureDialogStep::EnterAmount => " Type amount, [Enter] confirm, [Esc] cancel",
+            CultureDialogStep::SelectUnit => {
+                " [←/→] change unit, [Enter] confirm, [Esc] cancel"
+            }
+        }
+    } else if app.active_tab == Tab::Fermentables || app.active_tab == Tab::Hops || app.active_tab == Tab::Cultures {
         " [a]dd  [Enter] edit  [d]elete  [j/k] navigate  [n]ame  [s]tyle  [v]ol  [1-5] tabs  [Esc] back"
     } else {
         " [n]ame  [s]tyle  [v]ol  [b]rew  [1-5] tabs  [Esc] back"
@@ -528,6 +552,8 @@ fn draw_tab_content(frame: &mut Frame, app: &App, area: Rect) {
 
     match app.active_tab {
         Tab::Fermentables => draw_fermentables_tab(frame, app, area),
+        Tab::Hops => draw_hops_tab(frame, app, area),
+        Tab::Cultures => draw_cultures_tab(frame, app, area),
         _ => {
             let content = Paragraph::new(Line::from(Span::styled(
                 "  (coming soon)",
@@ -795,6 +821,650 @@ fn draw_fermentable_dialog(frame: &mut Frame, app: &App, area: Rect) {
     }
 }
 
+fn draw_hops_tab(frame: &mut Frame, app: &App, area: Rect) {
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(" Hops ");
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+
+    let additions = match app.current_doc.as_ref() {
+        Some(doc) => &doc.recipe.ingredients.hop_additions,
+        None => return,
+    };
+
+    if additions.is_empty() {
+        let empty = Paragraph::new(Line::from(Span::styled(
+            "  Press [a] to add a hop",
+            Style::default().fg(Color::DarkGray),
+        )));
+        frame.render_widget(empty, inner);
+    } else {
+        let items: Vec<ListItem> = additions
+            .iter()
+            .enumerate()
+            .map(|(i, addition)| {
+                let is_selected = i == app.hop_list_index;
+
+                let prefix = if is_selected { " ► " } else { "   " };
+                let (amount_val, amount_unit) = match &addition.amount {
+                    HopAdditionTypeAmount::MassType(m) => {
+                        (m.value, format!("{:?}", m.unit).to_lowercase())
+                    }
+                    HopAdditionTypeAmount::VolumeType(v) => {
+                        (v.value, format!("{:?}", v.unit).to_lowercase())
+                    }
+                };
+                let amount_str = format!("{} {}", format_amount(amount_val), amount_unit);
+                let timing_str = format_hop_timing(&addition.timing);
+                let name = &addition.name;
+
+                // Layout: prefix(3) + name + "  " + timing + padding + amount
+                let fixed = 3 + name.len() + 2 + timing_str.len() + amount_str.len();
+                let total_width = inner.width as usize;
+                let padding = if total_width > fixed {
+                    total_width - fixed
+                } else {
+                    1
+                };
+
+                let style = if is_selected {
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default()
+                };
+
+                ListItem::new(Line::from(vec![
+                    Span::styled(prefix, style),
+                    Span::styled(name.clone(), style),
+                    Span::styled("  ", Style::default()),
+                    Span::styled(
+                        timing_str,
+                        if is_selected {
+                            style
+                        } else {
+                            Style::default().fg(Color::DarkGray)
+                        },
+                    ),
+                    Span::styled(" ".repeat(padding), Style::default()),
+                    Span::styled(amount_str, style),
+                ]))
+            })
+            .collect();
+
+        let list = List::new(items);
+        frame.render_widget(list, inner);
+    }
+
+    // Overlay dialog if active
+    if app.hop_dialog.is_some() {
+        draw_hop_dialog(frame, app, area);
+    }
+}
+
+fn draw_hop_dialog(frame: &mut Frame, app: &App, area: Rect) {
+    let dialog = match app.hop_dialog.as_ref() {
+        Some(d) => d,
+        None => return,
+    };
+
+    match dialog.step {
+        HopDialogStep::SelectHop => {
+            dialog.selector.draw(frame, area);
+        }
+        HopDialogStep::EnterAmount => {
+            let all = brewdio_core::data::hops();
+            let hop_name = &all[dialog.selected_hop_index].name;
+
+            let popup_width = 50u16.min(area.width.saturating_sub(4));
+            let popup_height = 7u16.min(area.height.saturating_sub(2));
+            let popup_area = centered_rect(popup_width, popup_height, area);
+
+            let block = Block::default()
+                .borders(Borders::ALL)
+                .title(" Enter Amount ");
+            let inner = block.inner(popup_area);
+            frame.render_widget(
+                Paragraph::new("").style(Style::default().bg(Color::Black)),
+                popup_area,
+            );
+            frame.render_widget(block, popup_area);
+
+            let rows = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Min(0),
+                ])
+                .split(inner);
+
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Hop: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(hop_name.clone()),
+                ])),
+                rows[0],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    "─".repeat(inner.width as usize),
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[1],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Amount: ", Style::default().fg(Color::DarkGray)),
+                    Span::styled(
+                        format!("{}▏", dialog.amount_input),
+                        Style::default().fg(Color::Yellow),
+                    ),
+                ])),
+                rows[2],
+            );
+        }
+        HopDialogStep::SelectUnit => {
+            let all = brewdio_core::data::hops();
+            let hop_name = &all[dialog.selected_hop_index].name;
+
+            let popup_width = 50u16.min(area.width.saturating_sub(4));
+            let popup_height = 9u16.min(area.height.saturating_sub(2));
+            let popup_area = centered_rect(popup_width, popup_height, area);
+
+            let block = Block::default()
+                .borders(Borders::ALL)
+                .title(" Select Unit ");
+            let inner = block.inner(popup_area);
+            frame.render_widget(
+                Paragraph::new("").style(Style::default().bg(Color::Black)),
+                popup_area,
+            );
+            frame.render_widget(block, popup_area);
+
+            let rows = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Min(0),
+                ])
+                .split(inner);
+
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Hop: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(hop_name.clone()),
+                ])),
+                rows[0],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Amount: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(&dialog.amount_input),
+                ])),
+                rows[1],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    "─".repeat(inner.width as usize),
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[2],
+            );
+
+            let unit_labels: Vec<String> = MASS_UNITS
+                .iter()
+                .enumerate()
+                .map(|(i, u)| {
+                    let label = format!("{:?}", u).to_lowercase();
+                    if i == dialog.unit_index {
+                        format!("[{}]", label)
+                    } else {
+                        format!(" {} ", label)
+                    }
+                })
+                .collect();
+
+            let mut spans = vec![Span::styled(" Unit: ", Style::default().fg(Color::DarkGray))];
+            spans.push(Span::styled("◄ ", Style::default().fg(Color::Cyan)));
+            for (i, label) in unit_labels.iter().enumerate() {
+                let style = if i == dialog.unit_index {
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default().fg(Color::DarkGray)
+                };
+                spans.push(Span::styled(label.clone(), style));
+                if i < unit_labels.len() - 1 {
+                    spans.push(Span::raw("  "));
+                }
+            }
+            spans.push(Span::styled(" ►", Style::default().fg(Color::Cyan)));
+
+            frame.render_widget(Paragraph::new(Line::from(spans)), rows[3]);
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    " [Enter] next  [Esc] cancel  [←/→] change unit",
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[4],
+            );
+        }
+        HopDialogStep::SelectUse => {
+            let all = brewdio_core::data::hops();
+            let hop_name = &all[dialog.selected_hop_index].name;
+            let unit_str = format!("{:?}", MASS_UNITS[dialog.unit_index]).to_lowercase();
+
+            let popup_width = 50u16.min(area.width.saturating_sub(4));
+            let popup_height = 11u16.min(area.height.saturating_sub(2));
+            let popup_area = centered_rect(popup_width, popup_height, area);
+
+            let block = Block::default()
+                .borders(Borders::ALL)
+                .title(" Select Use ");
+            let inner = block.inner(popup_area);
+            frame.render_widget(
+                Paragraph::new("").style(Style::default().bg(Color::Black)),
+                popup_area,
+            );
+            frame.render_widget(block, popup_area);
+
+            let rows = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Min(0),
+                ])
+                .split(inner);
+
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Hop: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(hop_name.clone()),
+                ])),
+                rows[0],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Amount: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(format!("{} {}", &dialog.amount_input, unit_str)),
+                ])),
+                rows[1],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    "─".repeat(inner.width as usize),
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[2],
+            );
+
+            let use_labels: Vec<String> = USE_TYPES
+                .iter()
+                .enumerate()
+                .map(|(i, u)| {
+                    let label = use_type_label(u);
+                    if i == dialog.use_index {
+                        format!("[{}]", label)
+                    } else {
+                        format!(" {} ", label)
+                    }
+                })
+                .collect();
+
+            let mut spans = vec![Span::styled(" Use: ", Style::default().fg(Color::DarkGray))];
+            spans.push(Span::styled("◄ ", Style::default().fg(Color::Cyan)));
+            for (i, label) in use_labels.iter().enumerate() {
+                let style = if i == dialog.use_index {
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default().fg(Color::DarkGray)
+                };
+                spans.push(Span::styled(label.clone(), style));
+                if i < use_labels.len() - 1 {
+                    spans.push(Span::raw("  "));
+                }
+            }
+            spans.push(Span::styled(" ►", Style::default().fg(Color::Cyan)));
+
+            frame.render_widget(Paragraph::new(Line::from(spans)), rows[3]);
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    " [Enter] next  [Esc] cancel  [←/→] change use",
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[4],
+            );
+        }
+        HopDialogStep::EnterTime => {
+            let all = brewdio_core::data::hops();
+            let hop_name = &all[dialog.selected_hop_index].name;
+            let unit_str = format!("{:?}", MASS_UNITS[dialog.unit_index]).to_lowercase();
+            let use_label = use_type_label(&USE_TYPES[dialog.use_index]);
+            let time_unit = match USE_TYPES[dialog.use_index] {
+                UseType::AddToFermentation => "days",
+                _ => "min",
+            };
+
+            let popup_width = 50u16.min(area.width.saturating_sub(4));
+            let popup_height = 11u16.min(area.height.saturating_sub(2));
+            let popup_area = centered_rect(popup_width, popup_height, area);
+
+            let block = Block::default()
+                .borders(Borders::ALL)
+                .title(" Enter Time ");
+            let inner = block.inner(popup_area);
+            frame.render_widget(
+                Paragraph::new("").style(Style::default().bg(Color::Black)),
+                popup_area,
+            );
+            frame.render_widget(block, popup_area);
+
+            let rows = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Min(0),
+                ])
+                .split(inner);
+
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Hop: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(hop_name.clone()),
+                ])),
+                rows[0],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Amount: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(format!("{} {}", &dialog.amount_input, unit_str)),
+                ])),
+                rows[1],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Use: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(use_label),
+                ])),
+                rows[2],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    "─".repeat(inner.width as usize),
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[3],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(
+                        format!(" Time ({}): ", time_unit),
+                        Style::default().fg(Color::DarkGray),
+                    ),
+                    Span::styled(
+                        format!("{}▏", dialog.time_input),
+                        Style::default().fg(Color::Yellow),
+                    ),
+                ])),
+                rows[4],
+            );
+        }
+    }
+}
+
+fn draw_cultures_tab(frame: &mut Frame, app: &App, area: Rect) {
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(" Cultures ");
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+
+    let additions = match app.current_doc.as_ref() {
+        Some(doc) => &doc.recipe.ingredients.culture_additions,
+        None => return,
+    };
+
+    if additions.is_empty() {
+        let empty = Paragraph::new(Line::from(Span::styled(
+            "  Press [a] to add a culture",
+            Style::default().fg(Color::DarkGray),
+        )));
+        frame.render_widget(empty, inner);
+    } else {
+        let items: Vec<ListItem> = additions
+            .iter()
+            .enumerate()
+            .map(|(i, addition)| {
+                let is_selected = i == app.culture_list_index;
+
+                let prefix = if is_selected { " ► " } else { "   " };
+                let amount_str = match &addition.amount {
+                    CultureAdditionTypeAmount::UnitType(u) => {
+                        let unit_label = format!("{:?}", u.unit).to_lowercase();
+                        format!("{} {}", format_amount(u.value), unit_label)
+                    }
+                    CultureAdditionTypeAmount::MassType(m) => {
+                        format!("{} {}", format_amount(m.value), format!("{:?}", m.unit).to_lowercase())
+                    }
+                    CultureAdditionTypeAmount::VolumeType(v) => {
+                        format!("{} {}", format_amount(v.value), format!("{:?}", v.unit).to_lowercase())
+                    }
+                };
+                let name = &addition.name;
+
+                let total_width = inner.width as usize;
+                let used = 3 + name.len() + amount_str.len();
+                let padding = if total_width > used {
+                    total_width - used
+                } else {
+                    1
+                };
+
+                let style = if is_selected {
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default()
+                };
+
+                ListItem::new(Line::from(vec![
+                    Span::styled(prefix, style),
+                    Span::styled(name.clone(), style),
+                    Span::styled(" ".repeat(padding), Style::default()),
+                    Span::styled(amount_str, style),
+                ]))
+            })
+            .collect();
+
+        let list = List::new(items);
+        frame.render_widget(list, inner);
+    }
+
+    // Overlay dialog if active
+    if app.culture_dialog.is_some() {
+        draw_culture_dialog(frame, app, area);
+    }
+}
+
+fn draw_culture_dialog(frame: &mut Frame, app: &App, area: Rect) {
+    let dialog = match app.culture_dialog.as_ref() {
+        Some(d) => d,
+        None => return,
+    };
+
+    match dialog.step {
+        CultureDialogStep::SelectCulture => {
+            dialog.selector.draw(frame, area);
+        }
+        CultureDialogStep::EnterAmount => {
+            let all = brewdio_core::data::cultures();
+            let culture_name = &all[dialog.selected_culture_index].name;
+
+            let popup_width = 50u16.min(area.width.saturating_sub(4));
+            let popup_height = 7u16.min(area.height.saturating_sub(2));
+            let popup_area = centered_rect(popup_width, popup_height, area);
+
+            let block = Block::default()
+                .borders(Borders::ALL)
+                .title(" Enter Amount ");
+            let inner = block.inner(popup_area);
+            frame.render_widget(
+                Paragraph::new("").style(Style::default().bg(Color::Black)),
+                popup_area,
+            );
+            frame.render_widget(block, popup_area);
+
+            let rows = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Min(0),
+                ])
+                .split(inner);
+
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Culture: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(culture_name.clone()),
+                ])),
+                rows[0],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    "─".repeat(inner.width as usize),
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[1],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Amount: ", Style::default().fg(Color::DarkGray)),
+                    Span::styled(
+                        format!("{}▏", dialog.amount_input),
+                        Style::default().fg(Color::Yellow),
+                    ),
+                ])),
+                rows[2],
+            );
+        }
+        CultureDialogStep::SelectUnit => {
+            let all = brewdio_core::data::cultures();
+            let culture_name = &all[dialog.selected_culture_index].name;
+
+            let popup_width = 50u16.min(area.width.saturating_sub(4));
+            let popup_height = 9u16.min(area.height.saturating_sub(2));
+            let popup_area = centered_rect(popup_width, popup_height, area);
+
+            let block = Block::default()
+                .borders(Borders::ALL)
+                .title(" Select Unit ");
+            let inner = block.inner(popup_area);
+            frame.render_widget(
+                Paragraph::new("").style(Style::default().bg(Color::Black)),
+                popup_area,
+            );
+            frame.render_widget(block, popup_area);
+
+            let rows = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Length(1),
+                    Constraint::Min(0),
+                ])
+                .split(inner);
+
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Culture: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(culture_name.clone()),
+                ])),
+                rows[0],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(vec![
+                    Span::styled(" Amount: ", Style::default().fg(Color::DarkGray)),
+                    Span::raw(&dialog.amount_input),
+                ])),
+                rows[1],
+            );
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    "─".repeat(inner.width as usize),
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[2],
+            );
+
+            let unit_labels: Vec<String> = CULTURE_UNITS
+                .iter()
+                .enumerate()
+                .map(|(i, u)| {
+                    let label = format!("{:?}", u).to_lowercase();
+                    if i == dialog.unit_index {
+                        format!("[{}]", label)
+                    } else {
+                        format!(" {} ", label)
+                    }
+                })
+                .collect();
+
+            let mut spans = vec![Span::styled(" Unit: ", Style::default().fg(Color::DarkGray))];
+            spans.push(Span::styled("◄ ", Style::default().fg(Color::Cyan)));
+            for (i, label) in unit_labels.iter().enumerate() {
+                let style = if i == dialog.unit_index {
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default().fg(Color::DarkGray)
+                };
+                spans.push(Span::styled(label.clone(), style));
+                if i < unit_labels.len() - 1 {
+                    spans.push(Span::raw("  "));
+                }
+            }
+            spans.push(Span::styled(" ►", Style::default().fg(Color::Cyan)));
+
+            frame.render_widget(Paragraph::new(Line::from(spans)), rows[3]);
+            frame.render_widget(
+                Paragraph::new(Line::from(Span::styled(
+                    " [Enter] confirm  [Esc] cancel  [←/→] change unit",
+                    Style::default().fg(Color::DarkGray),
+                ))),
+                rows[4],
+            );
+        }
+    }
+}
+
 fn centered_rect(width: u16, height: u16, area: Rect) -> Rect {
     let x = area.x + (area.width.saturating_sub(width)) / 2;
     let y = area.y + (area.height.saturating_sub(height)) / 2;
@@ -887,6 +1557,8 @@ fn draw_range_bar(vital: &VitalDisplay, bar_width: u16) -> Line<'static> {
         .round()
         .clamp(0.0, bar_width as f64 - 1.0) as usize;
 
+    let is_srm = vital.label == "SRM";
+
     for col in 0..bar_width {
         let col_value = vital.normal_min + (col as f64 / (bar_width as f64 - 1.0).max(1.0)) * range;
 
@@ -899,7 +1571,17 @@ fn draw_range_bar(vital: &VitalDisplay, bar_width: u16) -> Line<'static> {
             ));
         } else if let Some(ref sr) = vital.style_range {
             if col_value >= sr.min && col_value <= sr.max {
-                spans.push(Span::styled("▓", Style::default().fg(Color::Cyan)));
+                if is_srm {
+                    let [r, g, b] = brewdio_core::olfarve::srm_to_srgb(col_value, None);
+                    let srm_color = Color::Rgb(
+                        (r * 255.0) as u8,
+                        (g * 255.0) as u8,
+                        (b * 255.0) as u8,
+                    );
+                    spans.push(Span::styled("▓", Style::default().fg(srm_color)));
+                } else {
+                    spans.push(Span::styled("▓", Style::default().fg(Color::Cyan)));
+                }
             } else {
                 spans.push(Span::styled("░", Style::default().fg(Color::DarkGray)));
             }

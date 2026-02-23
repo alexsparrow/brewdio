@@ -8,8 +8,8 @@ name = "brewdio"
 path = "src/main.rs"
 
 [dependencies]
-brewdio-core = { package = "core", path = "../core", features = ["crdt"] }
-persistence = { path = "../persistence", features = ["native"] }
+brewdio-core = { path = "../brewdio-core", features = ["crdt"] }
+brewdio-persistence = { path = "../brewdio-persistence", features = ["native"] }
 ratatui = "0.29"
 crossterm = "0.28"
 directories = "6"

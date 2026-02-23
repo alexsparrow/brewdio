@@ -1,5 +1,5 @@
 [package]
-name = "persistence"
+name = "brewdio-persistence"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,7 +10,7 @@ wasm = ["sqlite-wasm-rs", "wasm-bindgen", "wasm-bindgen-futures", "js-sys", "get
 
 [dependencies]
 # Always (pure, WASM-safe)
-brewdio-core = { package = "core", path = "../core", features = ["crdt"] }
+brewdio-core = { path = "../brewdio-core", features = ["crdt"] }
 automerge = "0.7"
 autosurgeon = "0.10"
 serde = { version = "1", features = ["derive"] }

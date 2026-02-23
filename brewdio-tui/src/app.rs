@@ -1,13 +1,16 @@
 use brewdio_core::beerjson_types::{
+    CultureAdditionType, CultureAdditionTypeAmount, CultureAdditionTypeForm,
+    CultureAdditionTypeType, CultureInformationForm, CultureInformationType,
     EfficiencyType, FermentableAdditionType, FermentableAdditionTypeAmount,
-    FermentableAdditionTypeType, FermentableTypeType, IngredientsType, MassType, MassUnitType,
-    PercentType, PercentUnitType, RecipeStyleType, RecipeType, RecipeTypeType, VolumeType,
-    VolumeUnitType,
+    FermentableAdditionTypeType, FermentableTypeType, HopAdditionType, HopAdditionTypeAmount,
+    IngredientsType, MassType, MassUnitType, PercentType, PercentUnitType, RecipeStyleType,
+    RecipeType, RecipeTypeType, TimeType, TimeUnitType, TimingType, UnitType, UnitUnitType,
+    UseType, VolumeType, VolumeUnitType,
 };
-use persistence::batch;
-use persistence::db;
-use persistence::recipe::RecipeDocument;
-use persistence::settings;
+use brewdio_persistence::batch;
+use brewdio_persistence::db;
+use brewdio_persistence::recipe::RecipeDocument;
+use brewdio_persistence::settings;
 use rusqlite::Connection;
 use serde_json::Value as JsonValue;
 
@@ -45,6 +48,108 @@ pub struct BatchSizeDialog {
     pub step: BatchSizeDialogStep,
     pub value_input: String,
     pub unit_index: usize,
+}
+
+pub const USE_TYPES: [UseType; 4] = [
+    UseType::AddToBoil,
+    UseType::AddToMash,
+    UseType::AddToFermentation,
+    UseType::AddToPackage,
+];
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum HopDialogStep {
+    SelectHop,
+    EnterAmount,
+    SelectUnit,
+    SelectUse,
+    EnterTime,
+}
+
+pub struct HopDialog {
+    pub step: HopDialogStep,
+    pub selector: SearchSelector,
+    pub selected_hop_index: usize,
+    pub amount_input: String,
+    pub unit_index: usize,
+    pub use_index: usize,
+    pub time_input: String,
+    pub editing_index: Option<usize>,
+}
+
+pub const CULTURE_UNITS: [UnitUnitType; 3] = [UnitUnitType::Pkg, UnitUnitType::Each, UnitUnitType::Unit];
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum CultureDialogStep {
+    SelectCulture,
+    EnterAmount,
+    SelectUnit,
+}
+
+pub struct CultureDialog {
+    pub step: CultureDialogStep,
+    pub selector: SearchSelector,
+    pub selected_culture_index: usize,
+    pub amount_input: String,
+    pub unit_index: usize,
+    pub editing_index: Option<usize>,
+}
+
+fn culture_info_form_to_addition_form(f: &CultureInformationForm) -> CultureAdditionTypeForm {
+    match f {
+        CultureInformationForm::Liquid => CultureAdditionTypeForm::Liquid,
+        CultureInformationForm::Dry => CultureAdditionTypeForm::Dry,
+        CultureInformationForm::Slant => CultureAdditionTypeForm::Slant,
+        CultureInformationForm::Culture => CultureAdditionTypeForm::Culture,
+        CultureInformationForm::Dregs => CultureAdditionTypeForm::Dregs,
+    }
+}
+
+fn culture_info_type_to_addition_type(t: &CultureInformationType) -> CultureAdditionTypeType {
+    match t {
+        CultureInformationType::Ale => CultureAdditionTypeType::Ale,
+        CultureInformationType::Bacteria => CultureAdditionTypeType::Bacteria,
+        CultureInformationType::Brett => CultureAdditionTypeType::Brett,
+        CultureInformationType::Champagne => CultureAdditionTypeType::Champagne,
+        CultureInformationType::Kveik => CultureAdditionTypeType::Kveik,
+        CultureInformationType::Lacto => CultureAdditionTypeType::Lacto,
+        CultureInformationType::Lager => CultureAdditionTypeType::Lager,
+        CultureInformationType::Malolactic => CultureAdditionTypeType::Malolactic,
+        CultureInformationType::MixedCulture => CultureAdditionTypeType::MixedCulture,
+        CultureInformationType::Other => CultureAdditionTypeType::Other,
+        CultureInformationType::Pedio => CultureAdditionTypeType::Pedio,
+        CultureInformationType::Spontaneous => CultureAdditionTypeType::Spontaneous,
+        CultureInformationType::Wine => CultureAdditionTypeType::Wine,
+    }
+}
+
+pub fn use_type_label(u: &UseType) -> &'static str {
+    match u {
+        UseType::AddToBoil => "Boil",
+        UseType::AddToMash => "Mash",
+        UseType::AddToFermentation => "Fermentation",
+        UseType::AddToPackage => "Package",
+    }
+}
+
+pub fn format_hop_timing(timing: &TimingType) -> String {
+    let use_label = timing
+        .use_
+        .as_ref()
+        .map(|u| use_type_label(u))
+        .unwrap_or("Boil");
+    if let Some(ref dur) = timing.time {
+        let unit_str = match dur.unit {
+            TimeUnitType::Min => "min",
+            TimeUnitType::Hr => "hr",
+            TimeUnitType::Day => "day",
+            TimeUnitType::Week => "wk",
+            TimeUnitType::Sec => "sec",
+        };
+        format!("{} @ {} {}", use_label, dur.value, unit_str)
+    } else {
+        use_label.to_string()
+    }
 }
 
 fn fermentable_type_to_addition_type(t: &FermentableTypeType) -> FermentableAdditionTypeType {
@@ -213,6 +318,10 @@ pub struct App {
     pub style_selector: Option<SearchSelector>,
     pub fermentable_list_index: usize,
     pub fermentable_dialog: Option<FermentableDialog>,
+    pub hop_list_index: usize,
+    pub hop_dialog: Option<HopDialog>,
+    pub culture_list_index: usize,
+    pub culture_dialog: Option<CultureDialog>,
     pub batch_size_dialog: Option<BatchSizeDialog>,
     pub should_quit: bool,
 }
@@ -239,6 +348,10 @@ impl App {
             style_selector: None,
             fermentable_list_index: 0,
             fermentable_dialog: None,
+            hop_list_index: 0,
+            hop_dialog: None,
+            culture_list_index: 0,
+            culture_dialog: None,
             batch_size_dialog: None,
             should_quit: false,
         };
@@ -582,6 +695,271 @@ impl App {
         additions.remove(self.fermentable_list_index);
         if self.fermentable_list_index >= additions.len() && !additions.is_empty() {
             self.fermentable_list_index = additions.len() - 1;
+        }
+        self.save_current();
+    }
+
+    fn make_hop_selector() -> SearchSelector {
+        let all = brewdio_core::data::hops();
+        let items: Vec<SearchItem> = all
+            .iter()
+            .enumerate()
+            .map(|(i, h)| SearchItem {
+                label: h.name.clone(),
+                detail: h
+                    .origin
+                    .clone()
+                    .unwrap_or_default(),
+                index: i,
+            })
+            .collect();
+        SearchSelector::new("Select Hop", items)
+    }
+
+    pub fn open_add_hop(&mut self) {
+        self.hop_dialog = Some(HopDialog {
+            step: HopDialogStep::SelectHop,
+            selector: Self::make_hop_selector(),
+            selected_hop_index: 0,
+            amount_input: "1.0".to_string(),
+            unit_index: 2, // default to grams
+            use_index: 0,  // default to boil
+            time_input: "60".to_string(),
+            editing_index: None,
+        });
+    }
+
+    pub fn open_edit_hop(&mut self) {
+        let doc = match self.current_doc.as_ref() {
+            Some(d) => d,
+            None => return,
+        };
+        let additions = &doc.recipe.ingredients.hop_additions;
+        if additions.is_empty() || self.hop_list_index >= additions.len() {
+            return;
+        }
+        let addition = &additions[self.hop_list_index];
+
+        let all = brewdio_core::data::hops();
+        let mut selector = Self::make_hop_selector();
+        let hop_idx = all.iter().position(|h| h.name == addition.name).unwrap_or(0);
+        selector.set_cursor_to_index(hop_idx);
+
+        let (amount_str, unit_idx) = match &addition.amount {
+            HopAdditionTypeAmount::MassType(m) => {
+                let ui = MASS_UNITS.iter().position(|u| *u == m.unit).unwrap_or(0);
+                (format!("{}", m.value), ui)
+            }
+            HopAdditionTypeAmount::VolumeType(v) => (format!("{}", v.value), 0),
+        };
+
+        let use_idx = addition
+            .timing
+            .use_
+            .as_ref()
+            .and_then(|u| USE_TYPES.iter().position(|ut| ut == u))
+            .unwrap_or(0);
+
+        let time_str = addition
+            .timing
+            .time
+            .as_ref()
+            .map(|t| format!("{}", t.value))
+            .unwrap_or_else(|| "60".to_string());
+
+        self.hop_dialog = Some(HopDialog {
+            step: HopDialogStep::SelectHop,
+            selector,
+            selected_hop_index: hop_idx,
+            amount_input: amount_str,
+            unit_index: unit_idx,
+            use_index: use_idx,
+            time_input: time_str,
+            editing_index: Some(self.hop_list_index),
+        });
+    }
+
+    pub fn confirm_hop_dialog(&mut self) {
+        let dialog = match self.hop_dialog.take() {
+            Some(d) => d,
+            None => return,
+        };
+        let amount_value: f64 = dialog.amount_input.parse().unwrap_or(1.0);
+        let time_value: i64 = dialog.time_input.parse().unwrap_or(60);
+        let all = brewdio_core::data::hops();
+        let hop = &all[dialog.selected_hop_index];
+
+        let use_type = USE_TYPES[dialog.use_index].clone();
+        let time_unit = match use_type {
+            UseType::AddToFermentation => TimeUnitType::Day,
+            _ => TimeUnitType::Min,
+        };
+
+        let addition = HopAdditionType {
+            name: hop.name.clone(),
+            alpha_acid: hop.alpha_acid.clone(),
+            beta_acid: hop.beta_acid.clone(),
+            form: None,
+            origin: hop.origin.clone(),
+            producer: hop.producer.clone(),
+            product_id: hop.product_id.clone(),
+            year: None,
+            amount: HopAdditionTypeAmount::MassType(MassType {
+                unit: MASS_UNITS[dialog.unit_index],
+                value: amount_value,
+            }),
+            timing: TimingType {
+                use_: Some(use_type),
+                duration: None,
+                time: Some(TimeType {
+                    unit: time_unit,
+                    value: time_value,
+                }),
+                continuous: None,
+                p_h: None,
+                specific_gravity: None,
+                step: None,
+            },
+        };
+
+        if let Some(ref mut doc) = self.current_doc {
+            if let Some(idx) = dialog.editing_index {
+                doc.recipe.ingredients.hop_additions[idx] = addition;
+            } else {
+                doc.recipe.ingredients.hop_additions.push(addition);
+                self.hop_list_index = doc.recipe.ingredients.hop_additions.len() - 1;
+            }
+        }
+        self.save_current();
+    }
+
+    pub fn delete_selected_hop(&mut self) {
+        let doc = match self.current_doc.as_mut() {
+            Some(d) => d,
+            None => return,
+        };
+        let additions = &mut doc.recipe.ingredients.hop_additions;
+        if additions.is_empty() || self.hop_list_index >= additions.len() {
+            return;
+        }
+        additions.remove(self.hop_list_index);
+        if self.hop_list_index >= additions.len() && !additions.is_empty() {
+            self.hop_list_index = additions.len() - 1;
+        }
+        self.save_current();
+    }
+
+    fn make_culture_selector() -> SearchSelector {
+        let all = brewdio_core::data::cultures();
+        let items: Vec<SearchItem> = all
+            .iter()
+            .enumerate()
+            .map(|(i, c)| SearchItem {
+                label: c.name.clone(),
+                detail: c.producer.clone().unwrap_or_default(),
+                index: i,
+            })
+            .collect();
+        SearchSelector::new("Select Culture", items)
+    }
+
+    pub fn open_add_culture(&mut self) {
+        self.culture_dialog = Some(CultureDialog {
+            step: CultureDialogStep::SelectCulture,
+            selector: Self::make_culture_selector(),
+            selected_culture_index: 0,
+            amount_input: "1".to_string(),
+            unit_index: 0, // default to pkg
+            editing_index: None,
+        });
+    }
+
+    pub fn open_edit_culture(&mut self) {
+        let doc = match self.current_doc.as_ref() {
+            Some(d) => d,
+            None => return,
+        };
+        let additions = &doc.recipe.ingredients.culture_additions;
+        if additions.is_empty() || self.culture_list_index >= additions.len() {
+            return;
+        }
+        let addition = &additions[self.culture_list_index];
+
+        let all = brewdio_core::data::cultures();
+        let mut selector = Self::make_culture_selector();
+        let culture_idx = all.iter().position(|c| c.name == addition.name).unwrap_or(0);
+        selector.set_cursor_to_index(culture_idx);
+
+        let (amount_str, unit_idx) = match &addition.amount {
+            CultureAdditionTypeAmount::UnitType(u) => {
+                let ui = CULTURE_UNITS.iter().position(|cu| *cu == u.unit).unwrap_or(0);
+                (format!("{}", u.value), ui)
+            }
+            CultureAdditionTypeAmount::MassType(m) => (format!("{}", m.value), 0),
+            CultureAdditionTypeAmount::VolumeType(v) => (format!("{}", v.value), 0),
+        };
+
+        self.culture_dialog = Some(CultureDialog {
+            step: CultureDialogStep::SelectCulture,
+            selector,
+            selected_culture_index: culture_idx,
+            amount_input: amount_str,
+            unit_index: unit_idx,
+            editing_index: Some(self.culture_list_index),
+        });
+    }
+
+    pub fn confirm_culture_dialog(&mut self) {
+        let dialog = match self.culture_dialog.take() {
+            Some(d) => d,
+            None => return,
+        };
+        let amount_value: f64 = dialog.amount_input.parse().unwrap_or(1.0);
+        let all = brewdio_core::data::cultures();
+        let culture = &all[dialog.selected_culture_index];
+
+        let attenuation = culture.attenuation_range.as_ref().map(|r| r.minimum.clone());
+
+        let addition = CultureAdditionType {
+            name: culture.name.clone(),
+            type_: culture_info_type_to_addition_type(&culture.type_),
+            form: culture_info_form_to_addition_form(&culture.form),
+            producer: culture.producer.clone(),
+            product_id: culture.product_id.clone(),
+            amount: CultureAdditionTypeAmount::UnitType(UnitType {
+                unit: CULTURE_UNITS[dialog.unit_index],
+                value: amount_value,
+            }),
+            attenuation,
+            cell_count_billions: None,
+            times_cultured: None,
+            timing: None,
+        };
+
+        if let Some(ref mut doc) = self.current_doc {
+            if let Some(idx) = dialog.editing_index {
+                doc.recipe.ingredients.culture_additions[idx] = addition;
+            } else {
+                doc.recipe.ingredients.culture_additions.push(addition);
+                self.culture_list_index =
+                    doc.recipe.ingredients.culture_additions.len() - 1;
+            }
+        }
+        self.save_current();
+    }
+
+    pub fn delete_selected_culture(&mut self) {
+        let doc = match self.current_doc.as_mut() {
+            Some(d) => d,
+            None => return,
+        };
+        let additions = &mut doc.recipe.ingredients.culture_additions;
+        if additions.is_empty() || self.culture_list_index >= additions.len() {
+            return;
+        }
+        additions.remove(self.culture_list_index);
+        if self.culture_list_index >= additions.len() && !additions.is_empty() {
+            self.culture_list_index = additions.len() - 1;
         }
         self.save_current();
     }
