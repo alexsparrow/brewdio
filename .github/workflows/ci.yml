@@ -25,7 +25,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - uses: jetli/wasm-pack-action@v0.4.0
       - uses: oven-sh/setup-bun@v2
-      - run: wasm-pack build brewdio-wasm --target bundler
+      - run: wasm-pack build brewdio-wasm --target web
       - run: cd brewdio-wasm-test && bun install && bun test
 
   webui-build:
@@ -38,5 +38,5 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - uses: jetli/wasm-pack-action@v0.4.0
       - uses: oven-sh/setup-bun@v2
-      - run: wasm-pack build brewdio-wasm --target bundler
+      - run: wasm-pack build brewdio-wasm --target web
       - run: cd brewdio-webui && bun install && bun run build

@@ -42,7 +42,7 @@ mod tests {
     #[test]
     fn test_fermentables_deserialize() {
         let f = fermentables();
-        assert_eq!(f.len(), 248);
+        assert_eq!(f.len(), 249);
     }
 
     #[test]
@@ -54,7 +54,7 @@ mod tests {
     #[test]
     fn test_cultures_deserialize() {
         let c = cultures();
-        assert_eq!(c.len(), 134);
+        assert_eq!(c.len(), 135);
     }
 
     #[test]
