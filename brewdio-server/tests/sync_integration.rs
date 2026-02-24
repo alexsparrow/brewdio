@@ -154,7 +154,7 @@ async fn shared_recipe_sync_preserves_is_deleted() {
             recipe: recipe.clone(),
             is_deleted: false,
         };
-        let am_data = reconcile_to_automerge(&doc, None);
+        let am_data = reconcile_to_automerge(&doc, None).unwrap();
         let recipe_json = serde_json::to_string(&recipe).unwrap();
 
         let c = server_conn.lock().unwrap();
@@ -170,7 +170,7 @@ async fn shared_recipe_sync_preserves_is_deleted() {
             recipe: recipe.clone(),
             is_deleted: false,
         };
-        let am_data = reconcile_to_automerge(&doc, None);
+        let am_data = reconcile_to_automerge(&doc, None).unwrap();
         let recipe_json = serde_json::to_string(&recipe).unwrap();
 
         let c = client_conn.lock().unwrap();
