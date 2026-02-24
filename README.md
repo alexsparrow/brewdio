@@ -61,8 +61,7 @@ brewdio/
 │       ├── sync.rs        # CRDT sync sessions
 │       ├── connection_native.rs  # Native SQLite (rusqlite)
 │       └── connection_wasm.rs    # WASM SQLite (sqlite-wasm-rs)
-├── brewdio-wasm/          # WASM bindings (wasm-bindgen)
-├── brewdio-wasm-test/     # WASM integration tests (bun test)
+├── brewdio-wasm/          # WASM bindings + integration tests (bun test)
 ├── brewdio-tui/           # Terminal UI (ratatui)
 ├── brewdio-webui/         # brewdio-webui — React web frontend
 │   └── src/
@@ -110,7 +109,7 @@ cargo test --workspace --exclude brewdio-wasm
 wasm-pack build brewdio-wasm --target bundler
 
 # Run WASM integration tests
-cd brewdio-wasm-test && bun install && bun test
+cd brewdio-wasm && bun install && bun test
 
 # Start web UI dev server
 cd brewdio-webui && bun install && bun dev

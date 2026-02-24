@@ -280,9 +280,6 @@ function RecipeDetailComponent() {
         <div className="border rounded-lg p-4">
           <h2 className="text-xl font-semibold mb-3">Recipe Details</h2>
           <div className="space-y-2">
-            <div className="text-sm py-1">
-              <span className="font-medium">Type:</span> {beerRecipe.type}
-            </div>
             <InlineEditableWithUnit
               value={beerRecipe.batch_size.value}
               unit={beerRecipe.batch_size.unit}

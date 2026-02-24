@@ -1,5 +1,6 @@
 import { InlineEditable } from "@/components/inline-editable";
 import { EditableStyleSelector } from "@/components/editable-style-selector";
+import { EditableTypeSelector } from "@/components/editable-type-selector";
 import { DeleteRecipeDialog } from "@/components/delete-recipe-dialog";
 import { BrewBatchDialog } from "@/components/brew-batch-dialog";
 import type { RecipeDocument } from "@/lib/db/recipes";
@@ -31,6 +32,15 @@ export function RecipeHeader({
     queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipe.id) });
   };
 
+  const handleTypeUpdate = async (newType: string) => {
+    const db = getRecipeDb();
+    const updated = structuredClone(recipe.recipe);
+    updated.type = newType as any;
+    db.update_recipe(recipe.id, updated.name, updated as any);
+    queryClient.invalidateQueries({ queryKey: recipeKeys.all });
+    queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipe.id) });
+  };
+
   const handleStyleUpdate = async (newStyleName: string) => {
     const selectedStyle = get_styles().find((s) => s.name === newStyleName);
     if (!selectedStyle) {
@@ -58,12 +68,19 @@ export function RecipeHeader({
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="flex-1 min-w-0">
-        <InlineEditable
-          value={recipe.recipe.name}
-          onSave={handleNameUpdate}
-          displayAs="heading"
-          placeholder="Recipe name"
-        />
+        <div className="flex items-baseline gap-3">
+          <InlineEditable
+            value={recipe.recipe.name}
+            onSave={handleNameUpdate}
+            displayAs="heading"
+            placeholder="Recipe name"
+          />
+          {recipe.recipe.author && (
+            <p className="text-xs text-muted-foreground/70 shrink-0">
+              by {recipe.recipe.author}
+            </p>
+          )}
+        </div>
         <div className="flex items-center gap-3 mt-1 flex-wrap">
           {recipe.recipe.style && (
             <div className="flex items-center gap-3 flex-wrap">
@@ -72,11 +89,11 @@ export function RecipeHeader({
                 styleCategory={recipe.recipe.style.category}
                 onSave={handleStyleUpdate}
               />
-              {recipe.recipe.author && (
-                <p className="text-xs text-muted-foreground/70 shrink-0">
-                  by {recipe.recipe.author}
-                </p>
-              )}
+              <span className="text-muted-foreground/40">·</span>
+              <EditableTypeSelector
+                type={recipe.recipe.type}
+                onSave={handleTypeUpdate}
+              />
             </div>
           )}
         </div>

@@ -1,8 +1,11 @@
 {
-  "name": "brewdio-wasm-build",
+  "name": "brewdio-wasm",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "build": "wasm-pack build --target web"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.9"
   }
 }

@@ -167,11 +167,11 @@ describe("calculate_water", () => {
 
     const result = calculate_water(input);
     expect(result).toBeDefined();
-    expect(result.total_water_needed).toBeDefined();
-    expect(result.total_water_needed.value).toBeGreaterThan(0);
-    expect(result.strike_water).toBeDefined();
-    expect(result.strike_water.volume.value).toBeGreaterThan(0);
-    expect(result.strike_water.temperature.value).toBeGreaterThan(0);
+    expect(result.totalWaterNeeded).toBeDefined();
+    expect(result.totalWaterNeeded.value).toBeGreaterThan(0);
+    expect(result.strikeWater).toBeDefined();
+    expect(result.strikeWater.volume.value).toBeGreaterThan(0);
+    expect(result.strikeWater.temperature.value).toBeGreaterThan(0);
   });
 });
 
