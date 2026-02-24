@@ -387,10 +387,6 @@ function RecipeDetailComponent() {
         )}
       </div>
 
-      <div id="mash" className="border rounded-lg p-4 scroll-mt-20">
-        <RecipeMashSection />
-      </div>
-
       <div id="hops" className="border rounded-lg p-4 scroll-mt-20">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-semibold">Hops</h2>
@@ -511,6 +507,10 @@ function RecipeDetailComponent() {
             ))}
           </div>
         )}
+      </div>
+
+      <div id="mash" className="border rounded-lg p-4 scroll-mt-20">
+        <RecipeMashSection />
       </div>
     </div>
     </RecipeEditProvider>

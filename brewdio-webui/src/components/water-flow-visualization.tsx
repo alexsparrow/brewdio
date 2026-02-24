@@ -1,4 +1,18 @@
-import type { CalculatedStage } from '@/lib/water-calculations';
+import type { CalculatedWaterStage, WaterStageType } from 'brewdio-wasm';
+
+// --- Types ---
+
+type TankShape = 'rect' | 'dome' | 'chimney' | 'conical' | 'keg';
+
+function stageTypeToShape(stageType: WaterStageType): TankShape {
+  switch (stageType) {
+    case 'mash': return 'dome';
+    case 'boil': return 'chimney';
+    case 'fermenter': return 'conical';
+    case 'packaging': return 'keg';
+    default: return 'rect'; // source, unknown
+  }
+}
 
 // --- Constants & Layout ---
 
@@ -44,7 +58,7 @@ const getTankPath = (shape: string, w: number, h: number): string => {
 };
 
 interface WaterFlowVisualizationProps {
-  stages: CalculatedStage[];
+  stages: CalculatedWaterStage[];
   beerColor?: string;
 }
 
@@ -67,7 +81,7 @@ export function WaterFlowVisualization({
         {/* Clip Paths for Shapes */}
         {stages.map((stage) => (
           <clipPath key={`clip-${stage.id}`} id={`clip-${stage.id}`}>
-            <path d={getTankPath(stage.shape, TANK_WIDTH, CYLINDER_HEIGHT)} />
+            <path d={getTankPath(stageTypeToShape(stage.stageType), TANK_WIDTH, CYLINDER_HEIGHT)} />
           </clipPath>
         ))}
       </defs>
@@ -77,7 +91,7 @@ export function WaterFlowVisualization({
         const xPos = 50 + (i * 200);
         const tankTopY = BASELINE_Y - CYLINDER_HEIGHT;
 
-        const isConical = stage.shape === 'conical';
+        const isConical = stageTypeToShape(stage.stageType) === 'conical';
         const totalTankHeight = isConical ? CYLINDER_HEIGHT + CONE_DROP : CYLINDER_HEIGHT;
 
         // Calculate Liquid
@@ -114,7 +128,7 @@ export function WaterFlowVisualization({
 
               {/* Tank Shell */}
               <path
-                d={getTankPath(stage.shape, TANK_WIDTH, CYLINDER_HEIGHT)}
+                d={getTankPath(stageTypeToShape(stage.stageType), TANK_WIDTH, CYLINDER_HEIGHT)}
                 fill="#1e293b"
                 fillOpacity="0.5"
                 stroke="#475569"

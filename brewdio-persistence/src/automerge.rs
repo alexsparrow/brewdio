@@ -5,24 +5,43 @@ use serde::{Deserialize, Serialize};
 use crate::batch::BatchDocument;
 use crate::recipe::RecipeDocument;
 
+/// Get the current time in milliseconds since UNIX epoch, working on both native and WASM.
+#[cfg(not(feature = "wasm"))]
+pub(crate) fn current_time_millis() -> i64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as i64
+}
+
+#[cfg(feature = "wasm")]
+pub(crate) fn current_time_millis() -> i64 {
+    web_time::SystemTime::now()
+        .duration_since(web_time::UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as i64
+}
+
+/// Generate a new ULID, working on both native and WASM.
+pub(crate) fn new_ulid() -> String {
+    ulid::Ulid::from_parts(current_time_millis() as u64, rand::random::<u128>()).to_string()
+}
+
 /// Create or update an Automerge document from a reconcilable value.
 /// If `existing` bytes are provided, loads and reconciles into that doc (preserving history).
 /// Otherwise creates a new doc.
-pub fn reconcile_to_automerge<T: autosurgeon::Reconcile>(doc: &T, existing: Option<&[u8]>) -> Vec<u8> {
+pub fn reconcile_to_automerge<T: autosurgeon::Reconcile>(doc: &T, existing: Option<&[u8]>) -> Result<Vec<u8>, String> {
     let mut am_doc = match existing {
-        Some(bytes) => AutoCommit::load(bytes).expect("Failed to load Automerge doc"),
+        Some(bytes) => AutoCommit::load(bytes).map_err(|e| format!("Failed to load Automerge doc: {}", e))?,
         None => AutoCommit::new(),
     };
-    reconcile(&mut am_doc, doc).expect("Failed to reconcile document");
-    let now = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap()
-        .as_millis() as i64;
+    reconcile(&mut am_doc, doc).map_err(|e| format!("Failed to reconcile document: {}", e))?;
+    let now = current_time_millis();
     am_doc.commit_with(automerge::transaction::CommitOptions {
         message: None,
         time: Some(now),
     });
-    am_doc.save()
+    Ok(am_doc.save())
 }
 
 /// Hydrate a value from Automerge binary data.

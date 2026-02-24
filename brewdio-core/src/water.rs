@@ -45,24 +45,36 @@ pub struct WaterCalculatorInput {
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(into_wasm_abi))]
+#[serde(rename_all = "camelCase")]
 pub struct StageVolumes {
     pub volume_in: VolumeType,
     pub volume_out: VolumeType,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(into_wasm_abi))]
+#[serde(rename_all = "camelCase")]
 pub struct WaterStrikeResult {
     pub volume: VolumeType,
     pub temperature: TemperatureType,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(into_wasm_abi))]
+#[serde(rename_all = "camelCase")]
 pub struct WaterSpargeResult {
     pub volume: VolumeType,
     pub temperature: TemperatureType,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(into_wasm_abi))]
+#[serde(rename_all = "camelCase")]
 pub struct WaterStages {
     pub mash: StageVolumes,
     pub kettle: StageVolumes,
@@ -70,11 +82,80 @@ pub struct WaterStages {
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(into_wasm_abi))]
+#[serde(rename_all = "camelCase")]
 pub struct WaterCalculatorResult {
     pub total_water_needed: VolumeType,
     pub strike_water: WaterStrikeResult,
     pub sparge_water: Option<WaterSpargeResult>,
     pub stages: WaterStages,
+    pub calculated_stages: Vec<CalculatedWaterStage>,
+}
+
+// --- Stage-based calculation types ---
+
+brewing_model!{
+#[serde(rename_all = "camelCase")]
+pub enum WaterStageType {
+    Source,
+    Mash,
+    Boil,
+    Fermenter,
+    Packaging,
+}
+}
+
+brewing_model!{
+#[serde(rename_all = "camelCase")]
+pub enum WaterLossType {
+    Flat,
+    Rate,
+}
+}
+
+brewing_model!{
+#[serde(rename_all = "camelCase")]
+pub struct WaterLoss {
+    pub id: String,
+    pub label: String,
+    pub value: f64,
+    #[serde(rename = "type")]
+    pub loss_type: WaterLossType,
+    pub unit: String,
+}
+}
+
+brewing_model!{
+#[serde(rename_all = "camelCase")]
+pub struct WaterStage {
+    pub id: String,
+    pub label: String,
+    pub stage_type: WaterStageType,
+    pub losses: Vec<WaterLoss>,
+}
+}
+
+brewing_model!{
+#[serde(rename_all = "camelCase")]
+pub struct CalculatedWaterStage {
+    pub id: String,
+    pub label: String,
+    pub stage_type: WaterStageType,
+    pub losses: Vec<WaterLoss>,
+    pub volume_in: f64,
+    pub volume_out: f64,
+    pub total_loss: f64,
+    pub is_source: bool,
+}
+}
+
+brewing_model!{
+#[serde(rename_all = "camelCase")]
+pub struct StageCalculationResult {
+    pub total_water_needed: f64,
+    pub stages: Vec<CalculatedWaterStage>,
+}
 }
 
 // ============================================================================
@@ -86,6 +167,7 @@ const MASH_TUN_DEADSPACE_LOSS_GAL: f64 = 0.25;
 const BOIL_OFF_RATE_GAL_PER_HR: f64 = 1.0;
 const KETTLE_TRUB_LOSS_GAL: f64 = 0.5;
 const FERMENTER_TRUB_LOSS_GAL: f64 = 0.5;
+const PACKAGING_TRANSFER_LOSS_GAL: f64 = 0.1;
 const SPARGE_TEMPERATURE_F: f64 = 168.0;
 const WATER_TO_GRAIN_RATIO_QT_PER_LB: f64 = 1.25;
 
@@ -169,6 +251,12 @@ fn get_fermenter_loss(equipment: Option<&EquipmentType>) -> f64 {
         .unwrap_or(FERMENTER_TRUB_LOSS_GAL)
 }
 
+fn get_packaging_loss(equipment: Option<&EquipmentType>) -> f64 {
+    find_equipment_item(equipment, EquipmentItemTypeForm::PackagingVessel)
+        .map(|pkg| volume_to_gallons(&pkg.loss))
+        .unwrap_or(PACKAGING_TRANSFER_LOSS_GAL)
+}
+
 // ============================================================================
 // GRAIN WEIGHT
 // ============================================================================
@@ -199,6 +287,153 @@ fn calc_strike_temperature(
 }
 
 // ============================================================================
+// STAGE-BASED CALCULATION
+// ============================================================================
+
+/// Build default brewing stages from equipment parameters.
+pub fn build_stages(
+    equipment: Option<&EquipmentType>,
+    grain_weight_lb: f64,
+) -> Vec<WaterStage> {
+    let grain_absorption = get_grain_absorption_rate(equipment);
+    let mash_tun_loss = get_mash_tun_loss(equipment);
+    let boil_off_rate = get_boil_off_rate(equipment);
+    let kettle_loss = get_kettle_loss(equipment);
+    let fermenter_loss = get_fermenter_loss(equipment);
+    let packaging_loss = get_packaging_loss(equipment);
+
+    vec![
+        WaterStage {
+            id: "mash".to_string(),
+            label: "Mash Tun".to_string(),
+            stage_type: WaterStageType::Mash,
+            losses: vec![
+                WaterLoss {
+                    id: "grainAbs".to_string(),
+                    label: "Grain Absorption".to_string(),
+                    value: grain_absorption * grain_weight_lb,
+                    loss_type: WaterLossType::Flat,
+                    unit: "gal".to_string(),
+                },
+                WaterLoss {
+                    id: "tunDead".to_string(),
+                    label: "Tun Deadspace".to_string(),
+                    value: mash_tun_loss,
+                    loss_type: WaterLossType::Flat,
+                    unit: "gal".to_string(),
+                },
+            ],
+        },
+        WaterStage {
+            id: "kettle".to_string(),
+            label: "Boil Kettle".to_string(),
+            stage_type: WaterStageType::Boil,
+            losses: vec![
+                WaterLoss {
+                    id: "boilOff".to_string(),
+                    label: "Boil Off Rate".to_string(),
+                    value: boil_off_rate,
+                    loss_type: WaterLossType::Rate,
+                    unit: "gal/hr".to_string(),
+                },
+                WaterLoss {
+                    id: "trub".to_string(),
+                    label: "Trub / Hop Loss".to_string(),
+                    value: kettle_loss,
+                    loss_type: WaterLossType::Flat,
+                    unit: "gal".to_string(),
+                },
+            ],
+        },
+        WaterStage {
+            id: "fermenter".to_string(),
+            label: "Fermenter".to_string(),
+            stage_type: WaterStageType::Fermenter,
+            losses: vec![
+                WaterLoss {
+                    id: "trub_ferm".to_string(),
+                    label: "Yeast/Cake Loss".to_string(),
+                    value: fermenter_loss,
+                    loss_type: WaterLossType::Flat,
+                    unit: "gal".to_string(),
+                },
+            ],
+        },
+        WaterStage {
+            id: "packaging".to_string(),
+            label: "Kegging".to_string(),
+            stage_type: WaterStageType::Packaging,
+            losses: vec![
+                WaterLoss {
+                    id: "lines".to_string(),
+                    label: "Transfer Loss".to_string(),
+                    value: packaging_loss,
+                    loss_type: WaterLossType::Flat,
+                    unit: "gal".to_string(),
+                },
+            ],
+        },
+    ]
+}
+
+/// Low-level stage-based water volume calculation.
+/// Works backwards from target_volume through each stage, accumulating losses.
+/// Returns calculated volumes for each stage plus a prepended source tank.
+pub fn calculate_water_from_stages(
+    target_volume: f64,
+    boil_time_min: f64,
+    stages: &[WaterStage],
+) -> StageCalculationResult {
+    let mut current_vol = target_volume;
+    let mut processed: Vec<CalculatedWaterStage> = Vec::new();
+
+    for stage in stages.iter().rev() {
+        let mut total_loss = 0.0;
+        for loss in &stage.losses {
+            let val = match loss.loss_type {
+                WaterLossType::Rate => loss.value * (boil_time_min / 60.0),
+                WaterLossType::Flat => loss.value,
+            };
+            total_loss += val;
+        }
+
+        let volume_in = current_vol + total_loss;
+        processed.push(CalculatedWaterStage {
+            id: stage.id.clone(),
+            label: stage.label.clone(),
+            stage_type: stage.stage_type.clone(),
+            losses: stage.losses.clone(),
+            volume_in,
+            volume_out: current_vol,
+            total_loss,
+            is_source: false,
+        });
+        current_vol = volume_in;
+    }
+
+    processed.reverse();
+
+    let source = CalculatedWaterStage {
+        id: "source".to_string(),
+        label: "Strike Water".to_string(),
+        stage_type: WaterStageType::Source,
+        losses: vec![],
+        volume_in: current_vol,
+        volume_out: current_vol,
+        total_loss: 0.0,
+        is_source: true,
+    };
+
+    let mut all_stages = vec![source];
+    all_stages.extend(processed);
+
+    StageCalculationResult {
+        total_water_needed: current_vol,
+        stages: all_stages,
+    }
+}
+
+// ============================================================================
 // MAIN CALCULATION
 // ============================================================================
 
@@ -212,24 +447,14 @@ pub fn calculate_water(input: &WaterCalculatorInput) -> WaterCalculatorResult {
         .unwrap_or(TemperatureUnitType::C);
 
     let target_vol_gal = volume_to_gallons(&input.target_batch_size);
-    let boil_time_hr = time_to_hours(&input.boil_time);
+    let boil_time_min = time_to_hours(&input.boil_time) * 60.0;
     let grain_weight_lb = total_grain_weight_lb(&input.grain_bill);
     let grain_temp_f = temperature_to_fahrenheit(&input.grain_temperature);
 
-    // Equipment parameters
-    let grain_absorption = get_grain_absorption_rate(input.equipment.as_ref());
-    let mash_tun_loss = get_mash_tun_loss(input.equipment.as_ref());
-    let boil_off_rate = get_boil_off_rate(input.equipment.as_ref());
-    let kettle_loss = get_kettle_loss(input.equipment.as_ref());
-    let fermenter_loss = get_fermenter_loss(input.equipment.as_ref());
-
-    // Work backwards from target batch size
-    let fermenter_volume_in = target_vol_gal + fermenter_loss;
-    let post_boil_kettle_vol = fermenter_volume_in + kettle_loss;
-    let pre_boil_kettle_vol = post_boil_kettle_vol + boil_off_rate * boil_time_hr;
-    let mash_volume_out = pre_boil_kettle_vol + mash_tun_loss;
-    let grain_absorption_loss = grain_absorption * grain_weight_lb;
-    let total_water_needed = mash_volume_out + grain_absorption_loss;
+    // Build stages and calculate volumes
+    let stages = build_stages(input.equipment.as_ref(), grain_weight_lb);
+    let stage_result = calculate_water_from_stages(target_vol_gal, boil_time_min, &stages);
+    let total_water_needed = stage_result.total_water_needed;
 
     // Determine whether a sparge step is present
     let has_sparge = input
@@ -295,6 +520,29 @@ pub fn calculate_water(input: &WaterCalculatorInput) -> WaterCalculatorResult {
     let vol = |gal: f64| gal_to_volume(gal, &vol_unit);
     let temp = |f: f64| f_to_temp(f, &temp_unit);
 
+    // Derive WaterStages from calculated stages for backward compat
+    let find_stage = |id: &str| stage_result.stages.iter().find(|s| s.id == id);
+    let mash_s = find_stage("mash").unwrap();
+    let kettle_s = find_stage("kettle").unwrap();
+    let fermenter_s = find_stage("fermenter").unwrap();
+
+    // Convert calculated_stages volumes to output units
+    let unit_factor = gal_to_volume(1.0, &vol_unit).value;
+    let calculated_stages: Vec<CalculatedWaterStage> = stage_result
+        .stages
+        .iter()
+        .map(|s| CalculatedWaterStage {
+            id: s.id.clone(),
+            label: s.label.clone(),
+            stage_type: s.stage_type.clone(),
+            losses: s.losses.clone(),
+            volume_in: s.volume_in * unit_factor,
+            volume_out: s.volume_out * unit_factor,
+            total_loss: s.total_loss * unit_factor,
+            is_source: s.is_source,
+        })
+        .collect();
+
     WaterCalculatorResult {
         total_water_needed: vol(total_water_needed),
         strike_water: WaterStrikeResult {
@@ -311,18 +559,19 @@ pub fn calculate_water(input: &WaterCalculatorInput) -> WaterCalculatorResult {
         },
         stages: WaterStages {
             mash: StageVolumes {
-                volume_in: vol(total_water_needed),
-                volume_out: vol(mash_volume_out),
+                volume_in: vol(mash_s.volume_in),
+                volume_out: vol(mash_s.volume_out),
             },
             kettle: StageVolumes {
-                volume_in: vol(pre_boil_kettle_vol),
-                volume_out: vol(post_boil_kettle_vol),
+                volume_in: vol(kettle_s.volume_in),
+                volume_out: vol(kettle_s.volume_out),
             },
             fermenter: StageVolumes {
-                volume_in: vol(fermenter_volume_in),
-                volume_out: vol(target_vol_gal),
+                volume_in: vol(fermenter_s.volume_in),
+                volume_out: vol(fermenter_s.volume_out),
             },
         },
+        calculated_stages,
     }
 }
 
@@ -526,13 +775,11 @@ mod tests {
         #[test]
         fn calculates_total_water_needed() {
             let result = TypicalInputBuilder::new().us_units().calculate();
-            // target 5 + fermenter 0.5 = 5.5
-            // post-boil = 5.5 + 0.5 = 6.0
-            // pre-boil = 6.0 + 1.0 = 7.0
-            // mash out = 7.0 + 0.25 = 7.25
-            // grain absorption = 10 * 0.125 = 1.25
-            // total = 7.25 + 1.25 = 8.5
-            assert!((result.total_water_needed.value - 8.5).abs() < 0.05);
+            // target 5 + packaging 0.1 = 5.1
+            // + fermenter 0.5 = 5.6
+            // + trub 0.5 + boil-off 1.0 = 7.1
+            // + grain absorption 1.25 + tun deadspace 0.25 = 8.6
+            assert!((result.total_water_needed.value - 8.6).abs() < 0.05);
         }
 
         #[test]
@@ -554,7 +801,7 @@ mod tests {
         fn sparge_volume_is_remainder() {
             let result = TypicalInputBuilder::new().us_units().calculate();
             assert!(
-                (result.sparge_water.as_ref().unwrap().volume.value - (8.5 - 3.125)).abs() < 0.05
+                (result.sparge_water.as_ref().unwrap().volume.value - (8.6 - 3.125)).abs() < 0.05
             );
         }
     }
@@ -681,14 +928,12 @@ mod tests {
 
             let result = builder.calculate();
 
-            // target 5 + fermenter 0.25 = 5.25
-            // post-boil = 5.25 + 1.0 = 6.25
-            // pre-boil = 6.25 + 1.5 = 7.75
-            // mash out = 7.75 + 0.5 = 8.25
-            // grain absorption = 10 * 0.1 = 1.0
-            // total = 8.25 + 1.0 = 9.25
-            assert!((result.total_water_needed.value - 9.25).abs() < 0.05);
-            assert!((result.stages.fermenter.volume_in.value - 5.25).abs() < 0.05);
+            // target 5 + packaging 0.1 = 5.1
+            // + fermenter 0.25 = 5.35
+            // + trub 1.0 + boil-off 1.5 = 7.85
+            // + grain absorption 1.0 + tun deadspace 0.5 = 9.35
+            assert!((result.total_water_needed.value - 9.35).abs() < 0.05);
+            assert!((result.stages.fermenter.volume_in.value - 5.35).abs() < 0.05);
         }
     }
 
@@ -755,19 +1000,26 @@ mod tests {
         #[test]
         fn stage_volumes_chain_correctly() {
             let result = TypicalInputBuilder::new().us_units().calculate();
-            // mash volumeOut - mash tun deadspace = kettle volumeIn
+            // In the stage model, each stage's volume_out == next stage's volume_in
             assert!(
                 (result.stages.kettle.volume_in.value
-                    - (result.stages.mash.volume_out.value - 0.25))
+                    - result.stages.mash.volume_out.value)
+                    .abs()
+                    < 0.05
+            );
+            assert!(
+                (result.stages.fermenter.volume_in.value
+                    - result.stages.kettle.volume_out.value)
                     .abs()
                     < 0.05
             );
         }
 
         #[test]
-        fn fermenter_output_equals_target_batch_size() {
+        fn fermenter_output_feeds_packaging() {
             let result = TypicalInputBuilder::new().us_units().calculate();
-            assert!((result.stages.fermenter.volume_out.value - 5.0).abs() < 0.05);
+            // Fermenter output = target (5.0) + packaging loss (0.1)
+            assert!((result.stages.fermenter.volume_out.value - 5.1).abs() < 0.05);
         }
 
         #[test]
@@ -847,10 +1099,10 @@ mod tests {
             let mut builder = TypicalInputBuilder::new().us_units();
             builder.grain_bill = vec![grain(5.0, FermentableAdditionTypeType::Extract)];
             let result = builder.calculate();
-            // No grain absorption
+            // Mash loss is only tun deadspace (no grain absorption)
             let mash_loss =
                 result.stages.mash.volume_in.value - result.stages.mash.volume_out.value;
-            assert!(mash_loss.abs() < 1e-5);
+            assert!((mash_loss - MASH_TUN_DEADSPACE_LOSS_GAL).abs() < 1e-5);
             assert!(result.strike_water.volume.value.abs() < 1e-5);
             assert!(
                 (result.sparge_water.as_ref().unwrap().volume.value
@@ -880,13 +1132,100 @@ mod tests {
             let no_boil_result = no_boil.calculate();
 
             assert!(no_boil_result.total_water_needed.value < with_boil.total_water_needed.value);
-            // With zero boil, pre-boil = post-boil (no evaporation)
-            assert!(
-                (no_boil_result.stages.kettle.volume_in.value
-                    - no_boil_result.stages.kettle.volume_out.value)
-                    .abs()
-                    < 0.05
-            );
+            // With zero boil, kettle loss is only trub (0.5), no evaporation
+            let kettle_loss = no_boil_result.stages.kettle.volume_in.value
+                - no_boil_result.stages.kettle.volume_out.value;
+            assert!((kettle_loss - KETTLE_TRUB_LOSS_GAL).abs() < 0.05);
+        }
+    }
+
+    mod stage_calculation {
+        use super::*;
+
+        fn default_stages() -> Vec<WaterStage> {
+            build_stages(None, 10.0)
+        }
+
+        #[test]
+        fn calculate_from_stages_matches_manual_backward_calculation() {
+            // target=5.0, boil=60min, default stages with 10lb grain
+            let result = calculate_water_from_stages(5.0, 60.0, &default_stages());
+            // packaging: 5.0+0.1=5.1
+            // fermenter: 5.1+0.5=5.6
+            // boil: 5.6+1.0+0.5=7.1
+            // mash: 7.1+1.25+0.25=8.6
+            assert!((result.total_water_needed - 8.6).abs() < 0.01);
+        }
+
+        #[test]
+        fn packaging_stage_appears_in_result() {
+            let result = calculate_water_from_stages(5.0, 60.0, &default_stages());
+            let packaging = result.stages.iter().find(|s| s.id == "packaging");
+            assert!(packaging.is_some());
+            let pkg = packaging.unwrap();
+            assert!(matches!(pkg.stage_type, WaterStageType::Packaging));
+            assert!((pkg.volume_out - 5.0).abs() < 0.01);
+            assert!((pkg.volume_in - 5.1).abs() < 0.01);
+        }
+
+        #[test]
+        fn stage_volumes_chain_through_all_stages() {
+            let result = calculate_water_from_stages(5.0, 60.0, &default_stages());
+            // Skip source (index 0), check that each stage's volume_out == next stage's volume_in
+            let stages = &result.stages;
+            for i in 1..stages.len() - 1 {
+                assert!(
+                    (stages[i].volume_out - stages[i + 1].volume_in).abs() < 1e-10,
+                    "stage {} volume_out ({}) != stage {} volume_in ({})",
+                    stages[i].id, stages[i].volume_out,
+                    stages[i + 1].id, stages[i + 1].volume_in,
+                );
+            }
+        }
+
+        #[test]
+        fn source_tank_has_correct_total_and_is_source() {
+            let result = calculate_water_from_stages(5.0, 60.0, &default_stages());
+            let source = &result.stages[0];
+            assert!(source.is_source);
+            assert!(matches!(source.stage_type, WaterStageType::Source));
+            assert!((source.volume_in - result.total_water_needed).abs() < 1e-10);
+            assert!((source.volume_out - result.total_water_needed).abs() < 1e-10);
+            assert!((source.total_loss - 0.0).abs() < 1e-10);
+        }
+
+        #[test]
+        fn calculated_stages_in_high_level_api() {
+            let result = TypicalInputBuilder::new().us_units().calculate();
+            // Should have 5 stages: source + mash + kettle + fermenter + packaging
+            assert_eq!(result.calculated_stages.len(), 5);
+            assert!(result.calculated_stages[0].is_source);
+            assert!(matches!(result.calculated_stages[1].stage_type, WaterStageType::Mash));
+            assert!(matches!(result.calculated_stages[2].stage_type, WaterStageType::Boil));
+            assert!(matches!(result.calculated_stages[3].stage_type, WaterStageType::Fermenter));
+            assert!(matches!(result.calculated_stages[4].stage_type, WaterStageType::Packaging));
+        }
+
+        #[test]
+        fn packaging_output_equals_target_batch_size() {
+            let result = TypicalInputBuilder::new().us_units().calculate();
+            let packaging = result.calculated_stages.iter()
+                .find(|s| matches!(s.stage_type, WaterStageType::Packaging))
+                .unwrap();
+            assert!((packaging.volume_out - 5.0).abs() < 0.05);
+        }
+
+        #[test]
+        fn calculated_stages_use_output_units() {
+            let mut builder = TypicalInputBuilder::new();
+            builder.units = Some(WaterCalculatorOptions {
+                volume_unit: VolumeUnitType::L,
+                temperature_unit: TemperatureUnitType::C,
+            });
+            let result = builder.calculate();
+            // Source volume should be in liters (total_water_needed)
+            let source = &result.calculated_stages[0];
+            assert!((source.volume_in - result.total_water_needed.value).abs() < 0.1);
         }
     }
 }

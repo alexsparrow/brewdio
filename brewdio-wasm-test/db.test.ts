@@ -170,6 +170,93 @@ describe("RecipeDb", () => {
     });
   });
 
+  describe("update with style", () => {
+    test("updates recipe with a style field", () => {
+      const recipe: RecipeType = {
+        name: "Test Barleywine",
+        type: "all grain",
+        author: "Tester",
+        batch_size: { unit: "gal", value: 5.5 },
+        boil: {
+          boil_time: { unit: "min", value: 60 },
+        },
+        efficiency: {
+          brewhouse: { unit: "%", value: 72 },
+        },
+        ingredients: {
+          fermentable_additions: [
+            {
+              name: "Pale Malt (2 Row) US",
+              type: "grain",
+              amount: { unit: "lb", value: 13.5 },
+              color: { unit: "Lovi", value: 1.8 },
+              yield: { fine_grind: { unit: "%", value: 79.0 } },
+            },
+          ],
+          hop_additions: [
+            {
+              name: "Columbus (Tomahawk)",
+              timing: {
+                duration: { unit: "min", value: 60 },
+                use: "add_to_boil",
+              },
+              amount: { unit: "oz", value: 2 },
+              form: "pellet",
+              alpha_acid: { unit: "%", value: 14 },
+            },
+          ],
+          culture_additions: [
+            {
+              name: "Safale American",
+              type: "ale",
+              form: "dry",
+              amount: { unit: "ml", value: 100 },
+            },
+          ],
+        },
+        mash: {
+          name: "Single Infusion, Medium Body, Batch Sparge",
+          grain_temperature: { unit: "F", value: 72 },
+          mash_steps: [
+            {
+              name: "Mash In",
+              type: "infusion",
+              step_temperature: { unit: "F", value: 154 },
+              step_time: { unit: "min", value: 60 },
+            },
+            {
+              name: "Sparge",
+              type: "sparge",
+              step_temperature: { unit: "F", value: 168 },
+              step_time: { unit: "min", value: 15 },
+            },
+          ],
+        },
+      } as RecipeType;
+
+      // Create the recipe without a style
+      const id = db.create_recipe("Test Barleywine", recipe);
+
+      // Now update it with a style (this triggers reconcile of RecipeStyleType)
+      const updatedRecipe = structuredClone(recipe);
+      (updatedRecipe as any).style = {
+        name: "American Barleywine",
+        category: "Strong Ale",
+        category_number: 19,
+        style_guide: "BJCP",
+        style_letter: "C",
+        type: "beer",
+      };
+
+      // This should not throw — but currently panics with "unreachable executed"
+      db.update_recipe(id, "Test Barleywine", updatedRecipe);
+
+      const result = db.get_recipe(id);
+      expect(result.recipe.style).toBeDefined();
+      expect(result.recipe.style.name).toBe("American Barleywine");
+    });
+  });
+
   describe("change notification", () => {
     test("fires callback on create", () => {
       let called = false;

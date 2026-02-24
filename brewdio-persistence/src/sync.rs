@@ -161,7 +161,7 @@ mod tests {
             is_deleted: false,
         };
 
-        let am_bytes = reconcile_to_automerge(&doc, None);
+        let am_bytes = reconcile_to_automerge(&doc, None).unwrap();
         let session = SyncSession::from_doc_bytes(&am_bytes);
         let hydrated = session.hydrate();
 
@@ -178,13 +178,13 @@ mod tests {
             recipe: sample_recipe(),
             is_deleted: false,
         };
-        let am_a = reconcile_to_automerge(&doc_a, None);
+        let am_a = reconcile_to_automerge(&doc_a, None).unwrap();
         let mut session_a = SyncSession::from_doc_bytes(&am_a);
 
         // Session B starts from same doc but with a different name
         let mut doc_b = doc_a.clone();
         doc_b.name = "Modified Beer".to_string();
-        let am_b = reconcile_to_automerge(&doc_b, Some(&am_a));
+        let am_b = reconcile_to_automerge(&doc_b, Some(&am_a)).unwrap();
         let mut session_b = SyncSession::from_doc_bytes(&am_b);
 
         // Exchange sync messages until convergence
@@ -229,8 +229,8 @@ mod tests {
         };
 
         // Both sides have the same recipe but with different names (concurrent edits)
-        let am_a = reconcile_to_automerge(&doc_a, None);
-        let am_b = reconcile_to_automerge(&doc_b, None);
+        let am_a = reconcile_to_automerge(&doc_a, None).unwrap();
+        let am_b = reconcile_to_automerge(&doc_b, None).unwrap();
 
         // Persistent sessions (kept alive for the connection)
         let mut session_a = SyncSession::from_doc_bytes(&am_a);
@@ -304,7 +304,7 @@ mod tests {
             recipe: sample_recipe(),
             is_deleted: false,
         };
-        let am_bytes = reconcile_to_automerge(&doc, None);
+        let am_bytes = reconcile_to_automerge(&doc, None).unwrap();
 
         let mut session_a = SyncSession::from_doc_bytes(&am_bytes);
         let mut session_b = SyncSession::from_doc_bytes(&am_bytes);
@@ -352,7 +352,7 @@ mod tests {
             recipe: sample_recipe(),
             is_deleted: false,
         };
-        let am_v1 = reconcile_to_automerge(&doc_v1, None);
+        let am_v1 = reconcile_to_automerge(&doc_v1, None).unwrap();
 
         // Create a session and start syncing
         let mut session = SyncSession::from_doc_bytes(&am_v1);
@@ -365,7 +365,7 @@ mod tests {
             recipe: sample_recipe(),
             is_deleted: false,
         };
-        let am_v2 = reconcile_to_automerge(&doc_v2, Some(&am_v1));
+        let am_v2 = reconcile_to_automerge(&doc_v2, Some(&am_v1)).unwrap();
 
         // Merge the updated doc into the session
         session.merge_doc(&am_v2);
@@ -386,7 +386,7 @@ mod tests {
             recipe: sample_recipe(),
             is_deleted: false,
         };
-        let am_bytes = reconcile_to_automerge(&doc, None);
+        let am_bytes = reconcile_to_automerge(&doc, None).unwrap();
 
         let mut session_a = SyncSession::from_doc_bytes(&am_bytes);
         let mut session_b = SyncSession::from_doc_bytes(&am_bytes);
@@ -411,7 +411,7 @@ mod tests {
             recipe: sample_recipe(),
             is_deleted: false,
         };
-        let am_v2 = reconcile_to_automerge(&doc_v2, Some(&am_bytes));
+        let am_v2 = reconcile_to_automerge(&doc_v2, Some(&am_bytes)).unwrap();
         session_a.merge_doc(&am_v2);
 
         // A should now have something to send
@@ -453,8 +453,8 @@ mod tests {
         };
 
         // Independently created docs (different actors)
-        let am_a = reconcile_to_automerge(&doc_a, None);
-        let am_b = reconcile_to_automerge(&doc_b, None);
+        let am_a = reconcile_to_automerge(&doc_a, None).unwrap();
+        let am_b = reconcile_to_automerge(&doc_b, None).unwrap();
 
         // Verify initial docs have is_deleted = false
         let h: RecipeDocument = hydrate_from_automerge(&am_a).unwrap();
@@ -569,7 +569,7 @@ mod tests {
             recipe: sample_recipe(),
             is_deleted: false,
         };
-        let am_bytes = reconcile_to_automerge(&doc, None);
+        let am_bytes = reconcile_to_automerge(&doc, None).unwrap();
 
         let mut session = SyncSession::from_doc_bytes(&am_bytes);
         let state_bytes = session.save_state();

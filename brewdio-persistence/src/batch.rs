@@ -2,7 +2,7 @@ use brewdio_core::beerjson_types::{EquipmentType, RecipeType};
 use serde::{Deserialize, Serialize};
 
 use crate::connection::{Connection, DbError, Value};
-use crate::automerge::reconcile_to_automerge;
+use crate::automerge::{current_time_millis, new_ulid, reconcile_to_automerge};
 
 #[derive(Debug, Clone, Serialize, Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate)]
 #[serde(rename_all = "camelCase")]
@@ -86,7 +86,7 @@ pub fn create_batch(
     recipe_id: &str,
     data: &str,
 ) -> Result<BatchRow, DbError> {
-    let id = ulid::Ulid::new().to_string();
+    let id = new_ulid();
     let parsed_data: BatchData =
         serde_json::from_str(data).map_err(|e| DbError(e.to_string()))?;
     let doc = BatchDocument {
@@ -96,7 +96,7 @@ pub fn create_batch(
         data: parsed_data,
         is_deleted: false,
     };
-    let am_data = reconcile_to_automerge(&doc, None);
+    let am_data = reconcile_to_automerge(&doc, None).map_err(|e| DbError(e))?;
 
     conn.execute(
         "INSERT INTO batch (id, name, recipe_id, data, am_data) VALUES (?1, ?2, ?3, ?4, ?5)",
@@ -156,7 +156,7 @@ pub fn update_batch(
         data: parsed_data,
         is_deleted: false,
     };
-    let am_data = reconcile_to_automerge(&doc, existing_am);
+    let am_data = reconcile_to_automerge(&doc, existing_am).map_err(|e| DbError(e))?;
 
     conn.execute(
         "UPDATE batch SET name = ?1, data = ?2, am_data = ?3, is_dirty = TRUE WHERE id = ?4",
@@ -169,7 +169,7 @@ pub fn delete_batch(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), D
     if let Some(row) = existing {
         let mut doc = row.to_document().map_err(|e| DbError(e.to_string()))?;
         doc.is_deleted = true;
-        let am_data = reconcile_to_automerge(&doc, Some(&row.am_data));
+        let am_data = reconcile_to_automerge(&doc, Some(&row.am_data)).map_err(|e| DbError(e))?;
 
         conn.execute(
             "UPDATE batch SET is_deleted = TRUE, is_dirty = TRUE, am_data = ?1 WHERE id = ?2",
@@ -186,10 +186,7 @@ pub fn create_batch_from_recipe(
     recipe: &RecipeType,
     equipment: &EquipmentType,
 ) -> Result<BatchRow, DbError> {
-    let now = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap()
-        .as_millis() as u64;
+    let now = current_time_millis() as u64;
     let data = BatchData {
         equipment_id: equipment.name.clone(),
         recipe: recipe.clone(),

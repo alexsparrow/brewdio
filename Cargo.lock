@@ -222,6 +222,7 @@ dependencies = [
  "futures-util",
  "getrandom 0.3.4",
  "js-sys",
+ "rand",
  "rusqlite",
  "serde",
  "serde_json",
@@ -231,6 +232,7 @@ dependencies = [
  "ulid",
  "wasm-bindgen",
  "wasm-bindgen-futures",
+ "web-time",
 ]
 
 [[package]]
@@ -267,6 +269,7 @@ version = "0.1.0"
 dependencies = [
  "brewdio-core",
  "brewdio-persistence",
+ "console_error_panic_hook",
  "js-sys",
  "serde",
  "serde-wasm-bindgen",
@@ -347,6 +350,16 @@ dependencies = [
  "rustversion",
  "ryu",
  "static_assertions",
+]
+
+[[package]]
+name = "console_error_panic_hook"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a06aeb73f470f66dcdbf7223caeebb85984942f22f1adb2a088cf9668146bbbc"
+dependencies = [
+ "cfg-if",
+ "wasm-bindgen",
 ]
 
 [[package]]

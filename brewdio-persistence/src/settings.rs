@@ -54,7 +54,7 @@ pub fn save_settings(conn: &(impl Connection + ?Sized), data: &str) -> Result<()
         id: "default".to_string(),
         data: data.to_string(),
     };
-    let am_data = reconcile_to_automerge(&doc, existing_am);
+    let am_data = reconcile_to_automerge(&doc, existing_am).map_err(|e| DbError(e))?;
 
     conn.execute(
         "INSERT INTO settings (id, data, am_data) VALUES ('default', ?1, ?2) ON CONFLICT (id) DO UPDATE SET data = excluded.data, am_data = excluded.am_data, is_dirty = TRUE",

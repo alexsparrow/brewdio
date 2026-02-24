@@ -58,11 +58,6 @@ const recipeContextNav = [
     icon: Wheat,
   },
   {
-    title: "Mash",
-    url: "#mash",
-    icon: Flame,
-  },
-  {
     title: "Hops",
     url: "#hops",
     icon: Leaf,
@@ -71,6 +66,11 @@ const recipeContextNav = [
     title: "Cultures (Yeast)",
     url: "#cultures",
     icon: FlaskConical,
+  },
+  {
+    title: "Mash",
+    url: "#mash",
+    icon: Flame,
   },
 ];
 

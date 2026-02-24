@@ -3,7 +3,7 @@
 
 use wasm_bindgen::prelude::*;
 use brewdio_core::beerjson_types::*;
-use brewdio_core::water::WaterCalculatorInput;
+use brewdio_core::water::{WaterCalculatorInput, WaterStage};
 use brewdio_core::carbonation::CarbonationInput;
 use brewdio_persistence::connection_wasm::WasmConnection;
 use brewdio_persistence::db;
@@ -11,14 +11,10 @@ use brewdio_persistence::batch;
 use brewdio_persistence::settings;
 use brewdio_persistence::sync::SyncSession as InnerSyncSession;
 
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
-
-macro_rules! console_log {
-    ($($arg:tt)*) => { log(&format!($($arg)*)) }
+/// Install the panic hook so WASM panics print readable messages to console.error.
+#[wasm_bindgen(start)]
+pub fn init_panic_hook() {
+    console_error_panic_hook::set_once();
 }
 
 /// Serialize to JsValue using JSON-compatible mode (produces plain objects, not Maps).
@@ -91,6 +87,20 @@ pub fn rgb_to_hex(r: f64, g: f64, b: f64) -> String {
 #[wasm_bindgen]
 pub fn calculate_water(input: WaterCalculatorInput) -> JsValue {
     let result = brewdio_core::water::calculate_water(&input);
+    to_js(&result).unwrap()
+}
+
+#[wasm_bindgen]
+pub fn calculate_water_from_stages(
+    target_volume: f64,
+    boil_time: f64,
+    stages: JsValue,
+) -> JsValue {
+    let stages: Vec<WaterStage> = serde_wasm_bindgen::from_value(stages)
+        .expect("Failed to deserialize stages");
+    let result = brewdio_core::water::calculate_water_from_stages(
+        target_volume, boil_time, &stages,
+    );
     to_js(&result).unwrap()
 }
 
@@ -445,50 +455,30 @@ impl RecipeDb {
 
     /// List all non-deleted recipes. Returns an array of {id, name, recipe} objects.
     pub fn list_recipes(&self) -> Result<JsValue, JsError> {
-        console_log!("[RecipeDb] list_recipes called");
-        let rows = db::list_recipes(&self.conn).map_err(|e| {
-            console_log!("[RecipeDb] list_recipes ERROR: {}", e);
-            JsError::new(&e.to_string())
-        })?;
-        console_log!("[RecipeDb] list_recipes: db returned {} rows", rows.len());
+        let rows = db::list_recipes(&self.conn)
+            .map_err(|e| JsError::new(&e.to_string()))?;
         let docs: Vec<serde_json::Value> = rows
             .into_iter()
             .filter_map(|r| {
-                let parse_result = serde_json::from_str::<RecipeType>(&r.recipe);
-                match parse_result {
-                    Ok(recipe) => Some(serde_json::json!({
-                        "id": r.id,
-                        "name": r.name,
-                        "recipe": recipe,
-                    })),
-                    Err(e) => {
-                        console_log!("[RecipeDb] list_recipes: failed to parse recipe JSON for id={}: {}", r.id, e);
-                        console_log!("[RecipeDb]   recipe text (first 200 chars): {:.200}", r.recipe);
-                        None
-                    }
-                }
+                let recipe: RecipeType = serde_json::from_str(&r.recipe).ok()?;
+                Some(serde_json::json!({
+                    "id": r.id,
+                    "name": r.name,
+                    "recipe": recipe,
+                }))
             })
             .collect();
-        console_log!("[RecipeDb] list_recipes: returning {} recipes", docs.len());
         to_js(&docs).map_err(|e| JsError::new(&e.to_string()))
     }
 
     /// Get a single recipe by ID. Returns {id, name, recipe} or null.
     pub fn get_recipe(&self, id: &str) -> Result<JsValue, JsError> {
-        console_log!("[RecipeDb] get_recipe called with id={}", id);
-        let row = db::get_recipe(&self.conn, id).map_err(|e| {
-            console_log!("[RecipeDb] get_recipe ERROR: {}", e);
-            JsError::new(&e.to_string())
-        })?;
+        let row = db::get_recipe(&self.conn, id)
+            .map_err(|e| JsError::new(&e.to_string()))?;
         match row {
             Some(r) if !r.is_deleted => {
-                console_log!("[RecipeDb] get_recipe: found recipe name={}, is_deleted={}, recipe_len={}, am_data_len={}", r.name, r.is_deleted, r.recipe.len(), r.am_data.len());
-                let recipe: RecipeType =
-                    serde_json::from_str(&r.recipe).map_err(|e| {
-                        console_log!("[RecipeDb] get_recipe: failed to parse recipe JSON: {}", e);
-                        console_log!("[RecipeDb]   recipe text (first 200 chars): {:.200}", r.recipe);
-                        JsError::new(&e.to_string())
-                    })?;
+                let recipe: RecipeType = serde_json::from_str(&r.recipe)
+                    .map_err(|e| JsError::new(&e.to_string()))?;
                 let doc = serde_json::json!({
                     "id": r.id,
                     "name": r.name,
@@ -496,60 +486,35 @@ impl RecipeDb {
                 });
                 to_js(&doc).map_err(|e| JsError::new(&e.to_string()))
             }
-            Some(r) => {
-                console_log!("[RecipeDb] get_recipe: found recipe id={} but is_deleted={}", r.id, r.is_deleted);
-                Ok(JsValue::NULL)
-            }
-            None => {
-                console_log!("[RecipeDb] get_recipe: no recipe found for id={}", id);
-                Ok(JsValue::NULL)
-            }
+            _ => Ok(JsValue::NULL),
         }
     }
 
     /// Create a new recipe. Takes the recipe name and a RecipeType as JsValue.
     /// Returns the created recipe's ID.
     pub fn create_recipe(&self, name: &str, recipe_js: JsValue) -> Result<String, JsError> {
-        console_log!("[RecipeDb] create_recipe called with name={}", name);
-        let recipe: RecipeType =
-            serde_wasm_bindgen::from_value(recipe_js).map_err(|e| {
-                console_log!("[RecipeDb] create_recipe: failed to deserialize RecipeType: {}", e);
-                JsError::new(&e.to_string())
-            })?;
-        let row = db::create_recipe(&self.conn, name, &recipe).map_err(|e| {
-            console_log!("[RecipeDb] create_recipe ERROR: {}", e);
-            JsError::new(&e.to_string())
-        })?;
-        console_log!("[RecipeDb] create_recipe: created id={}, recipe_len={}, am_data_len={}", row.id, row.recipe.len(), row.am_data.len());
+        let recipe: RecipeType = serde_wasm_bindgen::from_value(recipe_js)
+            .map_err(|e| JsError::new(&e.to_string()))?;
+        let row = db::create_recipe(&self.conn, name, &recipe)
+            .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify();
         Ok(row.id)
     }
 
     /// Update an existing recipe. Takes the ID, name, and RecipeType as JsValue.
     pub fn update_recipe(&self, id: &str, name: &str, recipe_js: JsValue) -> Result<(), JsError> {
-        console_log!("[RecipeDb] update_recipe called with id={}, name={}", id, name);
-        let recipe: RecipeType =
-            serde_wasm_bindgen::from_value(recipe_js).map_err(|e| {
-                console_log!("[RecipeDb] update_recipe: failed to deserialize RecipeType: {}", e);
-                JsError::new(&e.to_string())
-            })?;
-        db::update_recipe(&self.conn, id, name, &recipe).map_err(|e| {
-            console_log!("[RecipeDb] update_recipe ERROR: {}", e);
-            JsError::new(&e.to_string())
-        })?;
-        console_log!("[RecipeDb] update_recipe: success for id={}", id);
+        let recipe: RecipeType = serde_wasm_bindgen::from_value(recipe_js)
+            .map_err(|e| JsError::new(&e.to_string()))?;
+        db::update_recipe(&self.conn, id, name, &recipe)
+            .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify();
         Ok(())
     }
 
     /// Soft-delete a recipe by ID.
     pub fn delete_recipe(&self, id: &str) -> Result<(), JsError> {
-        console_log!("[RecipeDb] delete_recipe called with id={}", id);
-        db::delete_recipe(&self.conn, id).map_err(|e| {
-            console_log!("[RecipeDb] delete_recipe ERROR: {}", e);
-            JsError::new(&e.to_string())
-        })?;
-        console_log!("[RecipeDb] delete_recipe: success for id={}", id);
+        db::delete_recipe(&self.conn, id)
+            .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify();
         Ok(())
     }

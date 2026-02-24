@@ -96,7 +96,7 @@ mod tests {
             is_deleted: false,
         };
 
-        let bytes = reconcile_to_automerge(&doc, None);
+        let bytes = reconcile_to_automerge(&doc, None).unwrap();
         assert!(!bytes.is_empty());
 
         let hydrated: RecipeDocument = hydrate_from_automerge(&bytes).unwrap();
@@ -121,7 +121,7 @@ mod tests {
         };
 
         // First reconcile — creates doc
-        let bytes_v1 = reconcile_to_automerge(&doc, None);
+        let bytes_v1 = reconcile_to_automerge(&doc, None).unwrap();
 
         // Second reconcile — loads existing doc (preserving history)
         let doc_v2 = RecipeDocument {
@@ -130,7 +130,7 @@ mod tests {
             recipe,
             is_deleted: false,
         };
-        let bytes_v2 = reconcile_to_automerge(&doc_v2, Some(&bytes_v1));
+        let bytes_v2 = reconcile_to_automerge(&doc_v2, Some(&bytes_v1)).unwrap();
 
         // Verify the updated doc has the new name
         let hydrated: RecipeDocument = hydrate_from_automerge(&bytes_v2).unwrap();
@@ -180,7 +180,7 @@ mod tests {
             is_deleted: false,
         };
 
-        let bytes = reconcile_to_automerge(&doc, None);
+        let bytes = reconcile_to_automerge(&doc, None).unwrap();
         let hydrated: RecipeDocument = hydrate_from_automerge(&bytes).unwrap();
         assert_eq!(hydrated.name, "Belgian Ale");
         assert!(hydrated.recipe.style.is_some());
@@ -199,7 +199,7 @@ mod tests {
                 is_deleted: false,
             },
             None,
-        );
+        ).unwrap();
 
         let row = RecipeRow {
             id: "row-id".to_string(),

@@ -1,11 +1,11 @@
-import { InlineEditable } from '@/components/inline-editable';
-import { EditableStyleSelector } from '@/components/editable-style-selector';
-import { DeleteRecipeDialog } from '@/components/delete-recipe-dialog';
-import { BrewBatchDialog } from '@/components/brew-batch-dialog';
-import type { RecipeDocument } from '@/lib/db/recipes';
-import { getRecipeDb, recipeKeys } from '@/lib/db/recipes';
-import { useQueryClient } from '@tanstack/react-query';
-import { get_styles } from 'brewdio-wasm';
+import { InlineEditable } from "@/components/inline-editable";
+import { EditableStyleSelector } from "@/components/editable-style-selector";
+import { DeleteRecipeDialog } from "@/components/delete-recipe-dialog";
+import { BrewBatchDialog } from "@/components/brew-batch-dialog";
+import type { RecipeDocument } from "@/lib/db/recipes";
+import { getRecipeDb, recipeKeys } from "@/lib/db/recipes";
+import { useQueryClient } from "@tanstack/react-query";
+import { get_styles } from "brewdio-wasm";
 
 interface RecipeHeaderProps {
   recipe: RecipeDocument;
@@ -39,7 +39,17 @@ export function RecipeHeader({
 
     const db = getRecipeDb();
     const updated = structuredClone(recipe.recipe);
-    updated.style = selectedStyle as any;
+    // Extract only StyleBase fields for RecipeStyleType
+    // (StyleType has extra fields that cause autosurgeon reconcile to fail)
+    updated.style = {
+      name: selectedStyle.name,
+      category: selectedStyle.category,
+      category_number: selectedStyle.category_number,
+      style_guide: selectedStyle.style_guide,
+      style_letter: selectedStyle.style_letter,
+      type: (selectedStyle as any).type,
+    } as any;
+    console.log(updated);
     db.update_recipe(recipe.id, updated.name, updated as any);
     queryClient.invalidateQueries({ queryKey: recipeKeys.all });
     queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipe.id) });

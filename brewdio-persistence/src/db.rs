@@ -2,7 +2,7 @@ use brewdio_core::beerjson_types::RecipeType;
 
 use crate::batch::{self, BatchDocument};
 use crate::connection::{Connection, DbError, Value};
-use crate::automerge::{extract_fields_from_automerge, extract_string_field_from_automerge, hydrate_from_automerge, reconcile_to_automerge};
+use crate::automerge::{extract_fields_from_automerge, extract_string_field_from_automerge, hydrate_from_automerge, new_ulid, reconcile_to_automerge};
 use crate::protocol::DocType;
 use crate::recipe::{RecipeDocument, RecipeRow};
 use crate::settings::{self, SettingsDocument};
@@ -24,7 +24,7 @@ pub fn create_recipe(
     name: &str,
     recipe: &RecipeType,
 ) -> Result<RecipeRow, DbError> {
-    let id = ulid::Ulid::new().to_string();
+    let id = new_ulid();
     let recipe_json = serde_json::to_string(recipe).expect("Failed to serialize recipe");
 
     let doc = RecipeDocument {
@@ -33,7 +33,7 @@ pub fn create_recipe(
         recipe: recipe.clone(),
         is_deleted: false,
     };
-    let am_data = reconcile_to_automerge(&doc, None);
+    let am_data = reconcile_to_automerge(&doc, None).map_err(|e| DbError(e))?;
 
     conn.execute(
         "INSERT INTO recipe (id, name, recipe, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
@@ -86,7 +86,7 @@ pub fn update_recipe(
         recipe: recipe.clone(),
         is_deleted: false,
     };
-    let am_data = reconcile_to_automerge(&doc, existing_am);
+    let am_data = reconcile_to_automerge(&doc, existing_am).map_err(|e| DbError(e))?;
 
     conn.execute(
         "UPDATE recipe SET name = ?1, recipe = ?2, am_data = ?3, is_dirty = TRUE WHERE id = ?4",
@@ -120,7 +120,7 @@ pub fn undelete_recipe(conn: &(impl Connection + ?Sized), id: &str) -> Result<()
     if let Some(row) = existing {
         let mut doc = row.to_document().expect("Failed to deserialize recipe");
         doc.is_deleted = false;
-        let am_data = reconcile_to_automerge(&doc, Some(&row.am_data));
+        let am_data = reconcile_to_automerge(&doc, Some(&row.am_data)).map_err(|e| DbError(e))?;
 
         conn.execute(
             "UPDATE recipe SET is_deleted = FALSE, is_dirty = TRUE, am_data = ?1 WHERE id = ?2",
@@ -137,7 +137,7 @@ pub fn delete_recipe(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), 
     if let Some(row) = existing {
         let mut doc = row.to_document().expect("Failed to deserialize recipe");
         doc.is_deleted = true;
-        let am_data = reconcile_to_automerge(&doc, Some(&row.am_data));
+        let am_data = reconcile_to_automerge(&doc, Some(&row.am_data)).map_err(|e| DbError(e))?;
 
         conn.execute(
             "UPDATE recipe SET is_deleted = TRUE, is_dirty = TRUE, am_data = ?1 WHERE id = ?2",
@@ -564,7 +564,7 @@ mod tests {
             recipe: sample_recipe(),
             is_deleted: false,
         };
-        let am_data = reconcile_to_automerge(&doc, None);
+        let am_data = reconcile_to_automerge(&doc, None).unwrap();
 
         apply_remote_merge(&conn, "remote-id", &am_data).unwrap();
 
@@ -587,7 +587,7 @@ mod tests {
             recipe: sample_recipe(),
             is_deleted: false,
         };
-        let am_data = reconcile_to_automerge(&doc, None);
+        let am_data = reconcile_to_automerge(&doc, None).unwrap();
 
         apply_remote_merge(&conn, &row.id, &am_data).unwrap();
 
