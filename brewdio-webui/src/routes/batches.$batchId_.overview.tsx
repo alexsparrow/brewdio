@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useBatch, updateBatchImperative, batchKeys } from "@/lib/db/batches";
 import { useQueryClient } from "@tanstack/react-query";
-import { get_equipment } from "brewdio-wasm";
+import { getEquipment } from "brewdio-wasm";
 import { EditableNotes } from "@/components/editable-notes";
 import { InlineEditable } from "@/components/inline-editable";
 import { useEffect } from "react";
@@ -10,7 +10,7 @@ import { stores } from "@/lib/calculate";
 import { RetroCockpitDial } from "@/components/retro-cockpit-dial";
 import { GravitySightGlass } from "@/components/gravity-sight-glass";
 import { Screw } from "@/components/screw";
-import { srm_to_srgb, rgb_to_hex, color_to_srm, style_for_recipe } from "brewdio-wasm";
+import { srmToSrgb, rgbToHex, colorToSrm, styleForRecipe } from "brewdio-wasm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info, Calendar } from "lucide-react";
 import { GrainIcon, HopIcon, YeastIcon } from "@/components/ingredient-icons";
@@ -34,9 +34,9 @@ function getFermentableColorHex(fermentable: FermentableAdditionType): string | 
   }
 
   try {
-    const srm = color_to_srm(colorData);
-    const rgb = srm_to_srgb(srm) as [number, number, number];
-    return rgb_to_hex(rgb[0], rgb[1], rgb[2]);
+    const srm = colorToSrm(colorData);
+    const rgb = srmToSrgb(srm) as [number, number, number];
+    return rgbToHex(rgb[0], rgb[1], rgb[2]);
   } catch {
     return undefined;
   }
@@ -48,7 +48,7 @@ function BatchOverviewComponent() {
   const queryClient = useQueryClient();
 
   // Static equipment data
-  const equipmentProfiles = get_equipment();
+  const equipmentProfiles = getEquipment();
 
   const og = useCalculation<number>("og");
   const fg = useCalculation<number>("fg");
@@ -116,14 +116,14 @@ function BatchOverviewComponent() {
     updateBatch(() => ({ brewDate: timestamp }));
   };
 
-  const liquidColor = color ? (() => { const rgb = srm_to_srgb(color) as [number, number, number]; return rgb_to_hex(rgb[0], rgb[1], rgb[2]); })() : "#FBB123";
+  const liquidColor = color ? (() => { const rgb = srmToSrgb(color) as [number, number, number]; return rgbToHex(rgb[0], rgb[1], rgb[2]); })() : "#FBB123";
 
   // Format brew date for display and input
   const brewDate = new Date(batch.brewDate);
   const brewDateInputValue = brewDate.toISOString().split('T')[0]; // YYYY-MM-DD format for input
 
   // Extract style ranges if available
-  const fullStyle = style_for_recipe(beerRecipe);
+  const fullStyle = styleForRecipe(beerRecipe);
   const styleRanges = fullStyle ? {
     og: fullStyle.original_gravity ? {
       min: fullStyle.original_gravity.minimum?.value ?? null,

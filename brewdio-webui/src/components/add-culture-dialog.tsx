@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
 import { Plus } from "lucide-react";
-import { get_cultures } from "brewdio-wasm";
+import { getCultures } from "brewdio-wasm";
 
 interface AddCultureDialogProps {
   existingCulture?: CultureAdditionType;
@@ -49,7 +49,7 @@ export function AddCultureDialog({
     },
     onSubmit: async ({ value }) => {
       // Find the selected culture from the cultures data
-      const selectedCulture = get_cultures().find((c) => c.name === value.cultureName);
+      const selectedCulture = getCultures().find((c) => c.name === value.cultureName);
 
       if (!selectedCulture) {
         return;
@@ -129,7 +129,7 @@ export function AddCultureDialog({
               <div className="space-y-2">
                 <Label htmlFor={field.name}>Yeast Culture</Label>
                 <Combobox
-                  options={get_cultures().map((c) => ({
+                  options={getCultures().map((c) => ({
                     value: c.name,
                     label: `${c.name} (${c.type})`,
                   }))}

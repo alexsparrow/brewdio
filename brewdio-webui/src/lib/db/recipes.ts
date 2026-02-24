@@ -32,13 +32,13 @@ export function getRecipeDb(): RecipeDbClass {
  */
 export function registerChangeCallback(queryClient: QueryClient) {
   const db = getRecipeDb();
-  db.on_recipes_change(() => {
+  db.onRecipesChange(() => {
     queryClient.invalidateQueries({ queryKey: ['recipes'] });
   });
-  db.on_batches_change(() => {
+  db.onBatchesChange(() => {
     queryClient.invalidateQueries({ queryKey: ['batches'] });
   });
-  db.on_settings_change(() => {
+  db.onSettingsChange(() => {
     queryClient.invalidateQueries({ queryKey: ['settings'] });
   });
 }
@@ -62,7 +62,7 @@ export function useRecipes() {
     queryKey: recipeKeys.all,
     queryFn: () => {
       const db = getRecipeDb();
-      return db.list_recipes() as unknown as RecipeDocument[];
+      return db.listRecipes() as unknown as RecipeDocument[];
     },
   });
 }
@@ -73,7 +73,7 @@ export function useRecipe(id: string) {
     queryKey: recipeKeys.detail(id),
     queryFn: () => {
       const db = getRecipeDb();
-      const result = db.get_recipe(id);
+      const result = db.getRecipe(id);
       return (result ?? null) as unknown as RecipeDocument | null;
     },
   });
@@ -88,7 +88,7 @@ export function useCreateRecipe() {
   return useMutation({
     mutationFn: ({ name, recipe }: { name: string; recipe: RecipeType }) => {
       const db = getRecipeDb();
-      const id = db.create_recipe(name, recipe as any);
+      const id = db.createRecipe(name, recipe as any);
       return Promise.resolve(id);
     },
     onSuccess: () => {
@@ -102,7 +102,7 @@ export function useUpdateRecipe() {
   return useMutation({
     mutationFn: ({ id, name, recipe }: { id: string; name: string; recipe: RecipeType }) => {
       const db = getRecipeDb();
-      db.update_recipe(id, name, recipe as any);
+      db.updateRecipe(id, name, recipe as any);
       return Promise.resolve();
     },
     onSuccess: (_data, variables) => {
@@ -117,7 +117,7 @@ export function useDeleteRecipe() {
   return useMutation({
     mutationFn: (id: string) => {
       const db = getRecipeDb();
-      db.delete_recipe(id);
+      db.deleteRecipe(id);
       return Promise.resolve();
     },
     onSuccess: () => {
@@ -133,30 +133,30 @@ export function useDeleteRecipe() {
 /** Create a recipe imperatively. Returns the new recipe ID. */
 export function createRecipeImperative(name: string, recipe: RecipeType): string {
   const db = getRecipeDb();
-  return db.create_recipe(name, recipe as any);
+  return db.createRecipe(name, recipe as any);
 }
 
 /** Update a recipe imperatively. */
 export function updateRecipeImperative(id: string, name: string, recipe: RecipeType): void {
   const db = getRecipeDb();
-  db.update_recipe(id, name, recipe as any);
+  db.updateRecipe(id, name, recipe as any);
 }
 
 /** Delete a recipe imperatively. */
 export function deleteRecipeImperative(id: string): void {
   const db = getRecipeDb();
-  db.delete_recipe(id);
+  db.deleteRecipe(id);
 }
 
 /** List all recipes imperatively. */
 export function listRecipesImperative(): RecipeDocument[] {
   const db = getRecipeDb();
-  return db.list_recipes() as unknown as RecipeDocument[];
+  return db.listRecipes() as unknown as RecipeDocument[];
 }
 
 /** Get a recipe by ID imperatively. */
 export function getRecipeImperative(id: string): RecipeDocument | null {
   const db = getRecipeDb();
-  const result = db.get_recipe(id);
+  const result = db.getRecipe(id);
   return (result ?? null) as unknown as RecipeDocument | null;
 }

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { calculate_water_from_stages } from 'brewdio-wasm';
+import { calculateWaterFromStages } from 'brewdio-wasm';
 import type { WaterStage, WaterStageType, StageCalculationResult, CalculatedWaterStage } from 'brewdio-wasm';
 
 // --- Constants & Layout ---
@@ -106,7 +106,7 @@ const WaterCalculator: React.FC = () => {
 
   // --- Calculation Logic (via WASM) ---
   const data = useMemo((): StageCalculationResult => {
-    return calculate_water_from_stages(targetVolume, boilTime, stages as any) as StageCalculationResult;
+    return calculateWaterFromStages(targetVolume, boilTime, stages as any) as StageCalculationResult;
   }, [targetVolume, boilTime, stages]);
 
   // Handlers

@@ -23,9 +23,9 @@ import { Plus, Trash2 } from "lucide-react";
 import { BreweryVisualization, type TankShape } from "@/components/brewery-visualization";
 import { BreweryBatchSettings } from "@/components/brewery-batch-settings";
 import { BreweryLossControls, type CalculatedStage } from "@/components/brewery-loss-controls";
-import { get_equipment } from "brewdio-wasm";
+import { getEquipment } from "brewdio-wasm";
 import type { EquipmentItemType } from "brewdio-wasm";
-import { volume_to_gallons, specific_volume_to_gallons_per_kilogram } from "brewdio-wasm";
+import { volumeToGallons, specificVolumeToGallonsPerKilogram } from "brewdio-wasm";
 
 export const Route = createFileRoute("/brewery")({
   component: BreweryComponent,
@@ -82,7 +82,7 @@ function getLossLabel(item: EquipmentItemType): string {
 function BreweryComponent() {
   // Static equipment data from WASM (read-only for now)
   const equipmentProfiles = useMemo(() => {
-    const profiles = get_equipment();
+    const profiles = getEquipment();
     return profiles.map((e) => ({
       id: e.name.toLowerCase().replace(/\s+/g, '-'),
       equipment: e,
@@ -136,18 +136,18 @@ function BreweryComponent() {
       // Calculate loss based on type
       if (item.grain_absorption_rate) {
         // Grain absorption: rate * grain weight
-        const rateInGalPerKg = specific_volume_to_gallons_per_kilogram(item.grain_absorption_rate);
+        const rateInGalPerKg = specificVolumeToGallonsPerKilogram(item.grain_absorption_rate);
         stageLossTotal += rateInGalPerKg * grainWeight;
       }
 
       if (item.boil_rate_per_hour) {
         // Boil off: rate * time
-        const rateInGalPerHr = volume_to_gallons(item.boil_rate_per_hour);
+        const rateInGalPerHr = volumeToGallons(item.boil_rate_per_hour);
         stageLossTotal += rateInGalPerHr * (boilTime / 60);
       }
 
       // Add static loss
-      const staticLoss = volume_to_gallons(item.loss);
+      const staticLoss = volumeToGallons(item.loss);
       stageLossTotal += staticLoss;
 
       const volIn = currentVol + stageLossTotal;

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { srm_to_srgb, rgb_to_hex } from "brewdio-wasm";
+import { srmToSrgb, rgbToHex } from "brewdio-wasm";
 
 // --- Types & Interfaces ---
 
@@ -278,7 +278,7 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
                   key={i}
                   d={smallPath}
                   fill="none"
-                  stroke={(() => { const rgb = srm_to_srgb(value1) as [number, number, number]; return rgb_to_hex(rgb[0], rgb[1], rgb[2]); })()}
+                  stroke={(() => { const rgb = srmToSrgb(value1) as [number, number, number]; return rgbToHex(rgb[0], rgb[1], rgb[2]); })()}
                   strokeWidth="12"
                   strokeLinecap="butt"
                   strokeOpacity="0.9"

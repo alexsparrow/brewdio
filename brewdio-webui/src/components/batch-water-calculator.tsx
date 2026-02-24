@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { WaterFlowVisualization } from './water-flow-visualization';
-import { calculate_water } from 'brewdio-wasm';
+import { calculateWater } from 'brewdio-wasm';
 import type { CalculatedWaterStage, WaterCalculatorResult } from 'brewdio-wasm';
 import type { BatchDocument } from '@/lib/db/batches';
 
@@ -21,7 +21,7 @@ export function BatchWaterCalculator({ batch, beerColor = "#F59E0B" }: BatchWate
       units: { volume_unit: "gal", temperature_unit: "F" },
     };
 
-    return calculate_water(input as any) as WaterCalculatorResult;
+    return calculateWater(input as any) as WaterCalculatorResult;
   }, [batch]);
 
   const stages: CalculatedWaterStage[] = result.calculatedStages;

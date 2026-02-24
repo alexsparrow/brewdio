@@ -17,7 +17,7 @@ import { stores } from "@/lib/calculate";
 import { RetroCockpitDial } from "@/components/retro-cockpit-dial";
 import { GravitySightGlass } from "@/components/gravity-sight-glass";
 import { Screw } from "@/components/screw";
-import { srm_to_srgb, rgb_to_hex, color_to_srm, style_for_recipe } from "brewdio-wasm";
+import { srmToSrgb, rgbToHex, colorToSrm, styleForRecipe } from "brewdio-wasm";
 import { GrainIcon, HopIcon, YeastIcon } from "@/components/ingredient-icons";
 import type { FermentableAdditionType, RecipeType, VolumeUnitType, TimeUnitType } from "brewdio-wasm";
 
@@ -37,9 +37,9 @@ function getFermentableColorHex(fermentable: FermentableAdditionType): string | 
   }
 
   try {
-    const srm = color_to_srm(colorData);
-    const rgb = srm_to_srgb(srm) as [number, number, number];
-    return rgb_to_hex(rgb[0], rgb[1], rgb[2]);
+    const srm = colorToSrm(colorData);
+    const rgb = srmToSrgb(srm) as [number, number, number];
+    return rgbToHex(rgb[0], rgb[1], rgb[2]);
   } catch {
     return undefined;
   }
@@ -60,7 +60,7 @@ function RecipeDetailComponent() {
   const styleRanges = useMemo(() => {
     if (!recipe?.recipe) return null;
 
-    const style = style_for_recipe(recipe.recipe);
+    const style = styleForRecipe(recipe.recipe);
     if (!style) return null;
 
     // Helper to convert beerjson range types to simple min/max
@@ -86,7 +86,7 @@ function RecipeDetailComponent() {
     const updated = structuredClone(recipe.recipe);
     mutateFn(updated);
     const db = getRecipeDb();
-    db.update_recipe(recipeId, updated.name, updated as any);
+    db.updateRecipe(recipeId, updated.name, updated as any);
     queryClient.invalidateQueries({ queryKey: recipeKeys.all });
     queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipeId) });
   };
@@ -182,7 +182,7 @@ function RecipeDetailComponent() {
     updateRecipe((r) => { r.notes = newNotes; });
   };
 
-  const liquidColor = color ? (() => { const rgb = srm_to_srgb(color) as [number, number, number]; return rgb_to_hex(rgb[0], rgb[1], rgb[2]); })() : "#FBB123";
+  const liquidColor = color ? (() => { const rgb = srmToSrgb(color) as [number, number, number]; return rgbToHex(rgb[0], rgb[1], rgb[2]); })() : "#FBB123";
 
   return (
     <RecipeEditProvider

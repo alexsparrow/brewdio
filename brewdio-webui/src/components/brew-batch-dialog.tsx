@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useBatches, createBatchImperative, batchKeys } from "@/lib/db/batches";
 import { useQueryClient } from "@tanstack/react-query";
 import type { RecipeDocument } from "@/lib/db/recipes";
-import { get_equipment } from "brewdio-wasm";
+import { getEquipment } from "brewdio-wasm";
 import {
   Dialog,
   DialogContent,
@@ -28,7 +28,7 @@ export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
   const queryClient = useQueryClient();
 
   // Static equipment data
-  const equipmentProfiles = get_equipment();
+  const equipmentProfiles = getEquipment();
   const defaultEquipment = equipmentProfiles[0];
 
   const [open, setOpen] = useState(false);

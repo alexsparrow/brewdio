@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
 import { Plus } from "lucide-react";
-import { get_hops } from "brewdio-wasm";
+import { getHops } from "brewdio-wasm";
 
 interface AddHopDialogProps {
   existingHop?: HopAdditionType;
@@ -54,7 +54,7 @@ export function AddHopDialog({
     },
     onSubmit: async ({ value }) => {
       // Find the selected hop from the hops data
-      const selectedHop = get_hops().find((h) => h.name === value.hopName);
+      const selectedHop = getHops().find((h) => h.name === value.hopName);
 
       if (!selectedHop) {
         return;
@@ -154,7 +154,7 @@ export function AddHopDialog({
               <div className="space-y-2">
                 <Label htmlFor={field.name}>Hop Variety</Label>
                 <Combobox
-                  options={get_hops().map((h) => ({
+                  options={getHops().map((h) => ({
                     value: h.name,
                     label: `${h.name} (${h.origin})`,
                   }))}

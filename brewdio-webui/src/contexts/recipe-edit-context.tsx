@@ -44,12 +44,12 @@ export function RecipeEditProvider({
         // Use WASM db for recipes
         const db = getRecipeDb();
         // Get the current recipe from the db to ensure we have the latest
-        const current = db.get_recipe(id) as unknown as RecipeDocument | null;
+        const current = db.getRecipe(id) as unknown as RecipeDocument | null;
         if (!current) return;
         // Apply the draft function to a mutable copy
         const draft = { recipe: structuredClone(current.recipe) } as { recipe: RecipeType; updatedAt?: number };
         draftFn(draft);
-        db.update_recipe(id, draft.recipe.name, draft.recipe as any);
+        db.updateRecipe(id, draft.recipe.name, draft.recipe as any);
         // Invalidate queries so UI updates
         queryClient.invalidateQueries({ queryKey: recipeKeys.all });
         queryClient.invalidateQueries({ queryKey: recipeKeys.detail(id) });

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Check, X } from "lucide-react";
 import type { CalculatedStage } from "@/components/brewery-visualization";
 import type { EquipmentItemType } from "brewdio-wasm";
-import { volume_to_gallons } from "brewdio-wasm";
+import { volumeToGallons } from "brewdio-wasm";
 
 // Export CalculatedStage type from brewery-visualization to avoid duplication
 export type { CalculatedStage };
@@ -75,7 +75,7 @@ export const BreweryLossControls: React.FC<BreweryLossControlsProps> = ({
   }
 
   const currentLossValue = stage.equipmentItem
-    ? volume_to_gallons(stage.equipmentItem.loss)
+    ? volumeToGallons(stage.equipmentItem.loss)
     : 0;
 
   // Calculate individual loss contributions
@@ -85,7 +85,7 @@ export const BreweryLossControls: React.FC<BreweryLossControlsProps> = ({
   const grainAbsorptionLoss = grainAbsorptionRate * grainWeight;
 
   const boilRate = stage.equipmentItem?.boil_rate_per_hour
-    ? volume_to_gallons(stage.equipmentItem.boil_rate_per_hour)
+    ? volumeToGallons(stage.equipmentItem.boil_rate_per_hour)
     : 0;
   const boilLoss = boilRate * (boilTime / 60);
 

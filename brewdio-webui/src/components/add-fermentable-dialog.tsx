@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Combobox } from "@/components/ui/combobox";
 import { Plus } from "lucide-react";
-import { get_fermentables } from "brewdio-wasm";
+import { getFermentables } from "brewdio-wasm";
 
 interface AddFermentableDialogProps {
   existingFermentable?: FermentableAdditionType;
@@ -51,7 +51,7 @@ export function AddFermentableDialog({
     },
     onSubmit: async ({ value }) => {
       // Find the selected fermentable from the fermentables data
-      const selectedFermentable = get_fermentables().find((f) => f.name === value.fermentableName);
+      const selectedFermentable = getFermentables().find((f) => f.name === value.fermentableName);
 
       if (!selectedFermentable) {
         return;
@@ -131,7 +131,7 @@ export function AddFermentableDialog({
               <div className="space-y-2">
                 <Label htmlFor={field.name}>Fermentable</Label>
                 <Combobox
-                  options={get_fermentables().map((f) => ({
+                  options={getFermentables().map((f) => ({
                     value: f.name,
                     label: `${f.name} (${f.type})`,
                   }))}

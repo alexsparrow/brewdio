@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import initWasm, { RecipeDb, init_persistent_storage } from "brewdio-wasm";
+import initWasm, { RecipeDb, initPersistentStorage } from "brewdio-wasm";
 import { initRecipeDb, registerChangeCallback } from "@/lib/db/recipes";
 import "./index.css";
 
@@ -27,7 +27,7 @@ async function init() {
   await initWasm();
 
   try {
-    await init_persistent_storage();
+    await initPersistentStorage();
     console.log("[brewdio] Persistent storage initialized (IndexedDB VFS)");
   } catch (e) {
     console.warn("[brewdio] Failed to initialize persistent storage, falling back to in-memory:", e);

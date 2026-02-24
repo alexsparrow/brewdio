@@ -1,6 +1,6 @@
 import { createRecipeImperative, updateRecipeImperative, deleteRecipeImperative } from '@/lib/db/recipes';
 import type { RecipeType, StyleType } from 'brewdio-wasm';
-import { get_styles, get_mash_profiles } from 'brewdio-wasm';
+import { getStyles, getMashProfiles } from 'brewdio-wasm';
 
 export interface CreateRecipeParams {
   name: string;
@@ -22,14 +22,14 @@ export async function createRecipe(params: CreateRecipeParams): Promise<string> 
   const { name, batchSize, batchSizeUnit = 'gal', styleName, author = 'Brewdio User' } = params;
 
   // Find the selected style from the styles data
-  const selectedStyle = get_styles().find((s) => s.name === styleName);
+  const selectedStyle = getStyles().find((s) => s.name === styleName);
 
   if (!selectedStyle) {
     throw new Error(`Style "${styleName}" not found`);
   }
 
   // Use default mash profile from static data
-  const mashProfiles = get_mash_profiles();
+  const mashProfiles = getMashProfiles();
   const defaultMash = mashProfiles[0]; // "Single Infusion (F)"
 
   // Create a basic BeerJSON recipe
@@ -119,5 +119,5 @@ export async function deleteRecipe(recipeId: string): Promise<void> {
  * Get all available beer styles
  */
 export function getAvailableStyles(): Array<{ name: string; category: string }> {
-  return get_styles().map((s) => ({ name: s.name, category: s.category }));
+  return getStyles().map((s) => ({ name: s.name, category: s.category }));
 }

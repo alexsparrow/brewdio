@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { get_mash_profiles } from "brewdio-wasm";
+import { getMashProfiles } from "brewdio-wasm";
 import { useRecipeEdit } from "@/contexts/recipe-edit-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,7 +51,7 @@ function newDefaultStep(): MashStepType {
 export function RecipeMashSection() {
   const { update, document: recipe } = useRecipeEdit();
   const mashProfiles = useMemo(() => {
-    const profiles = get_mash_profiles();
+    const profiles = getMashProfiles();
     return profiles.map((p) => ({
       id: p.name.toLowerCase().replace(/\s+/g, "-"),
       mashProfile: p,

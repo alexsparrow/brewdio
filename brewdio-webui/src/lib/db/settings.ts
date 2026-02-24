@@ -42,7 +42,7 @@ export function useSettings() {
     queryKey: settingsKeys.all,
     queryFn: () => {
       const db = getRecipeDb();
-      const raw = db.get_settings() as unknown as SettingsDocument | null;
+      const raw = db.getSettings() as unknown as SettingsDocument | null;
       return raw ?? DEFAULT_SETTINGS;
     },
   });
@@ -54,13 +54,13 @@ export function useSettings() {
 
 export function getSettingsImperative(): SettingsDocument {
   const db = getRecipeDb();
-  const raw = db.get_settings() as unknown as SettingsDocument | null;
+  const raw = db.getSettings() as unknown as SettingsDocument | null;
   return raw ?? DEFAULT_SETTINGS;
 }
 
 export function saveSettingsImperative(settings: SettingsDocument): void {
   const db = getRecipeDb();
-  db.save_settings(settings as any);
+  db.saveSettings(settings as any);
 }
 
 // ---------------------------------------------------------------------------

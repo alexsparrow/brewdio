@@ -81,7 +81,7 @@ export function useBatches() {
     queryKey: batchKeys.all,
     queryFn: () => {
       const db = getRecipeDb();
-      const raws = db.list_batches() as unknown as BatchRaw[];
+      const raws = db.listBatches() as unknown as BatchRaw[];
       return raws.map(rawToBatchDoc);
     },
   });
@@ -92,7 +92,7 @@ export function useBatch(id: string) {
     queryKey: batchKeys.detail(id),
     queryFn: () => {
       const db = getRecipeDb();
-      const raw = db.get_batch(id) as unknown as BatchRaw | null;
+      const raw = db.getBatch(id) as unknown as BatchRaw | null;
       return raw ? rawToBatchDoc(raw) : null;
     },
   });
@@ -108,7 +108,7 @@ export function createBatchImperative(
   data: Omit<BatchDocument, 'id' | 'name' | 'recipeId'>,
 ): string {
   const db = getRecipeDb();
-  return db.create_batch(name, recipeId, batchDocToData(data) as any);
+  return db.createBatch(name, recipeId, batchDocToData(data) as any);
 }
 
 export function updateBatchImperative(
@@ -117,17 +117,17 @@ export function updateBatchImperative(
   data: Omit<BatchDocument, 'id' | 'name' | 'recipeId'>,
 ): void {
   const db = getRecipeDb();
-  db.update_batch(id, name, batchDocToData(data) as any);
+  db.updateBatch(id, name, batchDocToData(data) as any);
 }
 
 export function deleteBatchImperative(id: string): void {
   const db = getRecipeDb();
-  db.delete_batch(id);
+  db.deleteBatch(id);
 }
 
 export function listBatchesImperative(): BatchDocument[] {
   const db = getRecipeDb();
-  const raws = db.list_batches() as unknown as BatchRaw[];
+  const raws = db.listBatches() as unknown as BatchRaw[];
   return raws.map(rawToBatchDoc);
 }
 
