@@ -1,4 +1,4 @@
-use brewdio_core::beerjson_types::RecipeType;
+use brewdio_core::beerjson_types::{EquipmentType, RecipeType};
 use serde::{Deserialize, Serialize};
 
 /// Row representation for SQLite storage.
@@ -7,6 +7,7 @@ pub struct RecipeRow {
     pub id: String,
     pub name: String,
     pub recipe: String,
+    pub equipment: Option<String>,
     pub am_data: Vec<u8>,
     pub is_deleted: bool,
     pub is_dirty: bool,
@@ -18,6 +19,7 @@ pub struct RecipeDocument {
     pub id: String,
     pub name: String,
     pub recipe: RecipeType,
+    pub equipment: Option<EquipmentType>,
     pub is_deleted: bool,
 }
 
@@ -25,10 +27,15 @@ impl RecipeRow {
     /// Deserialize the JSON `recipe` field into a full `RecipeDocument`.
     pub fn to_document(&self) -> Result<RecipeDocument, serde_json::Error> {
         let recipe: RecipeType = serde_json::from_str(&self.recipe)?;
+        let equipment: Option<EquipmentType> = match &self.equipment {
+            Some(json) => Some(serde_json::from_str(json)?),
+            None => None,
+        };
         Ok(RecipeDocument {
             id: self.id.clone(),
             name: self.name.clone(),
             recipe,
+            equipment,
             is_deleted: self.is_deleted,
         })
     }
@@ -38,10 +45,15 @@ impl RecipeDocument {
     /// Serialize back into a `RecipeRow`, pairing with existing Automerge binary data.
     pub fn to_row(&self, am_data: Vec<u8>) -> Result<RecipeRow, serde_json::Error> {
         let recipe_json = serde_json::to_string(&self.recipe)?;
+        let equipment_json = match &self.equipment {
+            Some(eq) => Some(serde_json::to_string(eq)?),
+            None => None,
+        };
         Ok(RecipeRow {
             id: self.id.clone(),
             name: self.name.clone(),
             recipe: recipe_json,
+            equipment: equipment_json,
             am_data,
             is_deleted: self.is_deleted,
             is_dirty: true,
@@ -93,6 +105,7 @@ mod tests {
             id: "test-id".to_string(),
             name: "Test IPA".to_string(),
             recipe,
+            equipment: None,
             is_deleted: false,
         };
 
@@ -103,11 +116,30 @@ mod tests {
         assert_eq!(hydrated.id, "test-id");
         assert_eq!(hydrated.name, "Test IPA");
         assert_eq!(hydrated.is_deleted, false);
+        assert!(hydrated.equipment.is_none());
 
         // Verify the recipe survived the roundtrip
         let original_json = serde_json::to_value(&doc.recipe).unwrap();
         let hydrated_json = serde_json::to_value(&hydrated.recipe).unwrap();
         assert_eq!(original_json, hydrated_json);
+    }
+
+    #[test]
+    fn automerge_roundtrip_with_equipment() {
+        let recipe: RecipeType = serde_json::from_str(sample_recipe_json()).unwrap();
+        let equipment = brewdio_core::data::equipment()[0].clone();
+        let doc = RecipeDocument {
+            id: "equip-test".to_string(),
+            name: "Equipped IPA".to_string(),
+            recipe,
+            equipment: Some(equipment.clone()),
+            is_deleted: false,
+        };
+
+        let bytes = reconcile_to_automerge(&doc, None).unwrap();
+        let hydrated: RecipeDocument = hydrate_from_automerge(&bytes).unwrap();
+        assert!(hydrated.equipment.is_some());
+        assert_eq!(hydrated.equipment.unwrap().name, equipment.name);
     }
 
     #[test]
@@ -117,6 +149,7 @@ mod tests {
             id: "test-id".to_string(),
             name: "Test IPA".to_string(),
             recipe: recipe.clone(),
+            equipment: None,
             is_deleted: false,
         };
 
@@ -128,6 +161,7 @@ mod tests {
             id: "test-id".to_string(),
             name: "Updated IPA".to_string(),
             recipe,
+            equipment: None,
             is_deleted: false,
         };
         let bytes_v2 = reconcile_to_automerge(&doc_v2, Some(&bytes_v1)).unwrap();
@@ -177,6 +211,7 @@ mod tests {
             id: "style-test".to_string(),
             name: "Belgian Ale".to_string(),
             recipe,
+            equipment: None,
             is_deleted: false,
         };
 
@@ -196,6 +231,7 @@ mod tests {
                 id: "row-id".to_string(),
                 name: "Row Test".to_string(),
                 recipe: recipe.clone(),
+                equipment: None,
                 is_deleted: false,
             },
             None,
@@ -205,6 +241,7 @@ mod tests {
             id: "row-id".to_string(),
             name: "Row Test".to_string(),
             recipe: serde_json::to_string(&recipe).unwrap(),
+            equipment: None,
             am_data: am_data.clone(),
             is_deleted: false,
             is_dirty: true,
@@ -213,8 +250,44 @@ mod tests {
         let doc = row.to_document().unwrap();
         assert_eq!(doc.id, "row-id");
         assert_eq!(doc.name, "Row Test");
+        assert!(doc.equipment.is_none());
 
         let back = doc.to_row(am_data).unwrap();
         assert_eq!(back.id, "row-id");
+        assert!(back.equipment.is_none());
+    }
+
+    #[test]
+    fn row_document_conversion_with_equipment() {
+        let recipe_json = sample_recipe_json();
+        let recipe: RecipeType = serde_json::from_str(recipe_json).unwrap();
+        let equipment = brewdio_core::data::equipment()[0].clone();
+        let am_data = reconcile_to_automerge(
+            &RecipeDocument {
+                id: "row-eq-id".to_string(),
+                name: "Equipped Row".to_string(),
+                recipe: recipe.clone(),
+                equipment: Some(equipment.clone()),
+                is_deleted: false,
+            },
+            None,
+        ).unwrap();
+
+        let row = RecipeRow {
+            id: "row-eq-id".to_string(),
+            name: "Equipped Row".to_string(),
+            recipe: serde_json::to_string(&recipe).unwrap(),
+            equipment: Some(serde_json::to_string(&equipment).unwrap()),
+            am_data: am_data.clone(),
+            is_deleted: false,
+            is_dirty: true,
+        };
+
+        let doc = row.to_document().unwrap();
+        assert!(doc.equipment.is_some());
+        assert_eq!(doc.equipment.as_ref().unwrap().name, "Default Setup");
+
+        let back = doc.to_row(am_data).unwrap();
+        assert!(back.equipment.is_some());
     }
 }

@@ -4,14 +4,14 @@ use sqlite_wasm_rs::export::{
     sqlite3, sqlite3_stmt, SQLITE_DONE, SQLITE_OK, SQLITE_ROW,
 };
 use sqlite_wasm_rs::{
-    SQLITE_TRANSIENT, sqlite3_bind_blob, sqlite3_bind_int, sqlite3_bind_text, sqlite3_close,
-    sqlite3_column_blob, sqlite3_column_bytes, sqlite3_column_count, sqlite3_column_int,
-    sqlite3_column_text, sqlite3_errmsg, sqlite3_exec, sqlite3_finalize, sqlite3_open,
-    sqlite3_prepare_v2, sqlite3_step,
+    SQLITE_TRANSIENT, sqlite3_bind_blob, sqlite3_bind_int, sqlite3_bind_null, sqlite3_bind_text,
+    sqlite3_close, sqlite3_column_blob, sqlite3_column_bytes, sqlite3_column_count,
+    sqlite3_column_int, sqlite3_column_text, sqlite3_errmsg, sqlite3_exec, sqlite3_finalize,
+    sqlite3_open, sqlite3_prepare_v2, sqlite3_step,
 };
 use std::ffi::CStr;
 
-use crate::connection::{Connection, DbError, Row, Value, MIGRATION_SQL};
+use crate::connection::{run_migrations, Connection, DbError, Row, Value};
 
 /// Install the relaxed-idb VFS (IndexedDB-backed) and set it as the default VFS.
 /// Must be called once before opening any persistent database.
@@ -77,16 +77,6 @@ unsafe fn bind_blob(stmt: *mut sqlite3_stmt, idx: i32, val: &[u8]) -> i32 {
     )
 }
 
-unsafe fn column_text(stmt: *mut sqlite3_stmt, idx: i32) -> String {
-    let ptr = sqlite3_column_text(stmt, idx);
-    if ptr.is_null() {
-        return String::new();
-    }
-    CStr::from_ptr(ptr as *const i8)
-        .to_string_lossy()
-        .into_owned()
-}
-
 unsafe fn column_blob(stmt: *mut sqlite3_stmt, idx: i32) -> Vec<u8> {
     let ptr = sqlite3_column_blob(stmt, idx);
     let len = sqlite3_column_bytes(stmt, idx) as usize;
@@ -103,13 +93,17 @@ struct WasmRow {
 }
 
 struct WasmCol {
-    text: String,
+    text: Option<String>,
     blob: Vec<u8>,
     int: i32,
 }
 
 impl Row for WasmRow {
     fn get_text(&self, idx: usize) -> String {
+        self.cols[idx].text.clone().unwrap_or_default()
+    }
+
+    fn get_optional_text(&self, idx: usize) -> Option<String> {
         self.cols[idx].text.clone()
     }
 
@@ -146,24 +140,9 @@ impl WasmConnection {
                 )));
             }
 
-            // Null-terminate the shared migration SQL for sqlite3_exec
-            let mut migration_bytes = MIGRATION_SQL.as_bytes().to_vec();
-            migration_bytes.push(0);
-            let rc = sqlite3_exec(
-                db,
-                migration_bytes.as_ptr() as *const i8,
-                None,
-                std::ptr::null_mut(),
-                std::ptr::null_mut(),
-            );
-            if rc != 0 {
-                return Err(DbError(format!(
-                    "Failed to run migrations: {}",
-                    last_error(db)
-                )));
-            }
-
-            Ok(Self { db })
+            let conn = Self { db };
+            run_migrations(&conn)?;
+            Ok(conn)
         }
     }
 
@@ -185,6 +164,12 @@ impl Connection for WasmConnection {
                 match param {
                     Value::Text(s) => {
                         bind_text(stmt, idx, s);
+                    }
+                    Value::OptionalText(Some(s)) => {
+                        bind_text(stmt, idx, s);
+                    }
+                    Value::OptionalText(None) => {
+                        sqlite3_bind_null(stmt, idx);
                     }
                     Value::Blob(b) => {
                         bind_blob(stmt, idx, b);
@@ -240,6 +225,12 @@ impl Connection for WasmConnection {
                     Value::Text(s) => {
                         bind_text(stmt, idx, s);
                     }
+                    Value::OptionalText(Some(s)) => {
+                        bind_text(stmt, idx, s);
+                    }
+                    Value::OptionalText(None) => {
+                        sqlite3_bind_null(stmt, idx);
+                    }
                     Value::Blob(b) => {
                         bind_blob(stmt, idx, b);
                     }
@@ -265,7 +256,16 @@ impl Connection for WasmConnection {
                         // SQLite, which can corrupt the data that column_blob
                         // would subsequently return.
                         let blob = column_blob(stmt, ci);
-                        let text = column_text(stmt, ci);
+                        let text_ptr = sqlite3_column_text(stmt, ci);
+                        let text = if text_ptr.is_null() {
+                            None
+                        } else {
+                            Some(
+                                CStr::from_ptr(text_ptr as *const i8)
+                                    .to_string_lossy()
+                                    .into_owned(),
+                            )
+                        };
                         let int = sqlite3_column_int(stmt, ci);
                         cols.push(WasmCol { text, blob, int });
                     }

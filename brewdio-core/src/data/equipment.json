@@ -29,5 +29,55 @@
         "loss": { "value": 0, "unit": "gal" }
       }
     ]
+  },
+  {
+    "name": "BIAB (No Sparge)",
+    "equipment_items": [
+      {
+        "name": "Brew Kettle",
+        "form": "Brew Kettle",
+        "maximum_volume": { "value": 15, "unit": "gal" },
+        "loss": { "value": 0.5, "unit": "gal" },
+        "boil_rate_per_hour": { "value": 1.0, "unit": "gal" },
+        "grain_absorption_rate": { "value": 0.96, "unit": "l/kg" }
+      },
+      {
+        "name": "Fermenter",
+        "form": "Fermenter",
+        "maximum_volume": { "value": 10, "unit": "gal" },
+        "loss": { "value": 0.5, "unit": "gal" }
+      },
+      {
+        "name": "Kegging",
+        "form": "Packaging Vessel",
+        "maximum_volume": { "value": 5, "unit": "gal" },
+        "loss": { "value": 0, "unit": "gal" }
+      }
+    ]
+  },
+  {
+    "name": "BIAB (Sparge)",
+    "equipment_items": [
+      {
+        "name": "Brew Kettle",
+        "form": "Brew Kettle",
+        "maximum_volume": { "value": 15, "unit": "gal" },
+        "loss": { "value": 0.5, "unit": "gal" },
+        "boil_rate_per_hour": { "value": 1.0, "unit": "gal" },
+        "grain_absorption_rate": { "value": 0.48, "unit": "l/kg" }
+      },
+      {
+        "name": "Fermenter",
+        "form": "Fermenter",
+        "maximum_volume": { "value": 10, "unit": "gal" },
+        "loss": { "value": 0.5, "unit": "gal" }
+      },
+      {
+        "name": "Kegging",
+        "form": "Packaging Vessel",
+        "maximum_volume": { "value": 5, "unit": "gal" },
+        "loss": { "value": 0, "unit": "gal" }
+      }
+    ]
   }
 ]

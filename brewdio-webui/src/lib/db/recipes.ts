@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
-import type { RecipeType } from 'brewdio-wasm';
+import type { RecipeType, EquipmentType } from 'brewdio-wasm';
 import type { RecipeDb as RecipeDbClass } from 'brewdio-wasm';
 
 // Re-export the recipe document type used throughout the app.
@@ -8,6 +8,7 @@ export interface RecipeDocument {
   id: string;
   name: string;
   recipe: RecipeType;
+  equipment?: EquipmentType;
 }
 
 // ---------------------------------------------------------------------------

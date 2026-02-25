@@ -491,7 +491,7 @@ mod tests {
         let conn = test_conn();
 
         // Create a recipe
-        let row = create_recipe(&conn, "Version 1", &sample_recipe()).unwrap();
+        let row = create_recipe(&conn, "Version 1", &sample_recipe(), None).unwrap();
         let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
         let history = get_change_history(&fetched.am_data);
         assert_eq!(history.len(), 1, "Create should produce 1 change");
@@ -499,7 +499,7 @@ mod tests {
         // First update
         let mut recipe_v2 = sample_recipe();
         recipe_v2.name = "Version 2".to_string();
-        update_recipe(&conn, &row.id, "Version 2", &recipe_v2).unwrap();
+        update_recipe(&conn, &row.id, "Version 2", &recipe_v2, None).unwrap();
         let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
         let history = get_change_history(&fetched.am_data);
         assert_eq!(history.len(), 2, "One update should produce 2 changes");
@@ -507,7 +507,7 @@ mod tests {
         // Second update
         let mut recipe_v3 = sample_recipe();
         recipe_v3.name = "Version 3".to_string();
-        update_recipe(&conn, &row.id, "Version 3", &recipe_v3).unwrap();
+        update_recipe(&conn, &row.id, "Version 3", &recipe_v3, None).unwrap();
         let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
         let history = get_change_history(&fetched.am_data);
         assert_eq!(history.len(), 3, "Two updates should produce 3 changes");
@@ -532,10 +532,10 @@ mod tests {
     fn recipe_history_tracks_delete() {
         let conn = test_conn();
 
-        let row = create_recipe(&conn, "My Beer", &sample_recipe()).unwrap();
+        let row = create_recipe(&conn, "My Beer", &sample_recipe(), None).unwrap();
 
         // Update once
-        update_recipe(&conn, &row.id, "My Beer v2", &sample_recipe()).unwrap();
+        update_recipe(&conn, &row.id, "My Beer v2", &sample_recipe(), None).unwrap();
 
         // Soft-delete
         delete_recipe(&conn, &row.id).unwrap();

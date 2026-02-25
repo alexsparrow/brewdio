@@ -1,11 +1,11 @@
 #![cfg(feature = "native")]
 
-use crate::connection::{Connection, DbError, Row, Value, MIGRATION_SQL};
+use crate::connection::{run_migrations, Connection, DbError, Row, Value};
 
 /// Open a native SQLite database and run migrations.
 pub fn open(path: &str) -> Result<rusqlite::Connection, DbError> {
     let conn = rusqlite::Connection::open(path)?;
-    conn.execute_batch(MIGRATION_SQL)?;
+    run_migrations(&conn)?;
     Ok(conn)
 }
 
@@ -14,6 +14,7 @@ enum OwnedValue {
     Text(String),
     Blob(Vec<u8>),
     Int(i32),
+    Null,
 }
 
 /// A row with pre-extracted column values.
@@ -25,7 +26,16 @@ impl Row for NativeRow {
     fn get_text(&self, idx: usize) -> String {
         match &self.values[idx] {
             OwnedValue::Text(s) => s.clone(),
+            OwnedValue::Int(i) => i.to_string(),
             _ => String::new(),
+        }
+    }
+
+    fn get_optional_text(&self, idx: usize) -> Option<String> {
+        match &self.values[idx] {
+            OwnedValue::Text(s) => Some(s.clone()),
+            OwnedValue::Null => None,
+            _ => None,
         }
     }
 
@@ -48,6 +58,10 @@ impl Row for NativeRow {
 fn to_rusqlite_value<'a>(v: &'a Value<'a>) -> Box<dyn rusqlite::types::ToSql + 'a> {
     match v {
         Value::Text(s) => Box::new(*s),
+        Value::OptionalText(opt) => match opt {
+            Some(s) => Box::new(*s),
+            None => Box::new(rusqlite::types::Null),
+        },
         Value::Blob(b) => Box::new(*b),
         Value::Int(i) => Box::new(*i),
         Value::Bool(b) => Box::new(*b),
@@ -92,7 +106,7 @@ impl Connection for rusqlite::Connection {
                     ValueRef::Blob(b) => OwnedValue::Blob(b.to_vec()),
                     ValueRef::Integer(n) => OwnedValue::Int(n as i32),
                     ValueRef::Real(f) => OwnedValue::Int(f as i32),
-                    ValueRef::Null => OwnedValue::Text(String::new()),
+                    ValueRef::Null => OwnedValue::Null,
                 };
                 values.push(val);
             }

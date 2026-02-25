@@ -271,6 +271,15 @@ fn handle_edit_input(app: &mut App, key: KeyEvent) {
         return;
     }
 
+    if let Some(ref mut selector) = app.equipment_selector {
+        match selector.handle_key(key_code) {
+            search_selector::SearchAction::Confirm(idx) => app.confirm_equipment(idx),
+            search_selector::SearchAction::Cancel => app.cancel_equipment(),
+            search_selector::SearchAction::Nothing => {}
+        }
+        return;
+    }
+
     // Fermentable dialog
     if app.fermentable_dialog.is_some() {
         handle_fermentable_dialog(app, key_code);
@@ -300,6 +309,7 @@ fn handle_edit_input(app: &mut App, key: KeyEvent) {
         KeyCode::Esc | KeyCode::Char('q') => { app.back_to_list(); return; }
         KeyCode::Char('n') => { app.editing_name = true; return; }
         KeyCode::Char('s') => { app.open_style_selector(); return; }
+        KeyCode::Char('e') => { app.open_equipment_selector(); return; }
         KeyCode::Char('v') => { app.open_batch_size_dialog(); return; }
         KeyCode::Char('b') => { app.create_batch_from_current(); return; }
         KeyCode::Char('o') => { app.open_notes_editor(NotesTarget::Recipe); return; }

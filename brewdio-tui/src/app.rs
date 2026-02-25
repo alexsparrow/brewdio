@@ -335,6 +335,7 @@ pub struct App {
     pub name_input: String,
     pub editing_name: bool,
     pub style_selector: Option<SearchSelector>,
+    pub equipment_selector: Option<SearchSelector>,
     pub fermentable_list_index: usize,
     pub fermentable_dialog: Option<FermentableDialog>,
     pub hop_list_index: usize,
@@ -392,6 +393,7 @@ impl App {
             name_input: String::new(),
             editing_name: false,
             style_selector: None,
+            equipment_selector: None,
             fermentable_list_index: 0,
             fermentable_dialog: None,
             hop_list_index: 0,
@@ -525,7 +527,7 @@ impl App {
 
     pub fn create_recipe(&mut self) {
         let recipe = default_recipe();
-        let result = db::create_recipe(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), "New Recipe", &recipe);
+        let result = db::create_recipe(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), "New Recipe", &recipe, None);
         if let Ok(row) = result {
             let id = row.id.clone();
             self.refresh_recipes();
@@ -591,24 +593,24 @@ impl App {
         if let (Screen::RecipeEdit { ref recipe_id }, Some(ref doc)) =
             (&self.screen, &self.current_doc)
         {
-            let equipment_list = brewdio_core::data::equipment();
-            if let Some(equip) = equipment_list.first() {
-                let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
-                let count = batch::count_batches_for_recipe(&*conn, recipe_id).unwrap_or(0);
-                let name = format!("{} Batch {}", doc.name, count + 1);
-                let result = batch::create_batch_from_recipe(
-                    &*conn,
-                    &name,
-                    recipe_id,
-                    &doc.recipe,
-                    equip,
-                );
-                drop(conn);
-                if let Ok(row) = result {
-                    let batch_id = row.id.clone();
-                    self.save_current();
-                    self.open_batch(&batch_id);
-                }
+            let equip = doc.equipment.clone().unwrap_or_else(|| {
+                brewdio_core::data::equipment()[0].clone()
+            });
+            let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
+            let count = batch::count_batches_for_recipe(&*conn, recipe_id).unwrap_or(0);
+            let name = format!("{} Batch {}", doc.name, count + 1);
+            let result = batch::create_batch_from_recipe(
+                &*conn,
+                &name,
+                recipe_id,
+                &doc.recipe,
+                &equip,
+            );
+            drop(conn);
+            if let Ok(row) = result {
+                let batch_id = row.id.clone();
+                self.save_current();
+                self.open_batch(&batch_id);
             }
         }
     }
@@ -631,6 +633,7 @@ impl App {
                 };
                 self.editing_name = false;
                 self.style_selector = None;
+                self.equipment_selector = None;
                 self.edit_focus = EditFocus::Name;
                 self.active_tab = Tab::Fermentables;
                 self.recipe_batch_list_index = 0;
@@ -651,7 +654,7 @@ impl App {
         if let (Screen::RecipeEdit { ref recipe_id }, Some(ref doc)) =
             (&self.screen, &self.current_doc)
         {
-            let _ = db::update_recipe(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), recipe_id, &doc.name, &doc.recipe);
+            let _ = db::update_recipe(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), recipe_id, &doc.name, &doc.recipe, doc.equipment.as_ref());
         }
         if self.active_tab == Tab::History {
             self.refresh_history();
@@ -667,6 +670,7 @@ impl App {
         self.history_rx = None;
         self.editing_name = false;
         self.style_selector = None;
+        self.equipment_selector = None;
         self.refresh_recipes();
         self.refresh_batches();
     }
@@ -681,6 +685,7 @@ impl App {
                     id: batch_id.to_string(),
                     name: row.name.clone(),
                     recipe: data.recipe.clone(),
+                    equipment: Some(data.equipment.clone()),
                     is_deleted: false,
                 };
                 self.name_input = row.name.clone();
@@ -699,6 +704,7 @@ impl App {
                 self.editing_name = false;
                 self.editing_brew_date = false;
                 self.style_selector = None;
+                self.equipment_selector = None;
                 self.edit_focus = EditFocus::Name;
                 self.active_tab = Tab::Fermentables;
             }
@@ -746,6 +752,7 @@ impl App {
         self.current_batch_data = None;
         self.editing_name = false;
         self.style_selector = None;
+        self.equipment_selector = None;
         self.refresh_recipes();
         self.refresh_batches();
     }
@@ -762,6 +769,7 @@ impl App {
             self.current_batch_data = None;
             self.editing_name = false;
             self.style_selector = None;
+            self.equipment_selector = None;
             self.open_recipe(&rid);
         }
     }
@@ -916,6 +924,58 @@ impl App {
 
     pub fn cancel_style(&mut self) {
         self.style_selector = None;
+    }
+
+    pub fn equipment_name(&self) -> String {
+        self.current_doc
+            .as_ref()
+            .and_then(|d| d.equipment.as_ref())
+            .map(|e| e.name.clone())
+            .unwrap_or_else(|| "(none)".to_string())
+    }
+
+    pub fn open_equipment_selector(&mut self) {
+        let all = brewdio_core::data::equipment();
+        let items: Vec<SearchItem> = all
+            .iter()
+            .enumerate()
+            .map(|(i, e)| SearchItem {
+                label: e.name.clone(),
+                detail: e.equipment_items.iter().map(|item| item.name.clone()).collect::<Vec<_>>().join(", "),
+                index: i,
+            })
+            .collect();
+        let mut selector = SearchSelector::new("Select Equipment", items);
+        // Pre-position cursor on current equipment
+        if let Some(ref doc) = self.current_doc {
+            if let Some(ref eq) = doc.equipment {
+                if let Some(pos) = all.iter().position(|e| e.name == eq.name) {
+                    selector.set_cursor_to_index(pos);
+                }
+            }
+        }
+        self.equipment_selector = Some(selector);
+    }
+
+    pub fn confirm_equipment(&mut self, idx: usize) {
+        let all = brewdio_core::data::equipment();
+        let equipment = &all[idx];
+        if let Some(ref mut doc) = self.current_doc {
+            doc.equipment = Some(equipment.clone());
+        }
+        self.equipment_selector = None;
+        // Save equipment via dedicated function
+        if let Screen::RecipeEdit { ref recipe_id } = self.screen {
+            let _ = db::set_recipe_equipment(
+                &*self.conn.lock().unwrap_or_else(|e| e.into_inner()),
+                recipe_id,
+                Some(equipment),
+            );
+        }
+    }
+
+    pub fn cancel_equipment(&mut self) {
+        self.equipment_selector = None;
     }
 
     fn make_fermentable_selector() -> SearchSelector {

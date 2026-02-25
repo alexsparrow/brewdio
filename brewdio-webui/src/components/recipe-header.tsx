@@ -1,12 +1,13 @@
 import { InlineEditable } from "@/components/inline-editable";
 import { EditableStyleSelector } from "@/components/editable-style-selector";
 import { EditableTypeSelector } from "@/components/editable-type-selector";
+import { EditableEquipmentSelector } from "@/components/editable-equipment-selector";
 import { DeleteRecipeDialog } from "@/components/delete-recipe-dialog";
 import { BrewBatchDialog } from "@/components/brew-batch-dialog";
 import type { RecipeDocument } from "@/lib/db/recipes";
 import { getRecipeDb, recipeKeys } from "@/lib/db/recipes";
 import { useQueryClient } from "@tanstack/react-query";
-import { getStyles } from "brewdio-wasm";
+import { getStyles, type EquipmentType } from "brewdio-wasm";
 
 interface RecipeHeaderProps {
   recipe: RecipeDocument;
@@ -23,13 +24,17 @@ export function RecipeHeader({
 }: RecipeHeaderProps) {
   const queryClient = useQueryClient();
 
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: recipeKeys.all });
+    queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipe.id) });
+  };
+
   const handleNameUpdate = async (newName: string) => {
     const db = getRecipeDb();
     const updated = structuredClone(recipe.recipe);
     updated.name = newName;
     db.updateRecipe(recipe.id, newName, updated as any);
-    queryClient.invalidateQueries({ queryKey: recipeKeys.all });
-    queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipe.id) });
+    invalidate();
   };
 
   const handleTypeUpdate = async (newType: string) => {
@@ -37,8 +42,7 @@ export function RecipeHeader({
     const updated = structuredClone(recipe.recipe);
     updated.type = newType as any;
     db.updateRecipe(recipe.id, updated.name, updated as any);
-    queryClient.invalidateQueries({ queryKey: recipeKeys.all });
-    queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipe.id) });
+    invalidate();
   };
 
   const handleStyleUpdate = async (newStyleName: string) => {
@@ -61,8 +65,13 @@ export function RecipeHeader({
     } as any;
     console.log(updated);
     db.updateRecipe(recipe.id, updated.name, updated as any);
-    queryClient.invalidateQueries({ queryKey: recipeKeys.all });
-    queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipe.id) });
+    invalidate();
+  };
+
+  const handleEquipmentUpdate = async (equipment: EquipmentType | null) => {
+    const db = getRecipeDb();
+    db.setRecipeEquipment(recipe.id, (equipment ?? undefined) as any);
+    invalidate();
   };
 
   return (
@@ -96,6 +105,12 @@ export function RecipeHeader({
               />
             </div>
           )}
+          <div className="ml-auto">
+            <EditableEquipmentSelector
+              equipment={recipe.equipment}
+              onSave={handleEquipmentUpdate}
+            />
+          </div>
         </div>
       </div>
       <div className="shrink-0 flex items-center gap-2">

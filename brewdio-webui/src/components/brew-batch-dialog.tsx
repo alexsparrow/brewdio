@@ -40,7 +40,10 @@ export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
   const defaultBatchName = `${recipe.recipe.name} Batch ${batchNumber}`;
 
   const [batchName, setBatchName] = useState(defaultBatchName);
-  const [selectedEquipmentName, setSelectedEquipmentName] = useState(defaultEquipment?.name || "Default Setup");
+  const recipeEquipmentName = recipe.equipment?.name;
+  const initialEquipmentName = recipeEquipmentName || defaultEquipment?.name || "Default Setup";
+
+  const [selectedEquipmentName, setSelectedEquipmentName] = useState(initialEquipmentName);
 
   // Reset form when dialog opens
   const handleOpenChange = (newOpen: boolean) => {
@@ -50,7 +53,7 @@ export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
       const currentBatches = batches?.filter(b => b.recipeId === recipe.id) || [];
       const newBatchNumber = currentBatches.length + 1;
       setBatchName(`${recipe.recipe.name} Batch ${newBatchNumber}`);
-      setSelectedEquipmentName(defaultEquipment?.name || "Default Setup");
+      setSelectedEquipmentName(recipe.equipment?.name || defaultEquipment?.name || "Default Setup");
     }
   };
 

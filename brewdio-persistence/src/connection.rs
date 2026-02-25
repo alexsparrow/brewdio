@@ -1,45 +1,70 @@
 use std::fmt;
 
-/// Shared migration SQL used by both native and WASM backends.
-pub const MIGRATION_SQL: &str = r#"
-CREATE TABLE IF NOT EXISTS recipe (
-    id TEXT PRIMARY KEY NOT NULL,
-    name TEXT NOT NULL,
-    recipe TEXT NOT NULL,
-    am_data BLOB NOT NULL,
-    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-    is_dirty BOOLEAN NOT NULL DEFAULT TRUE
-);
+/// Versioned migrations. Each entry is run once, in order, tracked by PRAGMA user_version.
+const MIGRATIONS: &[&str] = &[
+    // V0 → V1: Initial schema
+    r#"
+    CREATE TABLE IF NOT EXISTS recipe (
+        id TEXT PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL,
+        recipe TEXT NOT NULL,
+        am_data BLOB NOT NULL,
+        is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+        is_dirty BOOLEAN NOT NULL DEFAULT TRUE
+    );
 
-CREATE TABLE IF NOT EXISTS sync_state (
-    recipe_id TEXT NOT NULL,
-    peer_id TEXT NOT NULL DEFAULT 'server',
-    state BLOB NOT NULL,
-    PRIMARY KEY (recipe_id, peer_id),
-    FOREIGN KEY (recipe_id) REFERENCES recipe(id)
-);
+    CREATE TABLE IF NOT EXISTS sync_state (
+        recipe_id TEXT NOT NULL,
+        peer_id TEXT NOT NULL DEFAULT 'server',
+        state BLOB NOT NULL,
+        PRIMARY KEY (recipe_id, peer_id),
+        FOREIGN KEY (recipe_id) REFERENCES recipe(id)
+    );
 
-CREATE TABLE IF NOT EXISTS batch (
-    id TEXT PRIMARY KEY NOT NULL,
-    name TEXT NOT NULL,
-    recipe_id TEXT NOT NULL,
-    data TEXT NOT NULL,
-    am_data BLOB NOT NULL DEFAULT X'',
-    is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
-    is_dirty BOOLEAN NOT NULL DEFAULT TRUE
-);
+    CREATE TABLE IF NOT EXISTS batch (
+        id TEXT PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL,
+        recipe_id TEXT NOT NULL,
+        data TEXT NOT NULL,
+        am_data BLOB NOT NULL DEFAULT X'',
+        is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+        is_dirty BOOLEAN NOT NULL DEFAULT TRUE
+    );
 
-CREATE TABLE IF NOT EXISTS settings (
-    id TEXT PRIMARY KEY NOT NULL DEFAULT 'default',
-    data TEXT NOT NULL,
-    am_data BLOB NOT NULL DEFAULT X'',
-    is_dirty BOOLEAN NOT NULL DEFAULT TRUE
-);
-"#;
+    CREATE TABLE IF NOT EXISTS settings (
+        id TEXT PRIMARY KEY NOT NULL DEFAULT 'default',
+        data TEXT NOT NULL,
+        am_data BLOB NOT NULL DEFAULT X'',
+        is_dirty BOOLEAN NOT NULL DEFAULT TRUE
+    );
+    "#,
+    // V1 → V2: Add equipment to recipes
+    "ALTER TABLE recipe ADD COLUMN equipment TEXT;",
+];
+
+/// Run all pending migrations and update PRAGMA user_version.
+pub fn run_migrations(conn: &(impl Connection + ?Sized)) -> Result<(), DbError> {
+    let version: i32 = conn
+        .query_one("PRAGMA user_version", &[], |row| {
+            row.get_text(0).parse().unwrap_or(0)
+        })?
+        .unwrap_or(0);
+
+    let target = MIGRATIONS.len() as i32;
+    for i in version..target {
+        conn.execute_batch(MIGRATIONS[i as usize])?;
+    }
+
+    if version < target {
+        conn.execute_batch(&format!("PRAGMA user_version = {};", target))?;
+    }
+    Ok(())
+}
 
 /// Parameter value for binding to SQL statements.
 pub enum Value<'a> {
     Text(&'a str),
+    OptionalText(Option<&'a str>),
     Blob(&'a [u8]),
     Int(i32),
     Bool(bool),
@@ -48,6 +73,7 @@ pub enum Value<'a> {
 /// Trait for reading column values from a result row.
 pub trait Row {
     fn get_text(&self, idx: usize) -> String;
+    fn get_optional_text(&self, idx: usize) -> Option<String>;
     fn get_blob(&self, idx: usize) -> Vec<u8>;
     fn get_bool(&self, idx: usize) -> bool;
 }

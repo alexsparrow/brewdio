@@ -158,6 +158,7 @@ mod tests {
             id: "test-1".to_string(),
             name: "Test Beer".to_string(),
             recipe: sample_recipe(),
+            equipment: None,
             is_deleted: false,
         };
 
@@ -176,6 +177,7 @@ mod tests {
             id: "recipe-1".to_string(),
             name: "Original Beer".to_string(),
             recipe: sample_recipe(),
+            equipment: None,
             is_deleted: false,
         };
         let am_a = reconcile_to_automerge(&doc_a, None).unwrap();
@@ -219,12 +221,14 @@ mod tests {
             id: "recipe-1".to_string(),
             name: "Server Beer".to_string(),
             recipe: sample_recipe(),
+            equipment: None,
             is_deleted: false,
         };
         let doc_b = RecipeDocument {
             id: "recipe-1".to_string(),
             name: "Client Beer".to_string(),
             recipe: sample_recipe(),
+            equipment: None,
             is_deleted: false,
         };
 
@@ -302,6 +306,7 @@ mod tests {
             id: "recipe-1".to_string(),
             name: "Same Beer".to_string(),
             recipe: sample_recipe(),
+            equipment: None,
             is_deleted: false,
         };
         let am_bytes = reconcile_to_automerge(&doc, None).unwrap();
@@ -350,6 +355,7 @@ mod tests {
             id: "recipe-1".to_string(),
             name: "Original Beer".to_string(),
             recipe: sample_recipe(),
+            equipment: None,
             is_deleted: false,
         };
         let am_v1 = reconcile_to_automerge(&doc_v1, None).unwrap();
@@ -363,6 +369,7 @@ mod tests {
             id: "recipe-1".to_string(),
             name: "Updated Beer".to_string(),
             recipe: sample_recipe(),
+            equipment: None,
             is_deleted: false,
         };
         let am_v2 = reconcile_to_automerge(&doc_v2, Some(&am_v1)).unwrap();
@@ -384,6 +391,7 @@ mod tests {
             id: "recipe-1".to_string(),
             name: "Original Beer".to_string(),
             recipe: sample_recipe(),
+            equipment: None,
             is_deleted: false,
         };
         let am_bytes = reconcile_to_automerge(&doc, None).unwrap();
@@ -409,6 +417,7 @@ mod tests {
             id: "recipe-1".to_string(),
             name: "Edited Beer".to_string(),
             recipe: sample_recipe(),
+            equipment: None,
             is_deleted: false,
         };
         let am_v2 = reconcile_to_automerge(&doc_v2, Some(&am_bytes)).unwrap();
@@ -443,12 +452,14 @@ mod tests {
             id: "recipe-1".to_string(),
             name: "Server Beer".to_string(),
             recipe: sample_recipe(),
+            equipment: None,
             is_deleted: false,
         };
         let doc_b = RecipeDocument {
             id: "recipe-1".to_string(),
             name: "Client Beer".to_string(),
             recipe: sample_recipe(),
+            equipment: None,
             is_deleted: false,
         };
 
@@ -514,8 +525,8 @@ mod tests {
         let conn_b = crate::connection_native::open(":memory:").unwrap();
 
         // Both sides create a recipe independently
-        let row_a = crate::db::create_recipe(&conn_a, "Server Beer", &sample_recipe()).unwrap();
-        let row_b = crate::db::create_recipe(&conn_b, "Client Beer", &sample_recipe()).unwrap();
+        let row_a = crate::db::create_recipe(&conn_a, "Server Beer", &sample_recipe(), None).unwrap();
+        let row_b = crate::db::create_recipe(&conn_b, "Client Beer", &sample_recipe(), None).unwrap();
 
         // Verify both start non-deleted
         assert!(!row_a.is_deleted);
@@ -567,6 +578,7 @@ mod tests {
             id: "test-1".to_string(),
             name: "Stateful Beer".to_string(),
             recipe: sample_recipe(),
+            equipment: None,
             is_deleted: false,
         };
         let am_bytes = reconcile_to_automerge(&doc, None).unwrap();

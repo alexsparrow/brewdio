@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
-use brewdio_core::beerjson_types::RecipeType;
+use brewdio_core::beerjson_types::{EquipmentType, RecipeType};
 use brewdio_persistence::connection_wasm::WasmConnection;
 use brewdio_persistence::db;
 use brewdio_persistence::batch;
@@ -13,6 +13,7 @@ pub struct RecipeDocumentJs {
     pub id: String,
     pub name: String,
     pub recipe: RecipeType,
+    pub equipment: Option<EquipmentType>,
 }
 
 #[derive(Serialize, Tsify)]
@@ -96,11 +97,16 @@ impl RecipeDb {
             .into_iter()
             .filter_map(|r| {
                 let recipe: RecipeType = serde_json::from_str(&r.recipe).ok()?;
-                Some(serde_json::json!({
+                let equipment: Option<EquipmentType> = r.equipment.as_ref().and_then(|eq| serde_json::from_str(eq).ok());
+                let mut obj = serde_json::json!({
                     "id": r.id,
                     "name": r.name,
                     "recipe": recipe,
-                }))
+                });
+                if let Some(eq) = equipment {
+                    obj["equipment"] = serde_json::to_value(eq).ok()?;
+                }
+                Some(obj)
             })
             .collect();
         crate::to_js(&docs).map_err(|e| JsError::new(&e.to_string()))
@@ -114,11 +120,17 @@ impl RecipeDb {
             Some(r) if !r.is_deleted => {
                 let recipe: RecipeType = serde_json::from_str(&r.recipe)
                     .map_err(|e| JsError::new(&e.to_string()))?;
-                let doc = serde_json::json!({
+                let equipment: Option<EquipmentType> = r.equipment.as_ref().and_then(|eq| serde_json::from_str(eq).ok());
+                let mut doc = serde_json::json!({
                     "id": r.id,
                     "name": r.name,
                     "recipe": recipe,
                 });
+                if let Some(eq) = equipment {
+                    if let Ok(val) = serde_json::to_value(eq) {
+                        doc["equipment"] = val;
+                    }
+                }
                 crate::to_js(&doc).map_err(|e| JsError::new(&e.to_string()))
             }
             _ => Ok(JsValue::NULL),
@@ -126,16 +138,24 @@ impl RecipeDb {
     }
 
     #[wasm_bindgen(js_name = "createRecipe")]
-    pub fn create_recipe(&self, name: &str, recipe: RecipeType) -> Result<String, JsError> {
-        let row = db::create_recipe(&self.conn, name, &recipe)
+    pub fn create_recipe(&self, name: &str, recipe: RecipeType, equipment: Option<EquipmentType>) -> Result<String, JsError> {
+        let row = db::create_recipe(&self.conn, name, &recipe, equipment.as_ref())
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify();
         Ok(row.id)
     }
 
     #[wasm_bindgen(js_name = "updateRecipe")]
-    pub fn update_recipe(&self, id: &str, name: &str, recipe: RecipeType) -> Result<(), JsError> {
-        db::update_recipe(&self.conn, id, name, &recipe)
+    pub fn update_recipe(&self, id: &str, name: &str, recipe: RecipeType, equipment: Option<EquipmentType>) -> Result<(), JsError> {
+        db::update_recipe(&self.conn, id, name, &recipe, equipment.as_ref())
+            .map_err(|e| JsError::new(&e.to_string()))?;
+        self.notify();
+        Ok(())
+    }
+
+    #[wasm_bindgen(js_name = "setRecipeEquipment")]
+    pub fn set_recipe_equipment(&self, id: &str, equipment: Option<EquipmentType>) -> Result<(), JsError> {
+        db::set_recipe_equipment(&self.conn, id, equipment.as_ref())
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify();
         Ok(())

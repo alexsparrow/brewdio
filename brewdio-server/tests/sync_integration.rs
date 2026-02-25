@@ -52,7 +52,7 @@ async fn client_to_server_sync() {
 
     {
         let c = client_conn.lock().unwrap();
-        db::create_recipe(&*c, "Client IPA", &sample_recipe()).unwrap();
+        db::create_recipe(&*c, "Client IPA", &sample_recipe(), None).unwrap();
     }
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -97,7 +97,7 @@ async fn server_to_client_sync() {
 
     {
         let c = server_conn.lock().unwrap();
-        db::create_recipe(&*c, "Server Stout", &sample_recipe()).unwrap();
+        db::create_recipe(&*c, "Server Stout", &sample_recipe(), None).unwrap();
     }
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();

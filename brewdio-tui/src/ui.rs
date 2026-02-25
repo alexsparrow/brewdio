@@ -362,7 +362,7 @@ fn draw_recipe_edit(frame: &mut Frame, app: &App) {
     // Help bar
     let help_text = if app.editing_name {
         " Type to edit, [Enter] confirm, [Esc] cancel"
-    } else if app.style_selector.is_some() {
+    } else if app.style_selector.is_some() || app.equipment_selector.is_some() {
         " Type to search, [↑/↓] navigate, [Enter] confirm, [Esc] cancel"
     } else if app.fermentable_dialog.is_some() {
         match app.fermentable_dialog.as_ref().unwrap().step {
@@ -408,13 +408,13 @@ fn draw_recipe_edit(frame: &mut Frame, app: &App) {
     } else if app.notes_editor.is_some() {
         " [F2] save  [Esc] cancel"
     } else if app.active_tab == Tab::History {
-        " [j/k] navigate  [n]ame  [s]tyle  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
+        " [j/k] navigate  [n]ame  [s]tyle  [e]quip  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
     } else if app.active_tab == Tab::Batches {
-        " [Enter] open  [j/k] navigate  [n]ame  [s]tyle  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
+        " [Enter] open  [j/k] navigate  [n]ame  [s]tyle  [e]quip  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
     } else if app.active_tab == Tab::Fermentables || app.active_tab == Tab::Hops || app.active_tab == Tab::Cultures {
-        " [a]dd  [Enter] edit  [d]elete  [j/k] navigate  [n]ame  [s]tyle  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
+        " [a]dd  [Enter] edit  [d]elete  [j/k] navigate  [n]ame  [s]tyle  [e]quip  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
     } else {
-        " [n]ame  [s]tyle  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
+        " [n]ame  [s]tyle  [e]quip  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
     };
     let help = Paragraph::new(Line::from(Span::raw(help_text)))
         .block(Block::default().borders(Borders::ALL));
@@ -454,7 +454,7 @@ fn draw_batch_edit(frame: &mut Frame, app: &App) {
         " Type to edit, [Enter] confirm, [Esc] cancel"
     } else if app.editing_brew_date {
         " Type date (YYYY-MM-DD), [Enter] confirm, [Esc] cancel"
-    } else if app.style_selector.is_some() {
+    } else if app.style_selector.is_some() || app.equipment_selector.is_some() {
         " Type to search, [↑/↓] navigate, [Enter] confirm, [Esc] cancel"
     } else if app.fermentable_dialog.is_some() {
         match app.fermentable_dialog.as_ref().unwrap().step {
@@ -524,7 +524,7 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
     let inner = block.inner(area);
     frame.render_widget(block, area);
 
-    let row_count = if is_batch { 5 } else { 4 };
+    let row_count = if is_batch { 6 } else { 5 };
     let mut constraints: Vec<Constraint> = (0..row_count).map(|_| Constraint::Length(1)).collect();
     constraints.push(Constraint::Min(0));
 
@@ -572,6 +572,28 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
             Span::raw(app.style_name()),
         ]);
         frame.render_widget(Paragraph::new(style_line), rows[row_idx]);
+    }
+    row_idx += 1;
+
+    // Equipment row
+    if let Some(ref selector) = app.equipment_selector {
+        let display = selector
+            .selected_label()
+            .unwrap_or("(no match)");
+        let equip_line = Line::from(vec![
+            Span::styled(" Equip: ", Style::default().fg(Color::DarkGray)),
+            Span::styled(
+                format!("< {} >", display),
+                Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD),
+            ),
+        ]);
+        frame.render_widget(Paragraph::new(equip_line), rows[row_idx]);
+    } else {
+        let equip_line = Line::from(vec![
+            Span::styled(" Equip: ", Style::default().fg(Color::DarkGray)),
+            Span::raw(app.equipment_name()),
+        ]);
+        frame.render_widget(Paragraph::new(equip_line), rows[row_idx]);
     }
     row_idx += 1;
 
@@ -933,6 +955,11 @@ fn draw_status_bar(frame: &mut Frame, app: &App, area: Rect) {
 
 fn draw_tab_content(frame: &mut Frame, app: &App, area: Rect) {
     if let Some(ref selector) = app.style_selector {
+        selector.draw(frame, area);
+        return;
+    }
+
+    if let Some(ref selector) = app.equipment_selector {
         selector.draw(frame, area);
         return;
     }
