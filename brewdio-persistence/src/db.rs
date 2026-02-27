@@ -379,6 +379,25 @@ pub fn get_doc_am_data(
     }
 }
 
+/// Mark a document as dirty (needs sync) for any document type.
+/// Used by the server to propagate changes received from one client to others.
+pub fn mark_dirty_doc(
+    conn: &(impl Connection + ?Sized),
+    doc_type: DocType,
+    id: &str,
+) -> Result<(), DbError> {
+    let (table, col) = match doc_type {
+        DocType::Recipe => ("recipe", "id"),
+        DocType::Batch => ("batch", "id"),
+        DocType::Settings => ("settings", "id"),
+        DocType::EquipmentProfile => ("equipment_profile", "id"),
+    };
+    conn.execute(
+        &format!("UPDATE {} SET is_dirty = TRUE WHERE {} = ?1", table, col),
+        &[Value::Text(id)],
+    )
+}
+
 /// Clear the dirty flag for any document type.
 pub fn clear_dirty_doc(
     conn: &(impl Connection + ?Sized),

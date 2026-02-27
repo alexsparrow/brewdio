@@ -44,6 +44,7 @@ pub struct RecipeDb {
     on_recipes_change: Option<js_sys::Function>,
     on_batches_change: Option<js_sys::Function>,
     on_settings_change: Option<js_sys::Function>,
+    on_equipment_change: Option<js_sys::Function>,
 }
 
 #[wasm_bindgen]
@@ -51,35 +52,21 @@ impl RecipeDb {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Result<RecipeDb, JsError> {
         let conn = WasmConnection::open_memory().map_err(|e| JsError::new(&e.to_string()))?;
-        Ok(RecipeDb { conn, on_recipes_change: None, on_batches_change: None, on_settings_change: None })
+        Ok(RecipeDb { conn, on_recipes_change: None, on_batches_change: None, on_settings_change: None, on_equipment_change: None })
     }
 
     pub fn open(path: &str) -> Result<RecipeDb, JsError> {
         let conn = WasmConnection::open(path).map_err(|e| JsError::new(&e.to_string()))?;
-        Ok(RecipeDb { conn, on_recipes_change: None, on_batches_change: None, on_settings_change: None })
+        Ok(RecipeDb { conn, on_recipes_change: None, on_batches_change: None, on_settings_change: None, on_equipment_change: None })
+    }
+
+    pub(crate) fn conn(&self) -> &WasmConnection {
+        &self.conn
     }
 
     #[wasm_bindgen(js_name = "onRecipesChange")]
     pub fn on_recipes_change(&mut self, callback: js_sys::Function) {
         self.on_recipes_change = Some(callback);
-    }
-
-    fn notify(&self) {
-        if let Some(ref cb) = self.on_recipes_change {
-            let _ = cb.call0(&JsValue::NULL);
-        }
-    }
-
-    fn notify_batches(&self) {
-        if let Some(ref cb) = self.on_batches_change {
-            let _ = cb.call0(&JsValue::NULL);
-        }
-    }
-
-    fn notify_settings(&self) {
-        if let Some(ref cb) = self.on_settings_change {
-            let _ = cb.call0(&JsValue::NULL);
-        }
     }
 
     #[wasm_bindgen(js_name = "onBatchesChange")]
@@ -90,6 +77,47 @@ impl RecipeDb {
     #[wasm_bindgen(js_name = "onSettingsChange")]
     pub fn on_settings_change(&mut self, callback: js_sys::Function) {
         self.on_settings_change = Some(callback);
+    }
+
+    #[wasm_bindgen(js_name = "onEquipmentChange")]
+    pub fn on_equipment_change(&mut self, callback: js_sys::Function) {
+        self.on_equipment_change = Some(callback);
+    }
+
+    pub(crate) fn notify(&self) {
+        if let Some(ref cb) = self.on_recipes_change {
+            web_sys::console::log_1(&"[db] notify recipes (callback registered)".into());
+            let _ = cb.call0(&JsValue::NULL);
+        } else {
+            web_sys::console::log_1(&"[db] notify recipes (NO callback)".into());
+        }
+    }
+
+    pub(crate) fn notify_batches(&self) {
+        if let Some(ref cb) = self.on_batches_change {
+            web_sys::console::log_1(&"[db] notify batches (callback registered)".into());
+            let _ = cb.call0(&JsValue::NULL);
+        } else {
+            web_sys::console::log_1(&"[db] notify batches (NO callback)".into());
+        }
+    }
+
+    pub(crate) fn notify_settings(&self) {
+        if let Some(ref cb) = self.on_settings_change {
+            web_sys::console::log_1(&"[db] notify settings (callback registered)".into());
+            let _ = cb.call0(&JsValue::NULL);
+        } else {
+            web_sys::console::log_1(&"[db] notify settings (NO callback)".into());
+        }
+    }
+
+    pub(crate) fn notify_equipment(&self) {
+        if let Some(ref cb) = self.on_equipment_change {
+            web_sys::console::log_1(&"[db] notify equipment (callback registered)".into());
+            let _ = cb.call0(&JsValue::NULL);
+        } else {
+            web_sys::console::log_1(&"[db] notify equipment (NO callback)".into());
+        }
     }
 
     #[wasm_bindgen(js_name = "listRecipes")]

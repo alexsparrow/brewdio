@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { startSync, stopSync, getSyncStatus, onSyncStatusChange } from "@/lib/sync";
 
 export const Route = createFileRoute("/settings")({
   component: SettingsComponent,
@@ -213,6 +214,78 @@ function SettingsComponent() {
         <Button variant="outline" onClick={handleReset} disabled={!hasChanges}>
           Reset
         </Button>
+      </div>
+
+      <SyncSection />
+    </div>
+  );
+}
+
+const statusColors: Record<string, string> = {
+  connected: "bg-green-500",
+  connecting: "bg-yellow-500",
+  disconnected: "bg-gray-400",
+};
+
+function SyncSection() {
+  const [syncStatus, setSyncStatus] = useState(getSyncStatus);
+  const [serverUrl, setServerUrl] = useState(
+    () => localStorage.getItem("brewdio_server") ?? ""
+  );
+
+  useEffect(() => {
+    return onSyncStatusChange(setSyncStatus);
+  }, []);
+
+  const handleConnect = () => {
+    if (!serverUrl.trim()) return;
+    localStorage.setItem("brewdio_server", serverUrl.trim());
+    startSync(serverUrl.trim());
+  };
+
+  const handleDisconnect = () => {
+    localStorage.removeItem("brewdio_server");
+    stopSync();
+  };
+
+  return (
+    <div className="space-y-6 border rounded-lg p-6">
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold">Sync</h2>
+        <p className="text-sm text-muted-foreground">
+          Connect to a sync server to keep recipes, batches, and settings in
+          sync across devices.
+        </p>
+
+        <div className="space-y-2">
+          <Label htmlFor="sync-server-url">Server URL</Label>
+          <Input
+            id="sync-server-url"
+            type="text"
+            value={serverUrl}
+            onChange={(e) => setServerUrl(e.target.value)}
+            placeholder="ws://192.168.1.100:8080/ws"
+            disabled={syncStatus !== "disconnected"}
+          />
+        </div>
+
+        <div className="flex items-center gap-3">
+          {syncStatus === "disconnected" ? (
+            <Button onClick={handleConnect} disabled={!serverUrl.trim()}>
+              Connect
+            </Button>
+          ) : (
+            <Button variant="outline" onClick={handleDisconnect}>
+              Disconnect
+            </Button>
+          )}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span
+              className={`inline-block h-2.5 w-2.5 rounded-full ${statusColors[syncStatus]}`}
+            />
+            {syncStatus}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,12 +1,12 @@
 #![cfg(feature = "wasm")]
 
-// WASM sync worker using gloo-net WebSocket.
-// This module mirrors sync_worker.rs but uses browser-compatible APIs.
+// WASM sync support.
 //
-// For the initial implementation, the sync logic is exposed through SyncSession
-// in the brewdio-wasm crate, and JavaScript controls the WebSocket connection.
-// A full gloo-net based worker can be added later if needed.
+// The full sync protocol (Hello handshake, NewDoc exchange, dirty doc
+// checking, incoming message handling) lives in the `SyncWorker` struct
+// in `brewdio-wasm/src/sync.rs`. It operates directly on `RecipeDb` and
+// calls the same `db::*` functions as the native `sync_worker.rs`.
 //
-// The reason: gloo-net requires a browser environment with WebSocket API,
-// which makes it untestable in bun/node. Instead, we expose SyncSession
-// methods via wasm-bindgen and let the JS layer handle WebSocket transport.
+// JavaScript handles only WebSocket transport and timer scheduling
+// (`brewdio-webui/src/lib/sync.ts`, ~100 lines). This keeps browser-specific
+// concerns out of Rust while keeping all CRDT/protocol logic in WASM.

@@ -34,13 +34,20 @@ export function getRecipeDb(): RecipeDbClass {
 export function registerChangeCallback(queryClient: QueryClient) {
   const db = getRecipeDb();
   db.onRecipesChange(() => {
+    console.log("[db] invalidating recipes queries");
     queryClient.invalidateQueries({ queryKey: ['recipes'] });
   });
   db.onBatchesChange(() => {
+    console.log("[db] invalidating batches queries");
     queryClient.invalidateQueries({ queryKey: ['batches'] });
   });
   db.onSettingsChange(() => {
+    console.log("[db] invalidating settings queries");
     queryClient.invalidateQueries({ queryKey: ['settings'] });
+  });
+  db.onEquipmentChange(() => {
+    console.log("[db] invalidating equipment-profiles queries");
+    queryClient.invalidateQueries({ queryKey: ['equipment-profiles'] });
   });
 }
 

@@ -6,6 +6,7 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use futures_util::stream::SplitSink;
 use futures_util::{SinkExt, StreamExt};
+use tokio::sync::broadcast;
 use tokio::time::{interval, Duration};
 
 use brewdio_persistence::db;
@@ -15,22 +16,28 @@ use brewdio_persistence::sync::SyncSession;
 const PEER_ID: &str = "client";
 const DIRTY_CHECK_INTERVAL: Duration = Duration::from_secs(2);
 
-type AppState = Arc<Mutex<rusqlite::Connection>>;
 type WsSender = SplitSink<WebSocket, Message>;
 
 /// Persistent sync sessions keyed by (DocType, doc_id), kept alive for the connection.
 type Sessions = HashMap<(DocType, String), SyncSession>;
 
-pub async fn ws_upgrade(
-    ws: WebSocketUpgrade,
-    State(conn): State<AppState>,
-) -> impl IntoResponse {
-    eprintln!("[server] client connected");
-    ws.on_upgrade(move |socket| handle_socket(socket, conn))
+/// Shared server state: DB connection + broadcast channel for cross-client notification.
+#[derive(Clone)]
+pub struct ServerState {
+    pub conn: Arc<Mutex<rusqlite::Connection>>,
+    pub notify_tx: broadcast::Sender<(DocType, String)>,
 }
 
-async fn handle_socket(socket: WebSocket, conn: AppState) {
-    if let Err(e) = run_sync(socket, conn).await {
+pub async fn ws_upgrade(
+    ws: WebSocketUpgrade,
+    State(state): State<ServerState>,
+) -> impl IntoResponse {
+    eprintln!("[server] client connected");
+    ws.on_upgrade(move |socket| handle_socket(socket, state))
+}
+
+async fn handle_socket(socket: WebSocket, state: ServerState) {
+    if let Err(e) = run_sync(socket, state).await {
         eprintln!("[server] sync error: {}", e);
     }
     eprintln!("[server] client disconnected");
@@ -38,10 +45,12 @@ async fn handle_socket(socket: WebSocket, conn: AppState) {
 
 async fn run_sync(
     socket: WebSocket,
-    conn: AppState,
+    state: ServerState,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let conn = &state.conn;
     let (mut ws_tx, mut ws_rx) = socket.split();
     let mut sessions: Sessions = HashMap::new();
+    let mut notify_rx = state.notify_tx.subscribe();
 
     // --- Wait for client Hello ---
     let client_hello = loop {
@@ -160,7 +169,7 @@ async fn run_sync(
             );
         }
         for id in &shared_ids {
-            send_sync_for_doc(&conn, &mut sessions, &mut ws_tx, *doc_type, id).await?;
+            send_sync_for_doc(conn, &mut sessions, &mut ws_tx, *doc_type, id).await?;
         }
     }
 
@@ -174,13 +183,20 @@ async fn run_sync(
             msg = ws_rx.next() => {
                 match msg {
                     Some(Ok(Message::Text(text))) => {
-                        handle_incoming(&conn, &mut sessions, &mut ws_tx, &text).await?;
+                        handle_incoming(conn, &state.notify_tx, &mut sessions, &mut ws_tx, &text).await?;
                     }
                     Some(Ok(Message::Close(_))) | None => {
                         return Ok(());
                     }
                     Some(Err(e)) => return Err(e.into()),
                     _ => {}
+                }
+            }
+            // Broadcast notification: another connection received a change
+            notification = notify_rx.recv() => {
+                if let Ok((doc_type, doc_id)) = notification {
+                    eprintln!("[server] broadcast: pushing {:?}/{} to client", doc_type, doc_id);
+                    send_sync_for_doc(conn, &mut sessions, &mut ws_tx, doc_type, &doc_id).await?;
                 }
             }
             _ = dirty_interval.tick() => {
@@ -192,7 +208,7 @@ async fn run_sync(
                     eprintln!("[server] pushing {} dirty doc(s)", dirty.len());
                 }
                 for (doc_type, id) in &dirty {
-                    send_sync_for_doc(&conn, &mut sessions, &mut ws_tx, *doc_type, id).await?;
+                    send_sync_for_doc(conn, &mut sessions, &mut ws_tx, *doc_type, id).await?;
                 }
             }
         }
@@ -201,7 +217,7 @@ async fn run_sync(
 
 /// Get or create a persistent SyncSession for a document.
 fn get_or_create_session<'a>(
-    conn: &AppState,
+    conn: &Arc<Mutex<rusqlite::Connection>>,
     sessions: &'a mut Sessions,
     doc_type: DocType,
     doc_id: &str,
@@ -222,7 +238,7 @@ fn get_or_create_session<'a>(
 }
 
 async fn send_sync_for_doc(
-    conn: &AppState,
+    conn: &Arc<Mutex<rusqlite::Connection>>,
     sessions: &mut Sessions,
     ws_tx: &mut WsSender,
     doc_type: DocType,
@@ -262,8 +278,11 @@ async fn send_sync_for_doc(
     Ok(())
 }
 
+/// Handle an incoming WebSocket message from a client using persistent sessions.
+/// Broadcasts notifications to other connections when changes are received.
 async fn handle_incoming(
-    conn: &AppState,
+    conn: &Arc<Mutex<rusqlite::Connection>>,
+    notify_tx: &broadcast::Sender<(DocType, String)>,
     sessions: &mut Sessions,
     ws_tx: &mut WsSender,
     text: &str,
@@ -285,9 +304,11 @@ async fn handle_incoming(
             let c = conn.lock().unwrap_or_else(|e| e.into_inner());
             db::apply_remote_merge_doc(&*c, doc_type, &doc_id, am_data)?;
             sessions.insert(
-                (doc_type, doc_id),
+                (doc_type, doc_id.clone()),
                 SyncSession::from_doc_bytes(am_data),
             );
+            // Notify other connections
+            let _ = notify_tx.send((doc_type, doc_id));
         }
         SyncMessage::SyncDoc {
             doc_type,
@@ -324,6 +345,8 @@ async fn handle_incoming(
             if reply.is_none() {
                 db::clear_dirty_doc(&*c, doc_type, &doc_id)?;
             }
+            // Notify other connections
+            let _ = notify_tx.send((doc_type, doc_id));
         }
         SyncMessage::Hello { .. } => {
             eprintln!("[server] unexpected mid-session Hello, ignoring");

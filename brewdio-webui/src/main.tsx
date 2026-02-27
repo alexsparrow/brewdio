@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import initWasm, { RecipeDb, initPersistentStorage } from "brewdio-wasm";
 import { initRecipeDb, registerChangeCallback } from "@/lib/db/recipes";
+import { startSync } from "@/lib/sync";
 import "./index.css";
 
 // Import the generated route tree
@@ -37,6 +38,9 @@ async function init() {
   const db = RecipeDb.open("brewdio.db");
   initRecipeDb(db);
   registerChangeCallback(queryClient);
+
+  const syncServer = localStorage.getItem("brewdio_server");
+  if (syncServer) startSync(syncServer);
 
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
