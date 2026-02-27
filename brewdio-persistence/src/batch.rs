@@ -185,10 +185,11 @@ pub fn create_batch_from_recipe(
     recipe_id: &str,
     recipe: &RecipeType,
     equipment: &EquipmentType,
+    equipment_profile_id: &str,
 ) -> Result<BatchRow, DbError> {
     let now = current_time_millis() as u64;
     let data = BatchData {
-        equipment_id: equipment.name.clone(),
+        equipment_id: equipment_profile_id.to_string(),
         recipe: recipe.clone(),
         equipment: equipment.clone(),
         brew_date: now,
@@ -250,7 +251,7 @@ mod tests {
                 "efficiency": { "brewhouse": { "unit": "%", "value": 72.0 } },
                 "ingredients": { "fermentable_additions": [], "hop_additions": [] }
             }"#).unwrap(),
-            equipment: brewdio_core::data::equipment()[0].clone(),
+            equipment: brewdio_core::data::equipment()[0].equipment.clone(),
             brew_date: 1000,
             notes: Some("test".to_string()),
             created_at: 1000,
@@ -301,10 +302,8 @@ mod tests {
 
     #[test]
     fn create_batch_from_recipe_roundtrip() {
-        use brewdio_core::data::equipment;
-
         let conn = test_conn();
-        let equip = &equipment()[0];
+        let profile = &brewdio_core::data::equipment()[0];
         let recipe = brewdio_core::beerjson_types::RecipeType {
             name: "Test IPA".to_string(),
             author: String::new(),
@@ -349,12 +348,12 @@ mod tests {
             taste: None,
         };
 
-        let row = create_batch_from_recipe(&conn, "Batch #1", "recipe-1", &recipe, equip).unwrap();
+        let row = create_batch_from_recipe(&conn, "Batch #1", "recipe-1", &recipe, &profile.equipment, &profile.id).unwrap();
         assert_eq!(row.name, "Batch #1");
 
         let data = row.to_data().unwrap();
         assert_eq!(data.recipe.name, "Test IPA");
-        assert_eq!(data.equipment_id, equip.name);
+        assert_eq!(data.equipment_id, profile.id);
         assert!(data.brew_date > 0);
     }
 }

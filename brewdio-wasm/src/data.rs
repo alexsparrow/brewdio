@@ -1,5 +1,6 @@
 use wasm_bindgen::prelude::*;
 use brewdio_core::beerjson_types::*;
+use brewdio_core::equipment_profile::EquipmentProfile;
 
 #[wasm_bindgen(js_name = "getFermentables")]
 pub fn get_fermentables() -> Vec<FermentableType> {
@@ -22,7 +23,7 @@ pub fn get_styles() -> Vec<StyleType> {
 }
 
 #[wasm_bindgen(js_name = "getEquipment")]
-pub fn get_equipment() -> Vec<EquipmentType> {
+pub fn get_equipment() -> Vec<EquipmentProfile> {
     brewdio_core::data::equipment()
 }
 

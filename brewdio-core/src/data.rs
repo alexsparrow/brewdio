@@ -1,4 +1,5 @@
-use crate::beerjson_types::{CultureInformation, EquipmentType, FermentableType, HopVarietyBase, MashProcedureType, RecipeType, StyleType};
+use crate::beerjson_types::{CultureInformation, FermentableType, HopVarietyBase, MashProcedureType, RecipeType, StyleType};
+use crate::equipment_profile::EquipmentProfile;
 
 pub fn fermentables() -> Vec<FermentableType> {
     serde_json::from_str(include_str!("data/fermentables.json"))
@@ -20,7 +21,7 @@ pub fn styles() -> Vec<StyleType> {
         .expect("Failed to deserialize styles.json")
 }
 
-pub fn equipment() -> Vec<EquipmentType> {
+pub fn equipment() -> Vec<EquipmentProfile> {
     serde_json::from_str(include_str!("data/equipment.json"))
         .expect("Failed to deserialize equipment.json")
 }
@@ -66,8 +67,11 @@ mod tests {
     #[test]
     fn test_equipment_deserialize() {
         let e = equipment();
-        assert_eq!(e.len(), 1);
-        assert_eq!(e[0].name, "Default Setup");
+        assert_eq!(e.len(), 3);
+        assert_eq!(e[0].name(), "Default Setup");
+        assert_eq!(e[0].id, "default-setup");
+        assert_eq!(e[1].name(), "BIAB (No Sparge)");
+        assert_eq!(e[2].name(), "BIAB (Sparge)");
     }
 
     #[test]

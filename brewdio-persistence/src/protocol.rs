@@ -7,6 +7,7 @@ pub enum DocType {
     Recipe,
     Batch,
     Settings,
+    EquipmentProfile,
 }
 
 /// Wire protocol messages for Automerge sync over WebSocket.
@@ -19,6 +20,8 @@ pub enum SyncMessage {
         recipe_ids: Vec<String>,
         batch_ids: Vec<String>,
         settings_ids: Vec<String>,
+        #[serde(default)]
+        equipment_profile_ids: Vec<String>,
     },
     /// Automerge sync message for a specific document.
     SyncDoc {

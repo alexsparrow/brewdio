@@ -5,6 +5,7 @@ use brewdio_core::beerjson_types::{EquipmentType, RecipeType};
 use brewdio_persistence::connection_wasm::WasmConnection;
 use brewdio_persistence::db;
 use brewdio_persistence::batch;
+use brewdio_persistence::equipment_profile;
 use brewdio_persistence::settings;
 
 #[derive(Serialize, Tsify)]
@@ -14,6 +15,8 @@ pub struct RecipeDocumentJs {
     pub name: String,
     pub recipe: RecipeType,
     pub equipment: Option<EquipmentType>,
+    #[serde(rename = "equipmentId")]
+    pub equipment_id: Option<String>,
 }
 
 #[derive(Serialize, Tsify)]
@@ -106,6 +109,9 @@ impl RecipeDb {
                 if let Some(eq) = equipment {
                     obj["equipment"] = serde_json::to_value(eq).ok()?;
                 }
+                if let Some(eid) = r.equipment_id {
+                    obj["equipmentId"] = serde_json::Value::String(eid);
+                }
                 Some(obj)
             })
             .collect();
@@ -131,6 +137,9 @@ impl RecipeDb {
                         doc["equipment"] = val;
                     }
                 }
+                if let Some(eid) = r.equipment_id {
+                    doc["equipmentId"] = serde_json::Value::String(eid);
+                }
                 crate::to_js(&doc).map_err(|e| JsError::new(&e.to_string()))
             }
             _ => Ok(JsValue::NULL),
@@ -138,8 +147,8 @@ impl RecipeDb {
     }
 
     #[wasm_bindgen(js_name = "createRecipe")]
-    pub fn create_recipe(&self, name: &str, recipe: RecipeType, equipment: Option<EquipmentType>) -> Result<String, JsError> {
-        let row = db::create_recipe(&self.conn, name, &recipe, equipment.as_ref())
+    pub fn create_recipe(&self, name: &str, recipe: RecipeType, equipment: Option<EquipmentType>, equipment_id: Option<String>) -> Result<String, JsError> {
+        let row = db::create_recipe(&self.conn, name, &recipe, equipment.as_ref(), equipment_id.as_deref())
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify();
         Ok(row.id)
@@ -154,8 +163,8 @@ impl RecipeDb {
     }
 
     #[wasm_bindgen(js_name = "setRecipeEquipment")]
-    pub fn set_recipe_equipment(&self, id: &str, equipment: Option<EquipmentType>) -> Result<(), JsError> {
-        db::set_recipe_equipment(&self.conn, id, equipment.as_ref())
+    pub fn set_recipe_equipment(&self, id: &str, equipment: Option<EquipmentType>, equipment_id: Option<String>) -> Result<(), JsError> {
+        db::set_recipe_equipment(&self.conn, id, equipment.as_ref(), equipment_id.as_deref())
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify();
         Ok(())
@@ -261,5 +270,40 @@ impl RecipeDb {
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify_settings();
         Ok(())
+    }
+
+    // --- Equipment Profile operations ---
+
+    #[wasm_bindgen(js_name = "listEquipmentProfiles")]
+    pub fn list_equipment_profiles(&self) -> Result<JsValue, JsError> {
+        let rows = equipment_profile::list_equipment_profiles(&self.conn)
+            .map_err(|e| JsError::new(&e.to_string()))?;
+        let profiles: Vec<serde_json::Value> = rows
+            .into_iter()
+            .filter_map(|r| {
+                let p = r.to_profile().ok()?;
+                serde_json::to_value(&p).ok()
+            })
+            .collect();
+        crate::to_js(&profiles).map_err(|e| JsError::new(&e.to_string()))
+    }
+
+    #[wasm_bindgen(js_name = "createEquipmentProfile")]
+    pub fn create_equipment_profile(&self, profile: brewdio_core::equipment_profile::EquipmentProfile) -> Result<String, JsError> {
+        let row = equipment_profile::create_equipment_profile(&self.conn, &profile)
+            .map_err(|e| JsError::new(&e.to_string()))?;
+        Ok(row.id)
+    }
+
+    #[wasm_bindgen(js_name = "updateEquipmentProfile")]
+    pub fn update_equipment_profile(&self, id: &str, profile: brewdio_core::equipment_profile::EquipmentProfile) -> Result<(), JsError> {
+        equipment_profile::update_equipment_profile(&self.conn, id, &profile)
+            .map_err(|e| JsError::new(&e.to_string()))
+    }
+
+    #[wasm_bindgen(js_name = "deleteEquipmentProfile")]
+    pub fn delete_equipment_profile(&self, id: &str) -> Result<(), JsError> {
+        equipment_profile::delete_equipment_profile(&self.conn, id)
+            .map_err(|e| JsError::new(&e.to_string()))
     }
 }

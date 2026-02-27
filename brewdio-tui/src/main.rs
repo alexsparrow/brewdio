@@ -271,6 +271,15 @@ fn handle_edit_input(app: &mut App, key: KeyEvent) {
         return;
     }
 
+    if app.confirm_equipment_idx.is_some() {
+        match key_code {
+            KeyCode::Char('y') | KeyCode::Char('Y') => app.confirm_equipment_yes(),
+            KeyCode::Char('n') | KeyCode::Char('N') | KeyCode::Esc => app.confirm_equipment_no(),
+            _ => {}
+        }
+        return;
+    }
+
     if let Some(ref mut selector) = app.equipment_selector {
         match selector.handle_key(key_code) {
             search_selector::SearchAction::Confirm(idx) => app.confirm_equipment(idx),
@@ -366,10 +375,28 @@ fn handle_batch_edit_input(app: &mut App, key: KeyEvent) {
         return;
     }
 
+    if app.confirm_equipment_idx.is_some() {
+        match key_code {
+            KeyCode::Char('y') | KeyCode::Char('Y') => app.confirm_equipment_yes(),
+            KeyCode::Char('n') | KeyCode::Char('N') | KeyCode::Esc => app.confirm_equipment_no(),
+            _ => {}
+        }
+        return;
+    }
+
     if let Some(ref mut selector) = app.style_selector {
         match selector.handle_key(key_code) {
             search_selector::SearchAction::Confirm(idx) => app.confirm_style(idx),
             search_selector::SearchAction::Cancel => app.cancel_style(),
+            search_selector::SearchAction::Nothing => {}
+        }
+        return;
+    }
+
+    if let Some(ref mut selector) = app.equipment_selector {
+        match selector.handle_key(key_code) {
+            search_selector::SearchAction::Confirm(idx) => app.confirm_equipment(idx),
+            search_selector::SearchAction::Cancel => app.cancel_equipment(),
             search_selector::SearchAction::Nothing => {}
         }
         return;
@@ -396,8 +423,9 @@ fn handle_batch_edit_input(app: &mut App, key: KeyEvent) {
         KeyCode::Esc | KeyCode::Char('q') => { app.back_from_batch(); return; }
         KeyCode::Char('r') => { app.open_recipe_from_batch(); return; }
         KeyCode::Char('n') => { app.editing_name = true; return; }
-        KeyCode::Char('e') => { app.start_edit_brew_date(); return; }
+        KeyCode::Char('b') => { app.start_edit_brew_date(); return; }
         KeyCode::Char('s') => { app.open_style_selector(); return; }
+        KeyCode::Char('e') => { app.open_equipment_selector(); return; }
         KeyCode::Char('v') => { app.open_batch_size_dialog(); return; }
         KeyCode::Char('o') => { app.open_notes_editor(NotesTarget::Batch); return; }
         KeyCode::Char('1') => { app.set_tab(0); return; }

@@ -2,9 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useBatch, updateBatchImperative, batchKeys } from "@/lib/db/batches";
 import { useQueryClient } from "@tanstack/react-query";
 import { getEquipment } from "brewdio-wasm";
+import type { EquipmentProfile } from "brewdio-wasm";
 import { EditableNotes } from "@/components/editable-notes";
 import { InlineEditable } from "@/components/inline-editable";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useCalculation } from "@/hooks/use-calculation";
 import { stores } from "@/lib/calculate";
 import { RetroCockpitDial } from "@/components/retro-cockpit-dial";
@@ -12,6 +13,16 @@ import { GravitySightGlass } from "@/components/gravity-sight-glass";
 import { Screw } from "@/components/screw";
 import { srmToSrgb, rgbToHex, colorToSrm, styleForRecipe } from "brewdio-wasm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { Info, Calendar } from "lucide-react";
 import { GrainIcon, HopIcon, YeastIcon } from "@/components/ingredient-icons";
 import type { FermentableAdditionType } from "brewdio-wasm";
@@ -49,6 +60,7 @@ function BatchOverviewComponent() {
 
   // Static equipment data
   const equipmentProfiles = getEquipment();
+  const [pendingEquipment, setPendingEquipment] = useState<EquipmentProfile | null>(null);
 
   const og = useCalculation<number>("og");
   const fg = useCalculation<number>("fg");
@@ -102,13 +114,21 @@ function BatchOverviewComponent() {
   };
 
   const handleEquipmentChange = (newEquipmentId: string) => {
-    const selectedEquipment = equipmentProfiles.find(e => e.name === newEquipmentId);
-    if (!selectedEquipment) return;
+    const selected = equipmentProfiles.find(e => e.id === newEquipmentId);
+    if (!selected) return;
+    setPendingEquipment(selected);
+  };
 
+  const confirmEquipmentChange = () => {
+    if (!pendingEquipment) return;
+    const updatedRecipe = structuredClone(beerRecipe);
+    updatedRecipe.efficiency = pendingEquipment.efficiency;
     updateBatch(() => ({
-      equipmentId: newEquipmentId,
-      equipment: structuredClone(selectedEquipment),
+      equipmentId: pendingEquipment.id,
+      equipment: structuredClone(pendingEquipment.equipment),
+      recipe: updatedRecipe,
     }));
+    setPendingEquipment(null);
   };
 
   const handleBrewDateChange = (newDate: string) => {
@@ -202,8 +222,8 @@ function BatchOverviewComponent() {
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             >
               {equipmentProfiles.map((profile) => (
-                <option key={profile.name} value={profile.name}>
-                  {profile.name}
+                <option key={profile.id} value={profile.id}>
+                  {profile.equipment.name} ({profile.efficiency.brewhouse.value}%)
                 </option>
               ))}
             </select>
@@ -506,6 +526,25 @@ function BatchOverviewComponent() {
           )}
         </div>
       </div>
+
+      <AlertDialog open={!!pendingEquipment} onOpenChange={(open) => { if (!open) setPendingEquipment(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change Equipment</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will set brewhouse efficiency to{" "}
+              <strong>{pendingEquipment?.efficiency.brewhouse.value}%</strong>,
+              overwriting the current value. Continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmEquipmentChange}>
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -336,6 +336,7 @@ pub struct App {
     pub editing_name: bool,
     pub style_selector: Option<SearchSelector>,
     pub equipment_selector: Option<SearchSelector>,
+    pub confirm_equipment_idx: Option<usize>, // pending equipment change awaiting confirmation
     pub fermentable_list_index: usize,
     pub fermentable_dialog: Option<FermentableDialog>,
     pub hop_list_index: usize,
@@ -394,6 +395,7 @@ impl App {
             editing_name: false,
             style_selector: None,
             equipment_selector: None,
+            confirm_equipment_idx: None,
             fermentable_list_index: 0,
             fermentable_dialog: None,
             hop_list_index: 0,
@@ -527,7 +529,7 @@ impl App {
 
     pub fn create_recipe(&mut self) {
         let recipe = default_recipe();
-        let result = db::create_recipe(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), "New Recipe", &recipe, None);
+        let result = db::create_recipe(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), "New Recipe", &recipe, None, None);
         if let Ok(row) = result {
             let id = row.id.clone();
             self.refresh_recipes();
@@ -593,8 +595,12 @@ impl App {
         if let (Screen::RecipeEdit { ref recipe_id }, Some(ref doc)) =
             (&self.screen, &self.current_doc)
         {
+            let default_profile = brewdio_core::data::equipment()[0].clone();
             let equip = doc.equipment.clone().unwrap_or_else(|| {
-                brewdio_core::data::equipment()[0].clone()
+                default_profile.equipment.clone()
+            });
+            let equipment_profile_id = doc.equipment_id.clone().unwrap_or_else(|| {
+                default_profile.id.clone()
             });
             let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
             let count = batch::count_batches_for_recipe(&*conn, recipe_id).unwrap_or(0);
@@ -605,6 +611,7 @@ impl App {
                 recipe_id,
                 &doc.recipe,
                 &equip,
+                &equipment_profile_id,
             );
             drop(conn);
             if let Ok(row) = result {
@@ -686,6 +693,7 @@ impl App {
                     name: row.name.clone(),
                     recipe: data.recipe.clone(),
                     equipment: Some(data.equipment.clone()),
+                    equipment_id: Some(data.equipment_id.clone()),
                     is_deleted: false,
                 };
                 self.name_input = row.name.clone();
@@ -936,12 +944,13 @@ impl App {
 
     pub fn open_equipment_selector(&mut self) {
         let all = brewdio_core::data::equipment();
+        // TODO: also load custom profiles from DB and combine
         let items: Vec<SearchItem> = all
             .iter()
             .enumerate()
-            .map(|(i, e)| SearchItem {
-                label: e.name.clone(),
-                detail: e.equipment_items.iter().map(|item| item.name.clone()).collect::<Vec<_>>().join(", "),
+            .map(|(i, p)| SearchItem {
+                label: p.name().to_string(),
+                detail: format!("{:.0}% eff, {}", p.efficiency.brewhouse.value, p.equipment.equipment_items.iter().map(|item| item.name.clone()).collect::<Vec<_>>().join(", ")),
                 index: i,
             })
             .collect();
@@ -949,7 +958,7 @@ impl App {
         // Pre-position cursor on current equipment
         if let Some(ref doc) = self.current_doc {
             if let Some(ref eq) = doc.equipment {
-                if let Some(pos) = all.iter().position(|e| e.name == eq.name) {
+                if let Some(pos) = all.iter().position(|p| p.equipment.name == eq.name) {
                     selector.set_cursor_to_index(pos);
                 }
             }
@@ -958,20 +967,45 @@ impl App {
     }
 
     pub fn confirm_equipment(&mut self, idx: usize) {
-        let all = brewdio_core::data::equipment();
-        let equipment = &all[idx];
-        if let Some(ref mut doc) = self.current_doc {
-            doc.equipment = Some(equipment.clone());
-        }
         self.equipment_selector = None;
-        // Save equipment via dedicated function
-        if let Screen::RecipeEdit { ref recipe_id } = self.screen {
-            let _ = db::set_recipe_equipment(
-                &*self.conn.lock().unwrap_or_else(|e| e.into_inner()),
-                recipe_id,
-                Some(equipment),
-            );
+        self.confirm_equipment_idx = Some(idx);
+    }
+
+    pub fn confirm_equipment_yes(&mut self) {
+        if let Some(idx) = self.confirm_equipment_idx.take() {
+            let all = brewdio_core::data::equipment();
+            let profile = &all[idx];
+            if let Some(ref mut doc) = self.current_doc {
+                doc.equipment = Some(profile.equipment.clone());
+                doc.equipment_id = Some(profile.id.clone());
+                // Copy efficiency into recipe
+                doc.recipe.efficiency = profile.efficiency.clone();
+            }
+            match self.screen {
+                Screen::RecipeEdit { ref recipe_id } => {
+                    let _ = db::set_recipe_equipment(
+                        &*self.conn.lock().unwrap_or_else(|e| e.into_inner()),
+                        recipe_id,
+                        Some(&profile.equipment),
+                        Some(&profile.id),
+                    );
+                    self.save_current();
+                }
+                Screen::BatchEdit { .. } => {
+                    // Update batch data's equipment too
+                    if let Some(ref mut batch_data) = self.current_batch_data {
+                        batch_data.equipment = profile.equipment.clone();
+                        batch_data.equipment_id = profile.id.clone();
+                    }
+                    self.save_current_batch();
+                }
+                _ => {}
+            }
         }
+    }
+
+    pub fn confirm_equipment_no(&mut self) {
+        self.confirm_equipment_idx = None;
     }
 
     pub fn cancel_equipment(&mut self) {

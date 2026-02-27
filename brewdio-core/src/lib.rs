@@ -1,5 +1,6 @@
 pub mod beerjson_types;
 pub mod data;
+pub mod equipment_profile;
 pub mod units;
 
 pub mod abv;

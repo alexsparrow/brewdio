@@ -8,9 +8,14 @@ pub struct RecipeRow {
     pub name: String,
     pub recipe: String,
     pub equipment: Option<String>,
+    pub equipment_id: Option<String>,
     pub am_data: Vec<u8>,
     pub is_deleted: bool,
     pub is_dirty: bool,
+}
+
+fn default_none<T>() -> Option<T> {
+    None
 }
 
 /// Automerge-reconciled document for CRDT sync.
@@ -19,7 +24,10 @@ pub struct RecipeDocument {
     pub id: String,
     pub name: String,
     pub recipe: RecipeType,
+    #[autosurgeon(missing = "default_none")]
     pub equipment: Option<EquipmentType>,
+    #[autosurgeon(missing = "default_none")]
+    pub equipment_id: Option<String>,
     pub is_deleted: bool,
 }
 
@@ -36,6 +44,7 @@ impl RecipeRow {
             name: self.name.clone(),
             recipe,
             equipment,
+            equipment_id: self.equipment_id.clone(),
             is_deleted: self.is_deleted,
         })
     }
@@ -54,6 +63,7 @@ impl RecipeDocument {
             name: self.name.clone(),
             recipe: recipe_json,
             equipment: equipment_json,
+            equipment_id: self.equipment_id.clone(),
             am_data,
             is_deleted: self.is_deleted,
             is_dirty: true,
@@ -106,6 +116,7 @@ mod tests {
             name: "Test IPA".to_string(),
             recipe,
             equipment: None,
+            equipment_id: None,
             is_deleted: false,
         };
 
@@ -127,19 +138,21 @@ mod tests {
     #[test]
     fn automerge_roundtrip_with_equipment() {
         let recipe: RecipeType = serde_json::from_str(sample_recipe_json()).unwrap();
-        let equipment = brewdio_core::data::equipment()[0].clone();
+        let profile = brewdio_core::data::equipment()[0].clone();
         let doc = RecipeDocument {
             id: "equip-test".to_string(),
             name: "Equipped IPA".to_string(),
             recipe,
-            equipment: Some(equipment.clone()),
+            equipment: Some(profile.equipment.clone()),
+            equipment_id: Some(profile.id.clone()),
             is_deleted: false,
         };
 
         let bytes = reconcile_to_automerge(&doc, None).unwrap();
         let hydrated: RecipeDocument = hydrate_from_automerge(&bytes).unwrap();
         assert!(hydrated.equipment.is_some());
-        assert_eq!(hydrated.equipment.unwrap().name, equipment.name);
+        assert_eq!(hydrated.equipment.unwrap().name, profile.equipment.name);
+        assert_eq!(hydrated.equipment_id.as_deref(), Some("default-setup"));
     }
 
     #[test]
@@ -150,6 +163,7 @@ mod tests {
             name: "Test IPA".to_string(),
             recipe: recipe.clone(),
             equipment: None,
+            equipment_id: None,
             is_deleted: false,
         };
 
@@ -162,6 +176,7 @@ mod tests {
             name: "Updated IPA".to_string(),
             recipe,
             equipment: None,
+            equipment_id: None,
             is_deleted: false,
         };
         let bytes_v2 = reconcile_to_automerge(&doc_v2, Some(&bytes_v1)).unwrap();
@@ -212,6 +227,7 @@ mod tests {
             name: "Belgian Ale".to_string(),
             recipe,
             equipment: None,
+            equipment_id: None,
             is_deleted: false,
         };
 
@@ -232,6 +248,7 @@ mod tests {
                 name: "Row Test".to_string(),
                 recipe: recipe.clone(),
                 equipment: None,
+                equipment_id: None,
                 is_deleted: false,
             },
             None,
@@ -242,6 +259,7 @@ mod tests {
             name: "Row Test".to_string(),
             recipe: serde_json::to_string(&recipe).unwrap(),
             equipment: None,
+            equipment_id: None,
             am_data: am_data.clone(),
             is_deleted: false,
             is_dirty: true,
@@ -261,13 +279,14 @@ mod tests {
     fn row_document_conversion_with_equipment() {
         let recipe_json = sample_recipe_json();
         let recipe: RecipeType = serde_json::from_str(recipe_json).unwrap();
-        let equipment = brewdio_core::data::equipment()[0].clone();
+        let profile = brewdio_core::data::equipment()[0].clone();
         let am_data = reconcile_to_automerge(
             &RecipeDocument {
                 id: "row-eq-id".to_string(),
                 name: "Equipped Row".to_string(),
                 recipe: recipe.clone(),
-                equipment: Some(equipment.clone()),
+                equipment: Some(profile.equipment.clone()),
+                equipment_id: Some(profile.id.clone()),
                 is_deleted: false,
             },
             None,
@@ -277,7 +296,8 @@ mod tests {
             id: "row-eq-id".to_string(),
             name: "Equipped Row".to_string(),
             recipe: serde_json::to_string(&recipe).unwrap(),
-            equipment: Some(serde_json::to_string(&equipment).unwrap()),
+            equipment: Some(serde_json::to_string(&profile.equipment).unwrap()),
+            equipment_id: Some(profile.id.clone()),
             am_data: am_data.clone(),
             is_deleted: false,
             is_dirty: true,
@@ -286,8 +306,44 @@ mod tests {
         let doc = row.to_document().unwrap();
         assert!(doc.equipment.is_some());
         assert_eq!(doc.equipment.as_ref().unwrap().name, "Default Setup");
+        assert_eq!(doc.equipment_id.as_deref(), Some("default-setup"));
 
         let back = doc.to_row(am_data).unwrap();
         assert!(back.equipment.is_some());
+        assert_eq!(back.equipment_id.as_deref(), Some("default-setup"));
+    }
+
+    /// Legacy automerge documents (created before equipment_id was added)
+    /// should still hydrate correctly with the missing fields defaulting to None.
+    #[test]
+    fn hydrate_legacy_document_without_equipment_fields() {
+        // Simulate a legacy document that only has id, name, recipe, is_deleted
+        // (no equipment or equipment_id keys in the automerge doc)
+        #[derive(autosurgeon::Reconcile)]
+        struct LegacyRecipeDocument {
+            id: String,
+            name: String,
+            recipe: RecipeType,
+            is_deleted: bool,
+        }
+
+        let recipe: RecipeType = serde_json::from_str(sample_recipe_json()).unwrap();
+        let legacy = LegacyRecipeDocument {
+            id: "legacy-id".to_string(),
+            name: "Legacy IPA".to_string(),
+            recipe,
+            is_deleted: false,
+        };
+
+        // Create automerge bytes with the legacy schema (no equipment fields)
+        let bytes = reconcile_to_automerge(&legacy, None).unwrap();
+
+        // Hydrate with the current schema — should succeed thanks to #[autosurgeon(missing)]
+        let hydrated: RecipeDocument = hydrate_from_automerge(&bytes).unwrap();
+        assert_eq!(hydrated.id, "legacy-id");
+        assert_eq!(hydrated.name, "Legacy IPA");
+        assert!(hydrated.equipment.is_none());
+        assert!(hydrated.equipment_id.is_none());
+        assert!(!hydrated.is_deleted);
     }
 }

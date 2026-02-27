@@ -2,6 +2,7 @@ pub mod automerge;
 pub mod batch;
 pub mod connection;
 pub mod db;
+pub mod equipment_profile;
 pub mod protocol;
 pub mod recipe;
 pub mod settings;

@@ -56,22 +56,25 @@ async fn run_sync(
         }
     };
 
-    let (client_recipe_ids, client_batch_ids, client_settings_ids) = match client_hello {
+    let (client_recipe_ids, client_batch_ids, client_settings_ids, client_equipment_profile_ids) = match client_hello {
         SyncMessage::Hello {
             recipe_ids,
             batch_ids,
             settings_ids,
+            equipment_profile_ids,
         } => {
             eprintln!(
-                "[server] received Hello with {} recipe(s), {} batch(es), {} settings",
+                "[server] received Hello with {} recipe(s), {} batch(es), {} settings, {} equipment_profile(s)",
                 recipe_ids.len(),
                 batch_ids.len(),
-                settings_ids.len()
+                settings_ids.len(),
+                equipment_profile_ids.len()
             );
             (
                 recipe_ids.into_iter().collect::<HashSet<_>>(),
                 batch_ids.into_iter().collect::<HashSet<_>>(),
                 settings_ids.into_iter().collect::<HashSet<_>>(),
+                equipment_profile_ids.into_iter().collect::<HashSet<_>>(),
             )
         }
         _ => return Err("Expected Hello from client".into()),
@@ -84,34 +87,38 @@ async fn run_sync(
     }
 
     // --- Send server Hello ---
-    let (local_recipe_ids, local_batch_ids, local_settings_ids) = {
+    let (local_recipe_ids, local_batch_ids, local_settings_ids, local_equipment_profile_ids) = {
         let c = conn.lock().unwrap_or_else(|e| e.into_inner());
         (
             db::list_all_doc_ids(&*c, DocType::Recipe)?,
             db::list_all_doc_ids(&*c, DocType::Batch)?,
             db::list_all_doc_ids(&*c, DocType::Settings)?,
+            db::list_all_doc_ids(&*c, DocType::EquipmentProfile)?,
         )
     };
     eprintln!(
-        "[server] sending Hello with {} recipe(s), {} batch(es), {} settings",
+        "[server] sending Hello with {} recipe(s), {} batch(es), {} settings, {} equipment_profile(s)",
         local_recipe_ids.len(),
         local_batch_ids.len(),
-        local_settings_ids.len()
+        local_settings_ids.len(),
+        local_equipment_profile_ids.len()
     );
     let hello = SyncMessage::Hello {
         recipe_ids: local_recipe_ids.clone(),
         batch_ids: local_batch_ids.clone(),
         settings_ids: local_settings_ids.clone(),
+        equipment_profile_ids: local_equipment_profile_ids.clone(),
     };
     ws_tx
         .send(Message::Text(serde_json::to_string(&hello)?.into()))
         .await?;
 
     // Send NewDoc for server-only docs and initiate sync for shared docs
-    let local_sets: [(DocType, HashSet<String>, &HashSet<String>); 3] = [
+    let local_sets: [(DocType, HashSet<String>, &HashSet<String>); 4] = [
         (DocType::Recipe, local_recipe_ids.into_iter().collect(), &client_recipe_ids),
         (DocType::Batch, local_batch_ids.into_iter().collect(), &client_batch_ids),
         (DocType::Settings, local_settings_ids.into_iter().collect(), &client_settings_ids),
+        (DocType::EquipmentProfile, local_equipment_profile_ids.into_iter().collect(), &client_equipment_profile_ids),
     ];
 
     for (doc_type, local_ids, client_ids) in &local_sets {

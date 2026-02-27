@@ -7,7 +7,7 @@ import { BrewBatchDialog } from "@/components/brew-batch-dialog";
 import type { RecipeDocument } from "@/lib/db/recipes";
 import { getRecipeDb, recipeKeys } from "@/lib/db/recipes";
 import { useQueryClient } from "@tanstack/react-query";
-import { getStyles, type EquipmentType } from "brewdio-wasm";
+import { getStyles, type EquipmentProfile } from "brewdio-wasm";
 
 interface RecipeHeaderProps {
   recipe: RecipeDocument;
@@ -68,9 +68,17 @@ export function RecipeHeader({
     invalidate();
   };
 
-  const handleEquipmentUpdate = async (equipment: EquipmentType | null) => {
+  const handleEquipmentUpdate = async (profile: EquipmentProfile | null) => {
     const db = getRecipeDb();
-    db.setRecipeEquipment(recipe.id, (equipment ?? undefined) as any);
+    if (profile) {
+      db.setRecipeEquipment(recipe.id, profile.equipment as any, profile.id);
+      // Copy efficiency into the recipe
+      const updated = structuredClone(recipe.recipe);
+      updated.efficiency = profile.efficiency;
+      db.updateRecipe(recipe.id, updated.name, updated as any);
+    } else {
+      db.setRecipeEquipment(recipe.id, undefined as any, undefined);
+    }
     invalidate();
   };
 

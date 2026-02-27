@@ -40,6 +40,20 @@ const MIGRATIONS: &[&str] = &[
     "#,
     // V1 → V2: Add equipment to recipes
     "ALTER TABLE recipe ADD COLUMN equipment TEXT;",
+    // V2 → V3: Add equipment_profile table and recipe equipment_id column
+    r#"
+    CREATE TABLE IF NOT EXISTS equipment_profile (
+        id TEXT PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL UNIQUE,
+        data TEXT NOT NULL,
+        efficiency TEXT NOT NULL,
+        am_data BLOB NOT NULL DEFAULT X'',
+        is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
+        is_dirty BOOLEAN NOT NULL DEFAULT TRUE
+    );
+
+    ALTER TABLE recipe ADD COLUMN equipment_id TEXT;
+    "#,
 ];
 
 /// Run all pending migrations and update PRAGMA user_version.

@@ -232,6 +232,52 @@ fn draw_confirm_delete(frame: &mut Frame, recipe_name: &str, area: Rect) {
     );
 }
 
+fn draw_confirm_equipment(frame: &mut Frame, new_efficiency: f64, area: Rect) {
+    let popup_width = 48u16.min(area.width.saturating_sub(4));
+    let popup_height = 5u16.min(area.height.saturating_sub(2));
+    let popup_area = centered_rect(popup_width, popup_height, area);
+
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(" Change Equipment ");
+    let inner = block.inner(popup_area);
+    frame.render_widget(
+        Paragraph::new("").style(Style::default().bg(Color::Black)),
+        popup_area,
+    );
+    frame.render_widget(block, popup_area);
+
+    let rows = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(1),
+            Constraint::Length(1),
+            Constraint::Min(0),
+        ])
+        .split(inner);
+
+    frame.render_widget(
+        Paragraph::new(Line::from(vec![
+            Span::styled(" Overwrite efficiency to ", Style::default().fg(Color::White)),
+            Span::styled(
+                format!("{:.0}%", new_efficiency),
+                Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD),
+            ),
+            Span::styled("?", Style::default().fg(Color::White)),
+        ])),
+        rows[0],
+    );
+    frame.render_widget(
+        Paragraph::new(Line::from(vec![
+            Span::styled(" [y]", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
+            Span::styled("es  ", Style::default().fg(Color::DarkGray)),
+            Span::styled("[n]", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+            Span::styled("o", Style::default().fg(Color::DarkGray)),
+        ])),
+        rows[1],
+    );
+}
+
 fn draw_batches_tab(frame: &mut Frame, app: &App, area: Rect) {
     let block = Block::default().borders(Borders::ALL).title(" Batches ");
     let inner = block.inner(area);
@@ -360,7 +406,9 @@ fn draw_recipe_edit(frame: &mut Frame, app: &App) {
     draw_tab_content(frame, app, outer[2]);
 
     // Help bar
-    let help_text = if app.editing_name {
+    let help_text = if app.confirm_equipment_idx.is_some() {
+        " [y]es  [n]o"
+    } else if app.editing_name {
         " Type to edit, [Enter] confirm, [Esc] cancel"
     } else if app.style_selector.is_some() || app.equipment_selector.is_some() {
         " Type to search, [↑/↓] navigate, [Enter] confirm, [Esc] cancel"
@@ -420,6 +468,13 @@ fn draw_recipe_edit(frame: &mut Frame, app: &App) {
         .block(Block::default().borders(Borders::ALL));
     frame.render_widget(help, outer[3]);
 
+    // Confirm equipment change popup overlay
+    if let Some(idx) = app.confirm_equipment_idx {
+        let all = brewdio_core::data::equipment();
+        let new_eff = all[idx].efficiency.brewhouse.value;
+        draw_confirm_equipment(frame, new_eff, frame.area());
+    }
+
     // Notes popup overlay
     if app.notes_editor.is_some() {
         draw_notes_popup(frame, app);
@@ -450,7 +505,9 @@ fn draw_batch_edit(frame: &mut Frame, app: &App) {
     draw_vitals_panel(frame, app, cols[1]);
     draw_tab_content(frame, app, outer[2]);
 
-    let help_text = if app.editing_name {
+    let help_text = if app.confirm_equipment_idx.is_some() {
+        " [y]es  [n]o"
+    } else if app.editing_name {
         " Type to edit, [Enter] confirm, [Esc] cancel"
     } else if app.editing_brew_date {
         " Type date (YYYY-MM-DD), [Enter] confirm, [Esc] cancel"
@@ -500,15 +557,22 @@ fn draw_batch_edit(frame: &mut Frame, app: &App) {
     } else if app.notes_editor.is_some() {
         " [F2] save  [Esc] cancel"
     } else if app.active_tab == Tab::History {
-        " [j/k] navigate  [n]ame  [e]date  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
+        " [j/k] navigate  [n]ame  [b]rew date  [e]quip  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
     } else if app.active_tab == Tab::Fermentables || app.active_tab == Tab::Hops || app.active_tab == Tab::Cultures {
-        " [a]dd  [Enter] edit  [d]elete  [j/k] navigate  [n]ame  [e]date  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
+        " [a]dd  [Enter] edit  [d]elete  [j/k] navigate  [n]ame  [b]rew date  [e]quip  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
     } else {
-        " [n]ame  [e]date  [v]ol  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
+        " [n]ame  [b]rew date  [e]quip  [v]ol  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
     };
     let help = Paragraph::new(Line::from(Span::raw(help_text)))
         .block(Block::default().borders(Borders::ALL));
     frame.render_widget(help, outer[3]);
+
+    // Confirm equipment change popup overlay
+    if let Some(idx) = app.confirm_equipment_idx {
+        let all = brewdio_core::data::equipment();
+        let new_eff = all[idx].efficiency.brewhouse.value;
+        draw_confirm_equipment(frame, new_eff, frame.area());
+    }
 
     // Notes popup overlay
     if app.notes_editor.is_some() {
@@ -524,7 +588,7 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
     let inner = block.inner(area);
     frame.render_widget(block, area);
 
-    let row_count = if is_batch { 6 } else { 5 };
+    let row_count = if is_batch { 7 } else { 6 };
     let mut constraints: Vec<Constraint> = (0..row_count).map(|_| Constraint::Length(1)).collect();
     constraints.push(Constraint::Min(0));
 
@@ -597,6 +661,19 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
     }
     row_idx += 1;
 
+    // Efficiency row
+    let eff_display = if let Some(ref doc) = app.current_doc {
+        format!("{:.0}%", doc.recipe.efficiency.brewhouse.value)
+    } else {
+        "(none)".to_string()
+    };
+    let eff_line = Line::from(vec![
+        Span::styled(" Effic: ", Style::default().fg(Color::DarkGray)),
+        Span::raw(eff_display),
+    ]);
+    frame.render_widget(Paragraph::new(eff_line), rows[row_idx]);
+    row_idx += 1;
+
     // Batch size row
     let batch_line = Line::from(vec![
         Span::styled(" Batch: ", Style::default().fg(Color::DarkGray)),
@@ -618,7 +695,7 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
             app.brew_date_input.clone()
         };
         let date_line = Line::from(vec![
-            Span::styled(" Date:  ", Style::default().fg(Color::DarkGray)),
+            Span::styled(" Brew:  ", Style::default().fg(Color::DarkGray)),
             Span::styled(date_display, date_style),
         ]);
         frame.render_widget(Paragraph::new(date_line), rows[row_idx]);

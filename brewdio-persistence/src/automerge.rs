@@ -267,9 +267,13 @@ pub fn get_recipe_history(bytes: &[u8]) -> Vec<HistoryEntry> {
             let curr: Option<RecipeDocument> = hydrate(&partial).ok();
             let s = match (&prev_doc, &curr) {
                 (Some(prev), Some(curr)) => diff_recipe(prev, curr),
-                _ => format!("{} operation(s)", ce.num_ops),
+                _ => "Updated".to_string(),
             };
-            prev_doc = curr;
+            // Only advance prev_doc if hydration succeeded; otherwise
+            // keep the last good state so future diffs still work.
+            if curr.is_some() {
+                prev_doc = curr;
+            }
             s
         };
 
@@ -311,9 +315,11 @@ pub fn get_batch_history(bytes: &[u8]) -> Vec<HistoryEntry> {
             let curr: Option<BatchDocument> = hydrate(&partial).ok();
             let s = match (&prev_doc, &curr) {
                 (Some(prev), Some(curr)) => diff_batch(prev, curr),
-                _ => format!("{} operation(s)", ce.num_ops),
+                _ => "Updated".to_string(),
             };
-            prev_doc = curr;
+            if curr.is_some() {
+                prev_doc = curr;
+            }
             s
         };
 
@@ -370,8 +376,50 @@ fn diff_recipe(prev: &RecipeDocument, curr: &RecipeDocument) -> String {
         }
     }
 
+    // Equipment
+    let prev_equip = prev.equipment.as_ref().map(|e| e.name.as_str());
+    let curr_equip = curr.equipment.as_ref().map(|e| e.name.as_str());
+    if prev_equip != curr_equip {
+        match curr_equip {
+            Some(name) => diffs.push(format!("Set equipment to \"{}\"", name)),
+            None => diffs.push("Removed equipment".to_string()),
+        }
+    }
+
+    // Efficiency
+    let prev_eff = prev.recipe.efficiency.brewhouse.value;
+    let curr_eff = curr.recipe.efficiency.brewhouse.value;
+    if (prev_eff - curr_eff).abs() > 0.01 {
+        diffs.push(format!("Changed efficiency to {:.0}%", curr_eff));
+    }
+
+    // Boil time
+    let prev_boil = prev.recipe.boil.as_ref().map(|b| format!("{} {:?}", b.boil_time.value, b.boil_time.unit));
+    let curr_boil = curr.recipe.boil.as_ref().map(|b| format!("{} {:?}", b.boil_time.value, b.boil_time.unit));
+    if prev_boil != curr_boil {
+        diffs.push("Changed boil time".to_string());
+    }
+
+    // Pre-boil size
+    let prev_pbs = prev.recipe.boil.as_ref().and_then(|b| b.pre_boil_size.as_ref()).map(|v| format!("{} {:?}", v.value, v.unit));
+    let curr_pbs = curr.recipe.boil.as_ref().and_then(|b| b.pre_boil_size.as_ref()).map(|v| format!("{} {:?}", v.value, v.unit));
+    if prev_pbs != curr_pbs {
+        diffs.push("Changed boil size".to_string());
+    }
+
+    // Mash steps
+    let prev_mash_json = serde_json::to_string(&prev.recipe.mash).unwrap_or_default();
+    let curr_mash_json = serde_json::to_string(&curr.recipe.mash).unwrap_or_default();
+    if prev_mash_json != curr_mash_json {
+        diffs.push("Changed mash profile".to_string());
+    }
+
     if prev.recipe.notes != curr.recipe.notes {
         diffs.push("Updated notes".to_string());
+    }
+
+    if prev.recipe.type_ != curr.recipe.type_ {
+        diffs.push(format!("Changed type to {:?}", curr.recipe.type_));
     }
 
     if diffs.is_empty() {
@@ -402,6 +450,18 @@ fn diff_batch(prev: &BatchDocument, curr: &BatchDocument) -> String {
         diffs.push("Updated notes".to_string());
     }
 
+    // Equipment
+    if prev.data.equipment.name != curr.data.equipment.name {
+        diffs.push(format!("Set equipment to \"{}\"", curr.data.equipment.name));
+    }
+
+    // Efficiency
+    let prev_eff = prev.data.recipe.efficiency.brewhouse.value;
+    let curr_eff = curr.data.recipe.efficiency.brewhouse.value;
+    if (prev_eff - curr_eff).abs() > 0.01 {
+        diffs.push(format!("Changed efficiency to {:.0}%", curr_eff));
+    }
+
     diff_ingredients(
         &prev.data.recipe.ingredients.fermentable_additions,
         &curr.data.recipe.ingredients.fermentable_additions,
@@ -420,6 +480,30 @@ fn diff_batch(prev: &BatchDocument, curr: &BatchDocument) -> String {
         "culture",
         &mut diffs,
     );
+
+    // Batch size
+    let prev_bs = format!("{} {:?}", prev.data.recipe.batch_size.value, prev.data.recipe.batch_size.unit);
+    let curr_bs = format!("{} {:?}", curr.data.recipe.batch_size.value, curr.data.recipe.batch_size.unit);
+    if prev_bs != curr_bs {
+        diffs.push("Changed batch size".to_string());
+    }
+
+    // Style
+    let prev_style = prev.data.recipe.style.as_ref().map(|s| s.0.name.as_str());
+    let curr_style = curr.data.recipe.style.as_ref().map(|s| s.0.name.as_str());
+    if prev_style != curr_style {
+        match curr_style {
+            Some(name) => diffs.push(format!("Set style to \"{}\"", name)),
+            None => diffs.push("Removed style".to_string()),
+        }
+    }
+
+    // Mash
+    let prev_mash_json = serde_json::to_string(&prev.data.recipe.mash).unwrap_or_default();
+    let curr_mash_json = serde_json::to_string(&curr.data.recipe.mash).unwrap_or_default();
+    if prev_mash_json != curr_mash_json {
+        diffs.push("Changed mash profile".to_string());
+    }
 
     if diffs.is_empty() {
         "Updated".to_string()
@@ -491,7 +575,7 @@ mod tests {
         let conn = test_conn();
 
         // Create a recipe
-        let row = create_recipe(&conn, "Version 1", &sample_recipe(), None).unwrap();
+        let row = create_recipe(&conn, "Version 1", &sample_recipe(), None, None).unwrap();
         let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
         let history = get_change_history(&fetched.am_data);
         assert_eq!(history.len(), 1, "Create should produce 1 change");
@@ -532,7 +616,7 @@ mod tests {
     fn recipe_history_tracks_delete() {
         let conn = test_conn();
 
-        let row = create_recipe(&conn, "My Beer", &sample_recipe(), None).unwrap();
+        let row = create_recipe(&conn, "My Beer", &sample_recipe(), None, None).unwrap();
 
         // Update once
         update_recipe(&conn, &row.id, "My Beer v2", &sample_recipe(), None).unwrap();

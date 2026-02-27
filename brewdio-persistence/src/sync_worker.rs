@@ -61,18 +61,20 @@ async fn connect_and_sync(
     }
 
     // --- Hello handshake ---
-    let (local_recipe_ids, local_batch_ids, local_settings_ids) = {
+    let (local_recipe_ids, local_batch_ids, local_settings_ids, local_equipment_profile_ids) = {
         let c = conn.lock().unwrap_or_else(|e| e.into_inner());
         (
             db::list_all_doc_ids(&*c, DocType::Recipe)?,
             db::list_all_doc_ids(&*c, DocType::Batch)?,
             db::list_all_doc_ids(&*c, DocType::Settings)?,
+            db::list_all_doc_ids(&*c, DocType::EquipmentProfile)?,
         )
     };
     let hello = SyncMessage::Hello {
         recipe_ids: local_recipe_ids.clone(),
         batch_ids: local_batch_ids.clone(),
         settings_ids: local_settings_ids.clone(),
+        equipment_profile_ids: local_equipment_profile_ids.clone(),
     };
     ws_tx
         .send(Message::Text(serde_json::to_string(&hello)?.into()))
@@ -91,15 +93,17 @@ async fn connect_and_sync(
         }
     };
 
-    let (server_recipe_ids, server_batch_ids, server_settings_ids) = match server_hello {
+    let (server_recipe_ids, server_batch_ids, server_settings_ids, server_equipment_profile_ids) = match server_hello {
         SyncMessage::Hello {
             recipe_ids,
             batch_ids,
             settings_ids,
+            equipment_profile_ids,
         } => (
             recipe_ids.into_iter().collect::<HashSet<_>>(),
             batch_ids.into_iter().collect::<HashSet<_>>(),
             settings_ids.into_iter().collect::<HashSet<_>>(),
+            equipment_profile_ids.into_iter().collect::<HashSet<_>>(),
         ),
         _ => return Err("Expected Hello from server".into()),
     };
@@ -108,10 +112,11 @@ async fn connect_and_sync(
     connected.store(true, Ordering::Relaxed);
 
     // Send NewDoc for docs only we have
-    let local_sets: [(DocType, HashSet<String>, &HashSet<String>); 3] = [
+    let local_sets: [(DocType, HashSet<String>, &HashSet<String>); 4] = [
         (DocType::Recipe, local_recipe_ids.into_iter().collect(), &server_recipe_ids),
         (DocType::Batch, local_batch_ids.into_iter().collect(), &server_batch_ids),
         (DocType::Settings, local_settings_ids.into_iter().collect(), &server_settings_ids),
+        (DocType::EquipmentProfile, local_equipment_profile_ids.into_iter().collect(), &server_equipment_profile_ids),
     ];
 
     for (doc_type, local_ids, server_ids) in &local_sets {
