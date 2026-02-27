@@ -7,7 +7,7 @@ import { BrewBatchDialog } from "@/components/brew-batch-dialog";
 import type { RecipeDocument } from "@/lib/db/recipes";
 import { getRecipeDb, recipeKeys } from "@/lib/db/recipes";
 import { useQueryClient } from "@tanstack/react-query";
-import { getStyles, type EquipmentProfile } from "brewdio-wasm";
+import { getStyles, type EquipmentProfile, type RecipeTypeType, type RecipeStyleType, type StyleCategories } from "brewdio-wasm";
 
 interface RecipeHeaderProps {
   recipe: RecipeDocument;
@@ -33,15 +33,15 @@ export function RecipeHeader({
     const db = getRecipeDb();
     const updated = structuredClone(recipe.recipe);
     updated.name = newName;
-    db.updateRecipe(recipe.id, newName, updated as any);
+    db.updateRecipe(recipe.id, newName, updated);
     invalidate();
   };
 
   const handleTypeUpdate = async (newType: string) => {
     const db = getRecipeDb();
     const updated = structuredClone(recipe.recipe);
-    updated.type = newType as any;
-    db.updateRecipe(recipe.id, updated.name, updated as any);
+    updated.type = newType as RecipeTypeType;
+    db.updateRecipe(recipe.id, updated.name, updated);
     invalidate();
   };
 
@@ -61,23 +61,22 @@ export function RecipeHeader({
       category_number: selectedStyle.category_number,
       style_guide: selectedStyle.style_guide,
       style_letter: selectedStyle.style_letter,
-      type: (selectedStyle as any).type,
-    } as any;
-    console.log(updated);
-    db.updateRecipe(recipe.id, updated.name, updated as any);
+      type: selectedStyle.type as StyleCategories,
+    } satisfies RecipeStyleType;
+    db.updateRecipe(recipe.id, updated.name, updated);
     invalidate();
   };
 
   const handleEquipmentUpdate = async (profile: EquipmentProfile | null) => {
     const db = getRecipeDb();
     if (profile) {
-      db.setRecipeEquipment(recipe.id, profile.equipment as any, profile.id);
+      db.setRecipeEquipment(recipe.id, profile.equipment, profile.id);
       // Copy efficiency into the recipe
       const updated = structuredClone(recipe.recipe);
       updated.efficiency = profile.efficiency;
-      db.updateRecipe(recipe.id, updated.name, updated as any);
+      db.updateRecipe(recipe.id, updated.name, updated);
     } else {
-      db.setRecipeEquipment(recipe.id, undefined as any, undefined);
+      db.setRecipeEquipment(recipe.id, undefined, undefined);
     }
     invalidate();
   };

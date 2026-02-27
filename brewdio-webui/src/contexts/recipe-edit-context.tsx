@@ -49,7 +49,7 @@ export function RecipeEditProvider({
         // Apply the draft function to a mutable copy
         const draft = { recipe: structuredClone(current.recipe) } as { recipe: RecipeType; updatedAt?: number };
         draftFn(draft);
-        db.updateRecipe(id, draft.recipe.name, draft.recipe as any);
+        db.updateRecipe(id, draft.recipe.name, draft.recipe);
         // Invalidate queries so UI updates
         queryClient.invalidateQueries({ queryKey: recipeKeys.all });
         queryClient.invalidateQueries({ queryKey: recipeKeys.detail(id) });

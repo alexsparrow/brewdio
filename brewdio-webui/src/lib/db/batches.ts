@@ -108,7 +108,7 @@ export function createBatchImperative(
   data: Omit<BatchDocument, 'id' | 'name' | 'recipeId'>,
 ): string {
   const db = getRecipeDb();
-  return db.createBatch(name, recipeId, batchDocToData(data) as any);
+  return db.createBatch(name, recipeId, batchDocToData(data));
 }
 
 export function updateBatchImperative(
@@ -117,7 +117,7 @@ export function updateBatchImperative(
   data: Omit<BatchDocument, 'id' | 'name' | 'recipeId'>,
 ): void {
   const db = getRecipeDb();
-  db.updateBatch(id, name, batchDocToData(data) as any);
+  db.updateBatch(id, name, batchDocToData(data));
 }
 
 export function deleteBatchImperative(id: string): void {

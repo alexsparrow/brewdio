@@ -29,8 +29,7 @@ export const Route = createFileRoute("/recipes/$recipeId")({
  * Get hex color for a fermentable based on its SRM value
  */
 function getFermentableColorHex(fermentable: FermentableAdditionType): string | undefined {
-  // Check both fermentable.type.color and fermentable.color
-  const colorData = (fermentable.type as any)?.color || (fermentable as any).color;
+  const colorData = fermentable.color;
 
   if (!colorData) {
     return undefined;
@@ -86,7 +85,7 @@ function RecipeDetailComponent() {
     const updated = structuredClone(recipe.recipe);
     mutateFn(updated);
     const db = getRecipeDb();
-    db.updateRecipe(recipeId, updated.name, updated as any);
+    db.updateRecipe(recipeId, updated.name, updated);
     queryClient.invalidateQueries({ queryKey: recipeKeys.all });
     queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipeId) });
   };

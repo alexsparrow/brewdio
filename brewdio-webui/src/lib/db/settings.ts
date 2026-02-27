@@ -60,7 +60,7 @@ export function getSettingsImperative(): SettingsDocument {
 
 export function saveSettingsImperative(settings: SettingsDocument): void {
   const db = getRecipeDb();
-  db.saveSettings(settings as any);
+  db.saveSettings(settings);
 }
 
 // ---------------------------------------------------------------------------

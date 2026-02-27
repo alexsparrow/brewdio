@@ -89,7 +89,7 @@ export function useCreateRecipe() {
   return useMutation({
     mutationFn: ({ name, recipe }: { name: string; recipe: RecipeType }) => {
       const db = getRecipeDb();
-      const id = db.createRecipe(name, recipe as any);
+      const id = db.createRecipe(name, recipe);
       return Promise.resolve(id);
     },
     onSuccess: () => {
@@ -103,7 +103,7 @@ export function useUpdateRecipe() {
   return useMutation({
     mutationFn: ({ id, name, recipe }: { id: string; name: string; recipe: RecipeType }) => {
       const db = getRecipeDb();
-      db.updateRecipe(id, name, recipe as any);
+      db.updateRecipe(id, name, recipe);
       return Promise.resolve();
     },
     onSuccess: (_data, variables) => {
@@ -134,13 +134,13 @@ export function useDeleteRecipe() {
 /** Create a recipe imperatively. Returns the new recipe ID. */
 export function createRecipeImperative(name: string, recipe: RecipeType): string {
   const db = getRecipeDb();
-  return db.createRecipe(name, recipe as any);
+  return db.createRecipe(name, recipe);
 }
 
 /** Update a recipe imperatively. */
 export function updateRecipeImperative(id: string, name: string, recipe: RecipeType): void {
   const db = getRecipeDb();
-  db.updateRecipe(id, name, recipe as any);
+  db.updateRecipe(id, name, recipe);
 }
 
 /** Delete a recipe imperatively. */

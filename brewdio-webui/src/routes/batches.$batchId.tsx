@@ -28,8 +28,7 @@ export const Route = createFileRoute("/batches/$batchId")({
  * Get hex color for a fermentable based on its SRM value
  */
 function getFermentableColorHex(fermentable: FermentableAdditionType): string | undefined {
-  // Check both fermentable.type.color and fermentable.color
-  const colorData = (fermentable.type as any)?.color || (fermentable as any).color;
+  const colorData = fermentable.color;
 
   if (!colorData) {
     return undefined;

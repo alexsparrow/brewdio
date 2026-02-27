@@ -149,7 +149,7 @@ function RecipeJsonEditorComponent() {
 
       // Update the recipe in the database
       const db = getRecipeDb();
-      db.updateRecipe(recipeId, parsedRecipe.name, parsedRecipe as any);
+      db.updateRecipe(recipeId, parsedRecipe.name, parsedRecipe);
       queryClient.invalidateQueries({ queryKey: recipeKeys.all });
       queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipeId) });
 
