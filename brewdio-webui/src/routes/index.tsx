@@ -101,7 +101,7 @@ function HomeComponent() {
             {recentBatches.map((batch) => (
               <Link
                 key={batch.id}
-                to="/batches/$batchId/overview"
+                to="/batches/$batchId"
                 params={{ batchId: batch.id }}
                 className="block border rounded-lg p-4 hover:bg-accent transition-colors"
               >

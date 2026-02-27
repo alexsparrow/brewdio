@@ -209,8 +209,8 @@ export function InlineEditableWithUnit({
 
   if (isEditing) {
     return (
-      <div className={cn('flex items-center gap-2', className)}>
-        <span className="font-medium text-sm">{label}:</span>
+      <div className={cn('col-span-full flex items-center gap-2', className)}>
+        <span className="font-medium text-sm">{label}</span>
         <Input
           ref={inputRef}
           type="number"
@@ -257,19 +257,22 @@ export function InlineEditableWithUnit({
   }
 
   return (
-    <div className={cn('flex items-center gap-2 group', className)}>
-      <span className="font-medium text-sm">{label}:</span>
-      <span className="text-sm">
-        {value} {unit}
-      </span>
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={() => setIsEditing(true)}
-        className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
-      >
-        <Pencil className="h-4 w-4" />
-      </Button>
+    <div className={cn('contents', className)}>
+      <span className="font-medium text-sm py-1">{label}</span>
+      <div className="flex items-center gap-1 group">
+        <span className="text-sm">
+          <span className="font-semibold">{value}</span>{" "}
+          <span className="text-muted-foreground">{unit}</span>
+        </span>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => setIsEditing(true)}
+          className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
+        >
+          <Pencil className="h-3 w-3" />
+        </Button>
+      </div>
     </div>
   );
 }

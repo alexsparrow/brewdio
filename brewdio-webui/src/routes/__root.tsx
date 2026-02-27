@@ -72,6 +72,12 @@ function RootComponent() {
   const currentRecipe = recipeId ? recipesData?.find((r) => r.id === recipeId) : undefined;
   const currentBatch = batchId ? batchesData?.find((b) => b.id === batchId) : undefined;
 
+  // Look up the original recipe name for batch breadcrumbs
+  const batchOriginalRecipe = currentBatch
+    ? recipesData?.find((r) => r.id === currentBatch.recipeId)
+    : undefined;
+  const batchRecipeName = batchOriginalRecipe?.recipe.name ?? currentBatch?.recipe.name;
+
   // Determine if we're on the JSON editor route
   const isJsonEditor = routerState.location.pathname.endsWith('/json');
 
@@ -93,7 +99,7 @@ function RootComponent() {
                   <>
                     <BreadcrumbItem>
                       <BreadcrumbLink to={`/recipes/${currentBatch.recipeId}`}>
-                        {currentBatch.recipe.name}
+                        {batchRecipeName}
                       </BreadcrumbLink>
                     </BreadcrumbItem>
                     <BreadcrumbSeparator />

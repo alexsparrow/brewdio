@@ -78,7 +78,7 @@ export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
 
       queryClient.invalidateQueries({ queryKey: batchKeys.all });
       setOpen(false);
-      navigate({ to: `/batches/${batchId}/overview` });
+      navigate({ to: `/batches/${batchId}` });
     } catch (error) {
       console.error("Failed to create batch:", error);
     } finally {

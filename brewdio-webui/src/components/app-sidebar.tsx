@@ -7,9 +7,8 @@ import {
   FlaskConical,
   Code,
   Beaker,
-  FileText,
-  GitBranch,
   Flame,
+  Droplets,
 } from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useBatches } from "@/lib/db/batches";
@@ -67,11 +66,6 @@ const recipeContextNav = [
     url: "#cultures",
     icon: FlaskConical,
   },
-  {
-    title: "Mash",
-    url: "#mash",
-    icon: Flame,
-  },
 ];
 
 // Shared Recipe Menu Component
@@ -82,7 +76,6 @@ interface RecipeMenuItemsProps {
   showRecipeOverview?: boolean;
   showJsonEditor?: boolean;
   showBatches?: boolean;
-  originalRecipeId?: string;
 }
 
 function RecipeMenuItems({
@@ -92,7 +85,6 @@ function RecipeMenuItems({
   showRecipeOverview = true,
   showJsonEditor = true,
   showBatches = true,
-  originalRecipeId,
 }: RecipeMenuItemsProps) {
   return (
     <>
@@ -100,18 +92,6 @@ function RecipeMenuItems({
       <SidebarGroup>
         <SidebarGroupLabel>{recipeName}</SidebarGroupLabel>
         <SidebarMenu>
-          {/* Original Recipe Link - Only show in batch mode */}
-          {originalRecipeId && (
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild className="text-primary">
-                <Link to="/recipes/$recipeId" params={{ recipeId: originalRecipeId }}>
-                  <GitBranch className="rotate-180" />
-                  <span>Original Recipe</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )}
-
           {/* Recipe Overview */}
           {showRecipeOverview && (
             <SidebarMenuItem>
@@ -135,6 +115,26 @@ function RecipeMenuItems({
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
+
+          {/* Mash */}
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link to={`${baseRoute}/mash` as string} params={params}>
+                <Flame />
+                <span>Mash</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          {/* Water */}
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link to={`${baseRoute}/water` as string} params={params}>
+                <Droplets />
+                <span>Water</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
 
           {/* Batches - Only show in recipe mode */}
           {showBatches && (
@@ -218,35 +218,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         {/* Context-dependent sections for Batch View */}
         {isBatchView && batchId && currentBatch && (
-          <>
-            {/* Recipe Section (for editing the batch's recipe) */}
-            <RecipeMenuItems
-              recipeName={`${currentBatch.recipe.name} (batch copy)`}
-              baseRoute="/batches/$batchId"
-              params={{ batchId }}
-              showRecipeOverview={true}
-              showJsonEditor={true}
-              showBatches={false}
-              originalRecipeId={currentBatch.recipeId}
-            />
-
-            {/* Batch Section (batch-specific items) */}
-            <Separator className="my-2" />
-            <SidebarGroup>
-              <SidebarGroupLabel>{currentBatch.name}</SidebarGroupLabel>
-              <SidebarMenu>
-                {/* Batch Overview */}
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <Link to="/batches/$batchId/overview" params={{ batchId }}>
-                      <FileText />
-                      <span>Batch Overview</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroup>
-          </>
+          <RecipeMenuItems
+            recipeName={currentBatch.name}
+            baseRoute="/batches/$batchId"
+            params={{ batchId }}
+            showRecipeOverview={true}
+            showJsonEditor={true}
+            showBatches={false}
+          />
         )}
 
         {/* Context-dependent sections for Recipe View */}

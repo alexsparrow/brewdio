@@ -3,8 +3,11 @@ import { EditableStyleSelector } from "@/components/editable-style-selector";
 import { EditableTypeSelector } from "@/components/editable-type-selector";
 import { EditableEquipmentSelector } from "@/components/editable-equipment-selector";
 import { DeleteRecipeDialog } from "@/components/delete-recipe-dialog";
+import { DeleteBatchDialog } from "@/components/delete-batch-dialog";
 import { BrewBatchDialog } from "@/components/brew-batch-dialog";
+import { Input } from "@/components/ui/input";
 import type { RecipeDocument } from "@/lib/db/recipes";
+import type { BatchDocument } from "@/lib/db/batches";
 import { getRecipeDb, recipeKeys } from "@/lib/db/recipes";
 import { useQueryClient } from "@tanstack/react-query";
 import { getStyles, type EquipmentProfile, type RecipeTypeType, type RecipeStyleType, type StyleCategories } from "brewdio-wasm";
@@ -14,6 +17,8 @@ interface RecipeHeaderProps {
   showDelete?: boolean;
   redirectOnDelete?: boolean;
   showBrew?: boolean;
+  batch?: BatchDocument;
+  onBatchUpdate?: (updates: Partial<BatchDocument>) => void;
 }
 
 export function RecipeHeader({
@@ -21,8 +26,11 @@ export function RecipeHeader({
   showDelete = true,
   redirectOnDelete = false,
   showBrew = true,
+  batch,
+  onBatchUpdate,
 }: RecipeHeaderProps) {
   const queryClient = useQueryClient();
+  const isBatchMode = !!batch;
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: recipeKeys.all });
@@ -30,6 +38,10 @@ export function RecipeHeader({
   };
 
   const handleNameUpdate = async (newName: string) => {
+    if (isBatchMode && onBatchUpdate) {
+      onBatchUpdate({ name: newName });
+      return;
+    }
     const db = getRecipeDb();
     const updated = structuredClone(recipe.recipe);
     updated.name = newName;
@@ -38,6 +50,12 @@ export function RecipeHeader({
   };
 
   const handleTypeUpdate = async (newType: string) => {
+    if (isBatchMode && onBatchUpdate) {
+      const updatedRecipe = structuredClone(batch!.recipe);
+      updatedRecipe.type = newType as RecipeTypeType;
+      onBatchUpdate({ recipe: updatedRecipe } as Partial<BatchDocument>);
+      return;
+    }
     const db = getRecipeDb();
     const updated = structuredClone(recipe.recipe);
     updated.type = newType as RecipeTypeType;
@@ -51,27 +69,50 @@ export function RecipeHeader({
       throw new Error(`Style "${newStyleName}" not found`);
     }
 
-    const db = getRecipeDb();
-    const updated = structuredClone(recipe.recipe);
-    // Extract only StyleBase fields for RecipeStyleType
-    // (StyleType has extra fields that cause autosurgeon reconcile to fail)
-    updated.style = {
+    const styleData: RecipeStyleType = {
       name: selectedStyle.name,
       category: selectedStyle.category,
       category_number: selectedStyle.category_number,
       style_guide: selectedStyle.style_guide,
       style_letter: selectedStyle.style_letter,
       type: selectedStyle.type as StyleCategories,
-    } satisfies RecipeStyleType;
+    };
+
+    if (isBatchMode && onBatchUpdate) {
+      const updatedRecipe = structuredClone(batch!.recipe);
+      updatedRecipe.style = styleData;
+      onBatchUpdate({ recipe: updatedRecipe } as Partial<BatchDocument>);
+      return;
+    }
+
+    const db = getRecipeDb();
+    const updated = structuredClone(recipe.recipe);
+    updated.style = styleData;
     db.updateRecipe(recipe.id, updated.name, updated);
     invalidate();
   };
 
   const handleEquipmentUpdate = async (profile: EquipmentProfile | null) => {
+    if (isBatchMode && onBatchUpdate) {
+      if (profile) {
+        const updatedRecipe = structuredClone(batch!.recipe);
+        updatedRecipe.efficiency = profile.efficiency;
+        onBatchUpdate({
+          equipmentId: profile.id,
+          equipment: structuredClone(profile.equipment),
+          recipe: updatedRecipe,
+        } as Partial<BatchDocument>);
+      } else {
+        onBatchUpdate({
+          equipmentId: undefined,
+          equipment: undefined,
+        } as Partial<BatchDocument>);
+      }
+      return;
+    }
     const db = getRecipeDb();
     if (profile) {
       db.setRecipeEquipment(recipe.id, profile.equipment, profile.id);
-      // Copy efficiency into the recipe
       const updated = structuredClone(recipe.recipe);
       updated.efficiency = profile.efficiency;
       db.updateRecipe(recipe.id, updated.name, updated);
@@ -81,53 +122,87 @@ export function RecipeHeader({
     invalidate();
   };
 
+  const handleBrewDateChange = (newDate: string) => {
+    if (onBatchUpdate) {
+      const timestamp = new Date(newDate).getTime();
+      onBatchUpdate({ brewDate: timestamp });
+    }
+  };
+
+  // Format brew date for the input
+  const brewDateInputValue = batch
+    ? new Date(batch.brewDate).toISOString().split("T")[0]
+    : undefined;
+
+  const displayName = isBatchMode ? batch!.name : recipe.recipe.name;
+  const displayRecipe = isBatchMode ? batch!.recipe : recipe.recipe;
+  const displayEquipment = isBatchMode ? batch!.equipment : recipe.equipment;
+
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-3">
           <InlineEditable
-            value={recipe.recipe.name}
+            value={displayName}
             onSave={handleNameUpdate}
             displayAs="heading"
-            placeholder="Recipe name"
+            placeholder={isBatchMode ? "Batch name" : "Recipe name"}
           />
-          {recipe.recipe.author && (
+          {isBatchMode && brewDateInputValue && (
+            <Input
+              type="date"
+              value={brewDateInputValue}
+              onChange={(e) => handleBrewDateChange(e.target.value)}
+              className="w-auto h-7 text-xs text-muted-foreground"
+            />
+          )}
+          {!isBatchMode && recipe.recipe.author && (
             <p className="text-xs text-muted-foreground/70 shrink-0">
               by {recipe.recipe.author}
             </p>
           )}
         </div>
         <div className="flex items-center gap-3 mt-1 flex-wrap">
-          {recipe.recipe.style && (
+          {displayRecipe.style && (
             <div className="flex items-center gap-3 flex-wrap">
               <EditableStyleSelector
-                styleName={recipe.recipe.style.name}
-                styleCategory={recipe.recipe.style.category}
+                styleName={displayRecipe.style.name}
+                styleCategory={displayRecipe.style.category}
                 onSave={handleStyleUpdate}
               />
               <span className="text-muted-foreground/40">·</span>
               <EditableTypeSelector
-                type={recipe.recipe.type}
+                type={displayRecipe.type}
                 onSave={handleTypeUpdate}
               />
             </div>
           )}
           <div className="ml-auto">
             <EditableEquipmentSelector
-              equipment={recipe.equipment}
+              equipment={displayEquipment}
               onSave={handleEquipmentUpdate}
             />
           </div>
         </div>
       </div>
       <div className="shrink-0 flex items-center gap-2">
-        {showBrew && <BrewBatchDialog recipe={recipe} />}
-        {showDelete && (
-          <DeleteRecipeDialog
-            recipeId={recipe.id}
-            recipeName={recipe.recipe.name}
+        {!isBatchMode && showBrew && <BrewBatchDialog recipe={recipe} />}
+        {isBatchMode ? (
+          <DeleteBatchDialog
+            batchId={batch!.id}
+            batchName={batch!.name}
+            variant="destructive"
+            size="sm"
             redirectOnDelete={redirectOnDelete}
           />
+        ) : (
+          showDelete && (
+            <DeleteRecipeDialog
+              recipeId={recipe.id}
+              recipeName={recipe.recipe.name}
+              redirectOnDelete={redirectOnDelete}
+            />
+          )
         )}
       </div>
     </div>

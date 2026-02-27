@@ -1,35 +1,35 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useBatch } from "@/lib/db/batches";
+import { useRecipe } from "@/lib/db/recipes";
 import { useCalculation } from "@/hooks/use-calculation";
 import { useEffect } from "react";
 import { stores } from "@/lib/calculate";
 import { srmToSrgb, rgbToHex } from "brewdio-wasm";
 import { WaterCalculator } from "@/components/batch-water-calculator";
 
-export const Route = createFileRoute("/batches/$batchId_/water")({
-  component: BatchWaterComponent,
+export const Route = createFileRoute("/recipes/$recipeId_/water")({
+  component: RecipeWaterComponent,
 });
 
-function BatchWaterComponent() {
-  const { batchId } = Route.useParams();
-  const { data: batch, status } = useBatch(batchId);
+function RecipeWaterComponent() {
+  const { recipeId } = Route.useParams();
+  const { data: recipe, status } = useRecipe(recipeId);
   const color = useCalculation<number>("color");
 
-  // Sync batch's recipe data to calculation store
+  // Sync recipe data to calculation store
   useEffect(() => {
-    if (batch) {
+    if (recipe) {
       stores.state.setState(() => ({
-        recipe: batch.recipe,
+        recipe: recipe.recipe,
       }));
     }
-  }, [batch]);
+  }, [recipe]);
 
   if (status === "pending") {
-    return <div>Loading batch...</div>;
+    return <div>Loading recipe...</div>;
   }
 
-  if (!batch) {
-    return <div>Batch not found</div>;
+  if (!recipe) {
+    return <div>Recipe not found</div>;
   }
 
   const liquidColor = color
@@ -42,8 +42,8 @@ function BatchWaterComponent() {
   return (
     <div className="flex flex-col gap-6">
       <WaterCalculator
-        recipe={batch.recipe}
-        equipment={batch.equipment}
+        recipe={recipe.recipe}
+        equipment={recipe.equipment}
         beerColor={liquidColor}
       />
     </div>
