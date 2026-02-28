@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/brewdio/brewdio/compare/v0.2.7...v0.3.0) (2026-02-28)
+
+
+### Features
+
+* remove docs home page ([fefcabf](https://github.com/brewdio/brewdio/commit/fefcabf019c5b75637fcc77f76136c4e1d433354))
+* switch to cloudflare pages ([69cd4b4](https://github.com/brewdio/brewdio/commit/69cd4b441bda2f849de12eb9fb8292c3de3e2d13))
+
 ## [0.2.7](https://github.com/brewdio/brewdio/compare/v0.2.6...v0.2.7) (2026-02-28)
 
 
