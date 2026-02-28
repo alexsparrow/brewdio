@@ -1,0 +1,87 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import HeroText from '~/components/widgets/HeroText.astro';
+import Prices from '~/components/widgets/Pricing.astro';
+import CallToAction from '~/components/widgets/CallToAction.astro';
+import Note from '~/components/widgets/Note.astro';
+
+const metadata = {
+  title: 'Pricing',
+};
+---
+
+<Layout metadata={metadata}>
+  <HeroText
+    tagline="Pricing"
+    title="Free forever. Optionally cloud-powered."
+    subtitle="brewdio is fully open source. Every feature works without paying a cent. Cloud sync is for convenience — not a requirement."
+  />
+
+  <Prices
+    title="Choose your setup"
+    subtitle="Both options give you the full brewing experience"
+    prices={[
+      {
+        title: 'Free / Self-Hosted',
+        subtitle: 'Everything, forever, free',
+        price: 0,
+        period: 'forever',
+        items: [
+          { description: 'Full web app & terminal interface' },
+          { description: 'All brewing calculations' },
+          { description: 'AI assistant (bring your own API key)' },
+          { description: 'Scriptable calculations' },
+          { description: 'Self-hosted sync server' },
+          { description: 'Unlimited recipes & batches' },
+          { description: 'Full source code access' },
+        ],
+        callToAction: {
+          text: 'Get started',
+          href: '#',
+        },
+        hasRibbon: true,
+        ribbonTitle: 'open source',
+      },
+      {
+        title: 'Cloud Sync',
+        subtitle: 'Sync without self-hosting',
+        price: 'TBD',
+        period: 'per month',
+        items: [
+          { description: 'Everything in Free' },
+          { description: 'Managed sync relay server' },
+          { description: 'Multi-device sync without self-hosting' },
+          { description: 'Automatic cloud backups' },
+          { description: 'Priority support' },
+        ],
+        callToAction: {
+          text: 'Coming soon',
+          href: '#',
+        },
+      },
+    ]}
+  />
+
+  <Note
+    title="No vendor lock-in, ever."
+    description="Even our cloud features run open-source software you can self-host. Your data is always exportable, always yours. Switch between self-hosted and cloud at any time."
+  />
+
+  <CallToAction
+    title="Ready to start brewing?"
+    subtitle="Download brewdio and start designing your next recipe. No signup, no credit card, no strings attached."
+    actions={[
+      {
+        variant: 'primary',
+        text: 'Open Web App',
+        href: '#',
+      },
+      {
+        text: 'View on GitHub',
+        href: '#',
+        target: '_blank',
+        icon: 'tabler:brand-github',
+      },
+    ]}
+  />
+</Layout>

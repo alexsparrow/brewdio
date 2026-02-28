@@ -4,8 +4,11 @@ use brewdio_core::beerjson_types::{
     EfficiencyType, FermentableAdditionType, FermentableAdditionTypeAmount,
     FermentableAdditionTypeType, FermentableTypeType, HopAdditionType, HopAdditionTypeAmount,
     IngredientsType, MassType, MassUnitType, PercentType, PercentUnitType, RecipeStyleType,
-    RecipeType, RecipeTypeType, TimeType, TimeUnitType, TimingType, UnitType, UnitUnitType,
-    UseType, VolumeType, VolumeUnitType,
+    RecipeType, RecipeTypeType, TemperatureType, TemperatureUnitType, TimeType, TimeUnitType,
+    TimingType, UnitType, UnitUnitType, UseType, VolumeType, VolumeUnitType,
+};
+use brewdio_core::water::{
+    WaterCalculatorInput, WaterCalculatorOptions, WaterCalculatorResult,
 };
 use brewdio_persistence::automerge::HistoryEntry;
 use brewdio_persistence::batch::{self, BatchData};
@@ -312,6 +315,7 @@ const DEFAULT_SETTINGS: &[(&str, &str)] = &[
 pub struct App {
     pub conn: Arc<Mutex<Connection>>,
     pub sync_connected: Option<Arc<std::sync::atomic::AtomicBool>>,
+    pub sync_changed: Option<Arc<std::sync::atomic::AtomicBool>>,
     pub screen: Screen,
     // Home tab
     pub home_tab: HomeTab,
@@ -376,6 +380,7 @@ impl App {
         let mut app = App {
             conn,
             sync_connected: None,
+            sync_changed: None,
             screen: Screen::Home,
             home_tab: HomeTab::Recipes,
             recipes: Vec::new(),
@@ -422,6 +427,49 @@ impl App {
         app.refresh_batches();
         app.refresh_settings();
         app
+    }
+
+    /// Check if the sync worker has applied remote changes and refresh from DB if so.
+    pub fn poll_sync_changes(&mut self) {
+        let changed = match self.sync_changed {
+            Some(ref flag) => flag.swap(false, std::sync::atomic::Ordering::Relaxed),
+            None => false,
+        };
+        if !changed {
+            return;
+        }
+        self.refresh_recipes();
+        self.refresh_batches();
+        self.refresh_settings();
+        // Reload the currently open recipe/batch from DB
+        match self.screen.clone() {
+            Screen::RecipeEdit { recipe_id } => {
+                let row = {
+                    let c = self.conn.lock().unwrap_or_else(|e| e.into_inner());
+                    db::get_recipe(&*c, &recipe_id).ok().flatten()
+                };
+                if let Some(row) = row {
+                    if let Ok(doc) = row.to_document() {
+                        self.name_input = doc.name.clone();
+                        self.current_doc = Some(doc);
+                    }
+                }
+            }
+            Screen::BatchEdit { ref batch_id } => {
+                let row = {
+                    let c = self.conn.lock().unwrap_or_else(|e| e.into_inner());
+                    batch::get_batch(&*c, batch_id).ok().flatten()
+                };
+                if let Some(row) = row {
+                    if let Ok(data) = row.to_data() {
+                        self.name_input = row.name.clone();
+                        self.batch_notes_text = data.notes.clone().unwrap_or_default();
+                        self.current_batch_data = Some(data);
+                    }
+                }
+            }
+            _ => {}
+        }
     }
 
     pub fn refresh_recipes(&mut self) {
@@ -669,7 +717,6 @@ impl App {
     }
 
     pub fn back_to_list(&mut self) {
-        self.save_current();
         self.screen = Screen::Home;
         self.current_doc = None;
         self.history_entries.clear();
@@ -750,7 +797,6 @@ impl App {
     }
 
     pub fn back_from_batch(&mut self) {
-        self.save_current_batch();
         self.screen = Screen::Home;
         self.current_doc = None;
         self.history_entries.clear();
@@ -1427,17 +1473,6 @@ impl App {
         self.batch_size_dialog = None;
     }
 
-    pub fn batch_size_display(&self) -> String {
-        match self.current_doc.as_ref() {
-            Some(doc) => {
-                let bs = &doc.recipe.batch_size;
-                let unit_str = format!("{:?}", bs.unit).to_lowercase();
-                format!("{} {}", format_amount(bs.value), unit_str)
-            }
-            None => "(none)".to_string(),
-        }
-    }
-
     pub fn set_tab(&mut self, n: usize) {
         if n < ALL_TABS.len() {
             self.active_tab = ALL_TABS[n];
@@ -1603,6 +1638,50 @@ impl App {
         ]
     }
 
+    pub fn compute_water(&self) -> Option<WaterCalculatorResult> {
+        let doc = self.current_doc.as_ref()?;
+        let recipe = &doc.recipe;
+
+        let vol_unit = recipe.batch_size.unit.clone();
+        let temp_unit = match vol_unit {
+            VolumeUnitType::Gal => TemperatureUnitType::F,
+            _ => TemperatureUnitType::C,
+        };
+
+        let input = WaterCalculatorInput {
+            target_batch_size: recipe.batch_size.clone(),
+            boil_time: recipe
+                .boil
+                .as_ref()
+                .map(|b| b.boil_time.clone())
+                .unwrap_or(TimeType {
+                    value: 60,
+                    unit: TimeUnitType::Min,
+                }),
+            grain_bill: recipe.ingredients.fermentable_additions.clone(),
+            mash_steps: recipe
+                .mash
+                .as_ref()
+                .map(|m| m.mash_steps.clone())
+                .unwrap_or_default(),
+            grain_temperature: recipe
+                .mash
+                .as_ref()
+                .map(|m| m.grain_temperature.clone())
+                .unwrap_or(TemperatureType {
+                    value: 20.0,
+                    unit: TemperatureUnitType::C,
+                }),
+            equipment: doc.equipment.clone(),
+            units: Some(WaterCalculatorOptions {
+                volume_unit: vol_unit,
+                temperature_unit: temp_unit,
+            }),
+        };
+
+        Some(brewdio_core::water::calculate_water(&input))
+    }
+
     pub fn style_name(&self) -> String {
         self.current_doc
             .as_ref()
@@ -1655,15 +1734,6 @@ fn format_epoch_millis(millis: u64) -> String {
     }
     let day = days + 1;
     format!("{:04}-{:02}-{:02}", year, month, day)
-}
-
-fn format_amount(value: f64) -> String {
-    if value == value.floor() {
-        format!("{:.0}", value)
-    } else {
-        let s = format!("{:.2}", value);
-        s.trim_end_matches('0').trim_end_matches('.').to_string()
-    }
 }
 
 fn parse_date_to_epoch_millis(s: &str) -> Option<u64> {

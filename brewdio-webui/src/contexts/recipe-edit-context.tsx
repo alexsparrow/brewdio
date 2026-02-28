@@ -1,7 +1,8 @@
 import { createContext, useContext, useCallback, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { RecipeDocument } from "@/lib/db/recipes";
-import { getRecipeDb, recipeKeys } from "@/lib/db/recipes";
+import { recipeKeys } from "@/lib/db/recipes";
+import { getAppDb } from "@/lib/db/app-db";
 import { updateBatchImperative, batchKeys, type BatchDocument } from "@/lib/db/batches";
 import type { RecipeType } from "brewdio-wasm";
 
@@ -42,7 +43,7 @@ export function RecipeEditProvider({
     (draftFn: (draft: { recipe: RecipeType; updatedAt?: number }) => void) => {
       if (type === "recipe") {
         // Use WASM db for recipes
-        const db = getRecipeDb();
+        const db = getAppDb();
         // Get the current recipe from the db to ensure we have the latest
         const current = db.getRecipe(id) as unknown as RecipeDocument | null;
         if (!current) return;

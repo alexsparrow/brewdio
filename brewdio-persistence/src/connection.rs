@@ -126,3 +126,24 @@ pub trait Connection {
         Ok(results.pop())
     }
 }
+
+impl<T: Connection> Connection for std::sync::Mutex<T> {
+    fn execute(&self, sql: &str, params: &[Value]) -> Result<(), DbError> {
+        self.lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .execute(sql, params)
+    }
+    fn execute_batch(&self, sql: &str) -> Result<(), DbError> {
+        self.lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .execute_batch(sql)
+    }
+    fn query_map<T2, F>(&self, sql: &str, params: &[Value], f: F) -> Result<Vec<T2>, DbError>
+    where
+        F: FnMut(&dyn Row) -> T2,
+    {
+        self.lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .query_map(sql, params, f)
+    }
+}

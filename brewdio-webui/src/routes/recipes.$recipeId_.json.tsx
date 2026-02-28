@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSettings } from "@/lib/db/settings";
-import { useRecipe, getRecipeDb, recipeKeys } from "@/lib/db/recipes";
+import { useRecipe, recipeKeys } from "@/lib/db/recipes";
+import { getAppDb } from "@/lib/db/app-db";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
 import Editor from "@monaco-editor/react";
@@ -148,7 +149,7 @@ function RecipeJsonEditorComponent() {
       const parsedRecipe = JSON.parse(value);
 
       // Update the recipe in the database
-      const db = getRecipeDb();
+      const db = getAppDb();
       db.updateRecipe(recipeId, parsedRecipe.name, parsedRecipe);
       queryClient.invalidateQueries({ queryKey: recipeKeys.all });
       queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipeId) });

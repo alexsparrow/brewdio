@@ -2,8 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import initWasm, { RecipeDb, initPersistentStorage } from "brewdio-wasm";
-import { initRecipeDb, registerChangeCallback } from "@/lib/db/recipes";
+import initWasm, { AppDb, initPersistentStorage } from "brewdio-wasm";
+import { initAppDb, registerChangeCallback } from "@/lib/db/app-db";
 import { startSync } from "@/lib/sync";
 import "./index.css";
 
@@ -35,8 +35,8 @@ async function init() {
   }
 
   // Open a named database — persists to IndexedDB if VFS was installed successfully.
-  const db = RecipeDb.open("brewdio.db");
-  initRecipeDb(db);
+  const db = AppDb.open("brewdio.db");
+  initAppDb(db);
   registerChangeCallback(queryClient);
 
   const syncServer = localStorage.getItem("brewdio_server");

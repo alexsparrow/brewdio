@@ -1,5 +1,5 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query';
-import { getRecipeDb } from './recipes';
+import { getAppDb } from './app-db';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -41,7 +41,7 @@ export function useSettings() {
   return useQuery<SettingsDocument>({
     queryKey: settingsKeys.all,
     queryFn: () => {
-      const db = getRecipeDb();
+      const db = getAppDb();
       const raw = db.getSettings() as unknown as SettingsDocument | null;
       return raw ?? DEFAULT_SETTINGS;
     },
@@ -53,13 +53,13 @@ export function useSettings() {
 // ---------------------------------------------------------------------------
 
 export function getSettingsImperative(): SettingsDocument {
-  const db = getRecipeDb();
+  const db = getAppDb();
   const raw = db.getSettings() as unknown as SettingsDocument | null;
   return raw ?? DEFAULT_SETTINGS;
 }
 
 export function saveSettingsImperative(settings: SettingsDocument): void {
-  const db = getRecipeDb();
+  const db = getAppDb();
   db.saveSettings(settings);
 }
 

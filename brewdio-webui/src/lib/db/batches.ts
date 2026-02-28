@@ -1,6 +1,6 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query';
 import type { RecipeType, EquipmentType } from 'brewdio-wasm';
-import { getRecipeDb } from './recipes';
+import { getAppDb } from './app-db';
 
 // ---------------------------------------------------------------------------
 // Types — matches the old BatchDocument shape for consumer compatibility
@@ -80,7 +80,7 @@ export function useBatches() {
   return useQuery<BatchDocument[]>({
     queryKey: batchKeys.all,
     queryFn: () => {
-      const db = getRecipeDb();
+      const db = getAppDb();
       const raws = db.listBatches() as unknown as BatchRaw[];
       return raws.map(rawToBatchDoc);
     },
@@ -91,7 +91,7 @@ export function useBatch(id: string) {
   return useQuery<BatchDocument | null>({
     queryKey: batchKeys.detail(id),
     queryFn: () => {
-      const db = getRecipeDb();
+      const db = getAppDb();
       const raw = db.getBatch(id) as unknown as BatchRaw | null;
       return raw ? rawToBatchDoc(raw) : null;
     },
@@ -107,7 +107,7 @@ export function createBatchImperative(
   recipeId: string,
   data: Omit<BatchDocument, 'id' | 'name' | 'recipeId'>,
 ): string {
-  const db = getRecipeDb();
+  const db = getAppDb();
   return db.createBatch(name, recipeId, batchDocToData(data));
 }
 
@@ -116,17 +116,17 @@ export function updateBatchImperative(
   name: string,
   data: Omit<BatchDocument, 'id' | 'name' | 'recipeId'>,
 ): void {
-  const db = getRecipeDb();
+  const db = getAppDb();
   db.updateBatch(id, name, batchDocToData(data));
 }
 
 export function deleteBatchImperative(id: string): void {
-  const db = getRecipeDb();
+  const db = getAppDb();
   db.deleteBatch(id);
 }
 
 export function listBatchesImperative(): BatchDocument[] {
-  const db = getRecipeDb();
+  const db = getAppDb();
   const raws = db.listBatches() as unknown as BatchRaw[];
   return raws.map(rawToBatchDoc);
 }

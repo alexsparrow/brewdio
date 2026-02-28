@@ -96,6 +96,10 @@ pub fn update_recipe(
     recipe: &RecipeType,
     equipment: Option<&EquipmentType>,
 ) -> Result<(), DbError> {
+    log::info!(
+        "[update_recipe] recipe={} name={:?} batch_size.value={}",
+        id, name, recipe.batch_size.value
+    );
     let recipe_json = serde_json::to_string(recipe).expect("Failed to serialize recipe");
 
     let existing = get_recipe(conn, id)?;
@@ -307,8 +311,25 @@ pub fn apply_remote_merge(
 ) -> Result<(), DbError> {
     let existing = get_recipe(conn, recipe_id)?;
 
+    // Log the existing state before merge
+    if let Some(ref row) = existing {
+        let batch_size_before: Option<f64> = serde_json::from_str::<serde_json::Value>(&row.recipe)
+            .ok()
+            .and_then(|v| v.get("batch_size")?.get("value")?.as_f64());
+        log::info!(
+            "[apply_remote_merge] recipe={} existing batch_size.value={:?} is_dirty={}",
+            recipe_id, batch_size_before, row.is_dirty
+        );
+    } else {
+        log::info!("[apply_remote_merge] recipe={} (new, no existing row)", recipe_id);
+    }
+
     match hydrate_from_automerge::<RecipeDocument>(am_data) {
         Ok(doc) => {
+            log::info!(
+                "[apply_remote_merge] recipe={} hydration OK: name={:?} batch_size.value={} is_deleted={}",
+                recipe_id, doc.name, doc.recipe.batch_size.value, doc.is_deleted
+            );
             let recipe_json = serde_json::to_string(&doc.recipe).expect("Failed to serialize recipe");
             let equipment_json = doc.equipment.as_ref().map(|eq| {
                 serde_json::to_string(eq).expect("Failed to serialize equipment")
@@ -341,7 +362,11 @@ pub fn apply_remote_merge(
                 )?;
             }
         }
-        Err(_) => {
+        Err(e) => {
+            log::warn!(
+                "[apply_remote_merge] recipe={} hydration FAILED: {:?} — falling back to name/is_deleted only",
+                recipe_id, e
+            );
             // Fallback: extract name/is_deleted directly from automerge doc
             let (name, is_deleted) = extract_fields_from_automerge(am_data);
             if existing.is_some() {

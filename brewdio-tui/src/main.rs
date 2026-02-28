@@ -26,17 +26,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(data_dir)?;
     let db_path = data_dir.join("brewdio.db");
 
+    // Set up file-based logging for sync debugging
+    let log_path = data_dir.join("brewdio-sync.log");
+    let log_file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&log_path)?;
+    env_logger::Builder::new()
+        .filter_level(log::LevelFilter::Debug)
+        .target(env_logger::Target::Pipe(Box::new(log_file)))
+        .init();
+    log::info!("[tui] === TUI starting, log file: {:?} ===", log_path);
+
     let conn = brewdio_persistence::connection_native::open(db_path.to_str().unwrap())?;
     let conn = Arc::new(Mutex::new(conn));
 
     // Start background sync worker if BREWDIO_SERVER_URL is set
     let sync_connected = Arc::new(AtomicBool::new(false));
+    let sync_changed = Arc::new(AtomicBool::new(false));
     let _runtime = if let Ok(url) = std::env::var("BREWDIO_SERVER_URL") {
         let rt = tokio::runtime::Runtime::new()?;
         let conn_clone = conn.clone();
         let connected = sync_connected.clone();
+        let changed = sync_changed.clone();
         rt.spawn(async move {
-            let _ = brewdio_persistence::sync_worker::spawn_sync(conn_clone, url, connected).await;
+            let _ = brewdio_persistence::sync_worker::spawn_sync(conn_clone, url, connected, changed).await;
         });
         Some(rt)
     } else {
@@ -46,6 +60,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut app = App::new(conn);
     if _runtime.is_some() {
         app.sync_connected = Some(sync_connected);
+        app.sync_changed = Some(sync_changed);
     }
 
     // Setup terminal
@@ -75,6 +90,9 @@ fn run_loop(
 
         // Check for async history results
         app.poll_history();
+
+        // Check for remote sync changes
+        app.poll_sync_changes();
 
         if event::poll(Duration::from_millis(100))? {
             if let Event::Key(key) = event::read()? {

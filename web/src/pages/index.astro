@@ -1,0 +1,236 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+
+import Hero from '~/components/widgets/Hero.astro';
+import Features from '~/components/widgets/Features.astro';
+import Features2 from '~/components/widgets/Features2.astro';
+import Content from '~/components/widgets/Content.astro';
+import CallToAction from '~/components/widgets/CallToAction.astro';
+
+const metadata = {
+  title: 'brewdio — Open-source brewing software',
+  ignoreTitleTemplate: true,
+};
+---
+
+<Layout metadata={metadata}>
+  <!-- Hero -->
+
+  <Hero
+    actions={[
+      {
+        variant: 'primary',
+        text: 'Open Web App',
+        href: '#',
+        icon: 'tabler:beer',
+      },
+      {
+        text: 'Download CLI',
+        href: '#',
+        icon: 'tabler:terminal-2',
+      },
+    ]}
+  >
+    <Fragment slot="title">
+      Brew your way.<br />
+      <span class="text-accent dark:text-white">Own your data.</span>
+    </Fragment>
+
+    <Fragment slot="subtitle">
+      Open-source, offline-first brewing software with recipe management, smart calculations, AI assistant, and multi-device sync.
+      No accounts. No subscriptions. No data collection. Just brewing.
+    </Fragment>
+  </Hero>
+
+  <!-- USP Highlights -->
+
+  <Features2
+    title="Built different"
+    subtitle="brewdio puts you in control. No cloud dependency, no vendor lock-in, no compromises."
+    items={[
+      {
+        title: 'Open Source',
+        description: 'Fully open-source under the MIT license. Inspect, modify, and contribute to every line of code. No black boxes.',
+        icon: 'tabler:code',
+      },
+      {
+        title: 'Offline-First',
+        description: 'Works without an internet connection, always. Your recipes and batches are stored locally on your device.',
+        icon: 'tabler:wifi-off',
+      },
+      {
+        title: 'Your Data',
+        description: 'No accounts required. No telemetry. No data collection. Your brewing data stays on your devices — period.',
+        icon: 'tabler:shield-check',
+      },
+    ]}
+  />
+
+  <!-- Features Grid -->
+
+  <Features
+    id="features"
+    tagline="Features"
+    title="Everything you need to brew"
+    subtitle="From recipe design to brew day, brewdio covers the full brewing workflow."
+    items={[
+      {
+        title: 'Recipe Management',
+        description:
+          'BeerJSON-compliant recipe storage with a built-in ingredient database and BJCP style guidelines.',
+        icon: 'tabler:notebook',
+      },
+      {
+        title: 'Smart Calculations',
+        description:
+          'OG, FG, ABV, IBU, SRM, and more — computed with proven brewing formulas, updated in real time.',
+        icon: 'tabler:calculator',
+      },
+      {
+        title: 'AI Brewing Assistant',
+        description:
+          'Chat-based AI helper for designing recipes, iterating on ingredients, and getting brew day guidance.',
+        icon: 'tabler:sparkles',
+      },
+      {
+        title: 'Multi-Device Sync',
+        description:
+          'Automerge CRDT-based sync that works conflict-free across devices. Self-hostable relay server included.',
+        icon: 'tabler:refresh',
+      },
+      {
+        title: 'Scriptable',
+        description:
+          'Extend brewing calculations with custom scripts for advanced and experimental brewing techniques.',
+        icon: 'tabler:script',
+      },
+      {
+        title: 'Batch Tracking',
+        description:
+          'Brew day companion with water chemistry calculator, fermentation tracking, and markdown notes.',
+        icon: 'tabler:clipboard-list',
+      },
+    ]}
+  />
+
+  <!-- Content: Web UI -->
+
+  <Content
+    isReversed
+    tagline="Web Interface"
+    title="A modern brewing workspace"
+    items={[
+      {
+        title: 'Full recipe editor',
+        description: 'Design and tweak recipes with a clean, responsive interface that works on desktop and mobile.',
+      },
+      {
+        title: 'Batch management',
+        description: 'Track your brew day from mash to fermentation with real-time calculations and notes.',
+      },
+      {
+        title: 'Works anywhere',
+        description: 'Progressive web app that runs in any modern browser. Mobile apps coming soon.',
+      },
+    ]}
+  >
+    <Fragment slot="content">
+      <h3 class="text-2xl font-bold tracking-tight dark:text-white sm:text-3xl mb-2">Your brewery in the browser</h3>
+      A full-featured brewing app that runs entirely in your browser with local-first storage.
+    </Fragment>
+
+    <Fragment slot="bg">
+      <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
+    </Fragment>
+  </Content>
+
+  <!-- Content: Terminal Interface -->
+
+  <Content
+    isAfterContent
+    tagline="Terminal Interface"
+    title="For power users"
+    items={[
+      {
+        title: 'Vim-style navigation',
+        description: 'Keyboard-driven interface with familiar keybindings for fast, efficient workflow.',
+      },
+      {
+        title: 'Full recipe & batch management',
+        description: 'Everything the web UI can do, from the comfort of your terminal.',
+      },
+      {
+        title: 'Scriptable & composable',
+        description: 'Pipe data in and out. Integrate with your existing tools and workflows.',
+      },
+    ]}
+  >
+    <Fragment slot="content">
+      <h3 class="text-2xl font-bold tracking-tight dark:text-white sm:text-3xl mb-2">Brew from the command line</h3>
+      A full TUI for brewers who live in the terminal. Manage recipes, run calculations, and track batches without leaving your shell.
+    </Fragment>
+
+    <Fragment slot="bg">
+      <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
+    </Fragment>
+  </Content>
+
+  <!-- Content: AI Assistant -->
+
+  <Content
+    isReversed
+    isAfterContent
+    tagline="AI Assistant"
+    title="Your brewing copilot"
+    items={[
+      {
+        title: 'Recipe design help',
+        description: 'Describe what you want to brew and get a starting recipe with ingredient suggestions.',
+      },
+      {
+        title: 'Ingredient substitutions',
+        description: 'Get smart suggestions when you need to swap hops, malts, or yeast.',
+      },
+      {
+        title: 'Brew day guidance',
+        description: 'Ask questions about your process and get context-aware answers based on your recipe.',
+      },
+    ]}
+  >
+    <Fragment slot="content">
+      <h3 class="text-2xl font-bold tracking-tight dark:text-white sm:text-3xl mb-2">AI that knows brewing</h3>
+      An optional AI assistant that helps you design recipes, troubleshoot issues, and learn. Bring your own API key — no data sent to us.
+    </Fragment>
+
+    <Fragment slot="bg">
+      <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
+    </Fragment>
+  </Content>
+
+  <!-- CallToAction -->
+
+  <CallToAction
+    actions={[
+      {
+        variant: 'primary',
+        text: 'Open Web App',
+        href: '#',
+        icon: 'tabler:beer',
+      },
+      {
+        text: 'View on GitHub',
+        href: '#',
+        target: '_blank',
+        icon: 'tabler:brand-github',
+      },
+    ]}
+  >
+    <Fragment slot="title">
+      Start brewing with brewdio
+    </Fragment>
+
+    <Fragment slot="subtitle">
+      Free and open source. No signup required. Start designing your next recipe right now.
+    </Fragment>
+  </CallToAction>
+</Layout>

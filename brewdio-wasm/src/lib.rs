@@ -9,10 +9,12 @@ mod data;
 mod db;
 mod sync;
 
-/// Install the panic hook so WASM panics print readable messages to console.error.
+/// Install the panic hook and logger so WASM panics print readable messages
+/// to console.error and `log::info!()` etc. appear in the browser console.
 #[wasm_bindgen(start)]
 pub fn init_panic_hook() {
     console_error_panic_hook::set_once();
+    console_log::init_with_level(log::Level::Info).ok();
 }
 
 /// Serialize to JsValue using JSON-compatible mode (produces plain objects, not Maps).

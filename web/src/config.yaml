@@ -1,0 +1,65 @@
+site:
+  name: brewdio
+  site: 'https://brewdio.app'
+  base: '/'
+  trailingSlash: false
+
+metadata:
+  title:
+    default: brewdio
+    template: '%s — brewdio'
+  description: 'Open-source, offline-first brewing software. Recipe management, calculations, AI assistant, and multi-device sync — all with full data sovereignty.'
+  robots:
+    index: true
+    follow: true
+  openGraph:
+    site_name: brewdio
+    images:
+      - url: '~/assets/images/default.png'
+        width: 1200
+        height: 628
+    type: website
+
+i18n:
+  language: en
+  textDirection: ltr
+
+apps:
+  blog:
+    isEnabled: false
+    postsPerPage: 6
+
+    post:
+      isEnabled: false
+      permalink: '/%slug%'
+      robots:
+        index: true
+
+    list:
+      isEnabled: false
+      pathname: 'blog'
+      robots:
+        index: true
+
+    category:
+      isEnabled: false
+      pathname: 'category'
+      robots:
+        index: true
+
+    tag:
+      isEnabled: false
+      pathname: 'tag'
+      robots:
+        index: false
+
+    isRelatedPostsEnabled: false
+    relatedPostsCount: 4
+
+analytics:
+  vendors:
+    googleAnalytics:
+      id: null
+
+ui:
+  theme: 'system'

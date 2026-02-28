@@ -1,5 +1,5 @@
 import { test, expect, describe, beforeEach } from "bun:test";
-import { RecipeDb } from "brewdio-wasm";
+import { AppDb } from "brewdio-wasm";
 
 import type { RecipeType } from "brewdio-wasm";
 
@@ -38,31 +38,31 @@ function sampleRecipe(name: string = "Test IPA"): RecipeType {
   } as RecipeType;
 }
 
-describe("RecipeDb", () => {
-  let db: RecipeDb;
+describe("AppDb", () => {
+  let db: AppDb;
 
   beforeEach(() => {
-    db = new RecipeDb();
+    db = new AppDb();
   });
 
   describe("create", () => {
     test("returns a recipe ID", () => {
-      const id = db.create_recipe("My IPA", sampleRecipe());
+      const id = db.createRecipe("My IPA", sampleRecipe());
       expect(typeof id).toBe("string");
       expect(id.length).toBeGreaterThan(0);
     });
 
     test("creates unique IDs", () => {
-      const id1 = db.create_recipe("Beer 1", sampleRecipe("Beer 1"));
-      const id2 = db.create_recipe("Beer 2", sampleRecipe("Beer 2"));
+      const id1 = db.createRecipe("Beer 1", sampleRecipe("Beer 1"));
+      const id2 = db.createRecipe("Beer 2", sampleRecipe("Beer 2"));
       expect(id1).not.toBe(id2);
     });
   });
 
   describe("get", () => {
     test("returns the created recipe", () => {
-      const id = db.create_recipe("Get Test IPA", sampleRecipe("Get Test IPA"));
-      const result = db.get_recipe(id);
+      const id = db.createRecipe("Get Test IPA", sampleRecipe("Get Test IPA"));
+      const result = db.getRecipe(id);
       expect(result).not.toBeNull();
       expect(result.id).toBe(id);
       expect(result.name).toBe("Get Test IPA");
@@ -71,14 +71,14 @@ describe("RecipeDb", () => {
     });
 
     test("returns null for nonexistent ID", () => {
-      const result = db.get_recipe("nonexistent-id");
+      const result = db.getRecipe("nonexistent-id");
       expect(result).toBeNull();
     });
 
     test("recipe data survives round-trip", () => {
       const recipe = sampleRecipe("Roundtrip Beer");
-      const id = db.create_recipe("Roundtrip Beer", recipe);
-      const result = db.get_recipe(id);
+      const id = db.createRecipe("Roundtrip Beer", recipe);
+      const result = db.getRecipe(id);
 
       expect(result.recipe.batch_size.value).toBe(20.0);
       expect(result.recipe.batch_size.unit).toBe("l");
@@ -92,80 +92,80 @@ describe("RecipeDb", () => {
 
   describe("list", () => {
     test("empty database returns empty array", () => {
-      const recipes = db.list_recipes();
+      const recipes = db.listRecipes();
       expect(Array.isArray(recipes)).toBe(true);
       expect(recipes).toHaveLength(0);
     });
 
     test("lists created recipes", () => {
-      db.create_recipe("Beer A", sampleRecipe("Beer A"));
-      db.create_recipe("Beer B", sampleRecipe("Beer B"));
+      db.createRecipe("Beer A", sampleRecipe("Beer A"));
+      db.createRecipe("Beer B", sampleRecipe("Beer B"));
 
-      const recipes = db.list_recipes();
+      const recipes = db.listRecipes();
       expect(recipes).toHaveLength(2);
       const names = recipes.map((r: any) => r.name).sort();
       expect(names).toEqual(["Beer A", "Beer B"]);
     });
 
     test("does not include deleted recipes", () => {
-      const id = db.create_recipe("Soon Deleted", sampleRecipe("Soon Deleted"));
-      db.delete_recipe(id);
+      const id = db.createRecipe("Soon Deleted", sampleRecipe("Soon Deleted"));
+      db.deleteRecipe(id);
 
-      const recipes = db.list_recipes();
+      const recipes = db.listRecipes();
       expect(recipes).toHaveLength(0);
     });
   });
 
   describe("update", () => {
     test("updates recipe name", () => {
-      const id = db.create_recipe("Original", sampleRecipe("Original"));
+      const id = db.createRecipe("Original", sampleRecipe("Original"));
       const updated = sampleRecipe("Updated");
-      db.update_recipe(id, "Updated", updated);
+      db.updateRecipe(id, "Updated", updated);
 
-      const result = db.get_recipe(id);
+      const result = db.getRecipe(id);
       expect(result.name).toBe("Updated");
       expect(result.recipe.name).toBe("Updated");
     });
 
     test("updates recipe data", () => {
-      const id = db.create_recipe("Batch Test", sampleRecipe("Batch Test"));
+      const id = db.createRecipe("Batch Test", sampleRecipe("Batch Test"));
       const updated = sampleRecipe("Batch Test");
       updated.batch_size = { unit: "gal", value: 5.0 } as any;
-      db.update_recipe(id, "Batch Test", updated);
+      db.updateRecipe(id, "Batch Test", updated);
 
-      const result = db.get_recipe(id);
+      const result = db.getRecipe(id);
       expect(result.recipe.batch_size.unit).toBe("gal");
       expect(result.recipe.batch_size.value).toBe(5.0);
     });
 
     test("preserves ID after update", () => {
-      const id = db.create_recipe("ID Test", sampleRecipe("ID Test"));
-      db.update_recipe(id, "ID Test v2", sampleRecipe("ID Test v2"));
+      const id = db.createRecipe("ID Test", sampleRecipe("ID Test"));
+      db.updateRecipe(id, "ID Test v2", sampleRecipe("ID Test v2"));
 
-      const result = db.get_recipe(id);
+      const result = db.getRecipe(id);
       expect(result.id).toBe(id);
     });
   });
 
   describe("delete", () => {
     test("soft-deletes a recipe", () => {
-      const id = db.create_recipe("Delete Me", sampleRecipe("Delete Me"));
-      db.delete_recipe(id);
+      const id = db.createRecipe("Delete Me", sampleRecipe("Delete Me"));
+      db.deleteRecipe(id);
 
-      const result = db.get_recipe(id);
+      const result = db.getRecipe(id);
       expect(result).toBeNull();
     });
 
     test("does not affect other recipes", () => {
-      const id1 = db.create_recipe("Keep", sampleRecipe("Keep"));
-      const id2 = db.create_recipe("Remove", sampleRecipe("Remove"));
-      db.delete_recipe(id2);
+      const id1 = db.createRecipe("Keep", sampleRecipe("Keep"));
+      const id2 = db.createRecipe("Remove", sampleRecipe("Remove"));
+      db.deleteRecipe(id2);
 
-      const kept = db.get_recipe(id1);
+      const kept = db.getRecipe(id1);
       expect(kept).not.toBeNull();
       expect(kept.name).toBe("Keep");
 
-      const recipes = db.list_recipes();
+      const recipes = db.listRecipes();
       expect(recipes).toHaveLength(1);
     });
   });
@@ -235,7 +235,7 @@ describe("RecipeDb", () => {
       } as RecipeType;
 
       // Create the recipe without a style
-      const id = db.create_recipe("Test Barleywine", recipe);
+      const id = db.createRecipe("Test Barleywine", recipe);
 
       // Now update it with a style (this triggers reconcile of RecipeStyleType)
       const updatedRecipe = structuredClone(recipe);
@@ -248,10 +248,9 @@ describe("RecipeDb", () => {
         type: "beer",
       };
 
-      // This should not throw — but currently panics with "unreachable executed"
-      db.update_recipe(id, "Test Barleywine", updatedRecipe);
+      db.updateRecipe(id, "Test Barleywine", updatedRecipe);
 
-      const result = db.get_recipe(id);
+      const result = db.getRecipe(id);
       expect(result.recipe.style).toBeDefined();
       expect(result.recipe.style.name).toBe("American Barleywine");
     });
@@ -260,24 +259,24 @@ describe("RecipeDb", () => {
   describe("change notification", () => {
     test("fires callback on create", () => {
       let called = false;
-      db.on_recipes_change(() => { called = true; });
-      db.create_recipe("Notify Test", sampleRecipe("Notify Test"));
+      db.onRecipesChange(() => { called = true; });
+      db.createRecipe("Notify Test", sampleRecipe("Notify Test"));
       expect(called).toBe(true);
     });
 
     test("fires callback on update", () => {
-      const id = db.create_recipe("Update Notify", sampleRecipe("Update Notify"));
+      const id = db.createRecipe("Update Notify", sampleRecipe("Update Notify"));
       let called = false;
-      db.on_recipes_change(() => { called = true; });
-      db.update_recipe(id, "Updated", sampleRecipe("Updated"));
+      db.onRecipesChange(() => { called = true; });
+      db.updateRecipe(id, "Updated", sampleRecipe("Updated"));
       expect(called).toBe(true);
     });
 
     test("fires callback on delete", () => {
-      const id = db.create_recipe("Delete Notify", sampleRecipe("Delete Notify"));
+      const id = db.createRecipe("Delete Notify", sampleRecipe("Delete Notify"));
       let called = false;
-      db.on_recipes_change(() => { called = true; });
-      db.delete_recipe(id);
+      db.onRecipesChange(() => { called = true; });
+      db.deleteRecipe(id);
       expect(called).toBe(true);
     });
   });

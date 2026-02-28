@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use serde::Serialize;
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
@@ -30,7 +31,7 @@ pub struct BatchDocumentJs {
 }
 
 /// Install the IndexedDB-backed persistent VFS.
-/// Must be called once before creating a RecipeDb with `RecipeDb.open(path)`.
+/// Must be called once before creating an AppDb with `AppDb.open(path)`.
 #[wasm_bindgen(js_name = "initPersistentStorage")]
 pub async fn init_persistent_storage() -> Result<(), JsError> {
     brewdio_persistence::connection_wasm::install_persistent_vfs()
@@ -38,29 +39,29 @@ pub async fn init_persistent_storage() -> Result<(), JsError> {
         .map_err(|e| JsError::new(&e.to_string()))
 }
 
-#[wasm_bindgen]
-pub struct RecipeDb {
-    conn: WasmConnection,
-    on_recipes_change: Option<js_sys::Function>,
-    on_batches_change: Option<js_sys::Function>,
-    on_settings_change: Option<js_sys::Function>,
-    on_equipment_change: Option<js_sys::Function>,
+#[wasm_bindgen(js_name = "AppDb")]
+pub struct AppDb {
+    conn: Arc<WasmConnection>,
+    pub(crate) on_recipes_change: Option<js_sys::Function>,
+    pub(crate) on_batches_change: Option<js_sys::Function>,
+    pub(crate) on_settings_change: Option<js_sys::Function>,
+    pub(crate) on_equipment_change: Option<js_sys::Function>,
 }
 
-#[wasm_bindgen]
-impl RecipeDb {
+#[wasm_bindgen(js_class = "AppDb")]
+impl AppDb {
     #[wasm_bindgen(constructor)]
-    pub fn new() -> Result<RecipeDb, JsError> {
+    pub fn new() -> Result<AppDb, JsError> {
         let conn = WasmConnection::open_memory().map_err(|e| JsError::new(&e.to_string()))?;
-        Ok(RecipeDb { conn, on_recipes_change: None, on_batches_change: None, on_settings_change: None, on_equipment_change: None })
+        Ok(AppDb { conn: Arc::new(conn), on_recipes_change: None, on_batches_change: None, on_settings_change: None, on_equipment_change: None })
     }
 
-    pub fn open(path: &str) -> Result<RecipeDb, JsError> {
+    pub fn open(path: &str) -> Result<AppDb, JsError> {
         let conn = WasmConnection::open(path).map_err(|e| JsError::new(&e.to_string()))?;
-        Ok(RecipeDb { conn, on_recipes_change: None, on_batches_change: None, on_settings_change: None, on_equipment_change: None })
+        Ok(AppDb { conn: Arc::new(conn), on_recipes_change: None, on_batches_change: None, on_settings_change: None, on_equipment_change: None })
     }
 
-    pub(crate) fn conn(&self) -> &WasmConnection {
+    pub(crate) fn conn_arc(&self) -> &Arc<WasmConnection> {
         &self.conn
     }
 
@@ -86,43 +87,25 @@ impl RecipeDb {
 
     pub(crate) fn notify(&self) {
         if let Some(ref cb) = self.on_recipes_change {
-            web_sys::console::log_1(&"[db] notify recipes (callback registered)".into());
             let _ = cb.call0(&JsValue::NULL);
-        } else {
-            web_sys::console::log_1(&"[db] notify recipes (NO callback)".into());
         }
     }
 
     pub(crate) fn notify_batches(&self) {
         if let Some(ref cb) = self.on_batches_change {
-            web_sys::console::log_1(&"[db] notify batches (callback registered)".into());
             let _ = cb.call0(&JsValue::NULL);
-        } else {
-            web_sys::console::log_1(&"[db] notify batches (NO callback)".into());
         }
     }
 
     pub(crate) fn notify_settings(&self) {
         if let Some(ref cb) = self.on_settings_change {
-            web_sys::console::log_1(&"[db] notify settings (callback registered)".into());
             let _ = cb.call0(&JsValue::NULL);
-        } else {
-            web_sys::console::log_1(&"[db] notify settings (NO callback)".into());
-        }
-    }
-
-    pub(crate) fn notify_equipment(&self) {
-        if let Some(ref cb) = self.on_equipment_change {
-            web_sys::console::log_1(&"[db] notify equipment (callback registered)".into());
-            let _ = cb.call0(&JsValue::NULL);
-        } else {
-            web_sys::console::log_1(&"[db] notify equipment (NO callback)".into());
         }
     }
 
     #[wasm_bindgen(js_name = "listRecipes")]
     pub fn list_recipes(&self) -> Result<JsValue, JsError> {
-        let rows = db::list_recipes(&self.conn)
+        let rows = db::list_recipes(&*self.conn)
             .map_err(|e| JsError::new(&e.to_string()))?;
         let docs: Vec<serde_json::Value> = rows
             .into_iter()
@@ -148,7 +131,7 @@ impl RecipeDb {
 
     #[wasm_bindgen(js_name = "getRecipe")]
     pub fn get_recipe(&self, id: &str) -> Result<JsValue, JsError> {
-        let row = db::get_recipe(&self.conn, id)
+        let row = db::get_recipe(&*self.conn, id)
             .map_err(|e| JsError::new(&e.to_string()))?;
         match row {
             Some(r) if !r.is_deleted => {
@@ -176,7 +159,7 @@ impl RecipeDb {
 
     #[wasm_bindgen(js_name = "createRecipe")]
     pub fn create_recipe(&self, name: &str, recipe: RecipeType, equipment: Option<EquipmentType>, equipment_id: Option<String>) -> Result<String, JsError> {
-        let row = db::create_recipe(&self.conn, name, &recipe, equipment.as_ref(), equipment_id.as_deref())
+        let row = db::create_recipe(&*self.conn, name, &recipe, equipment.as_ref(), equipment_id.as_deref())
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify();
         Ok(row.id)
@@ -184,7 +167,7 @@ impl RecipeDb {
 
     #[wasm_bindgen(js_name = "updateRecipe")]
     pub fn update_recipe(&self, id: &str, name: &str, recipe: RecipeType, equipment: Option<EquipmentType>) -> Result<(), JsError> {
-        db::update_recipe(&self.conn, id, name, &recipe, equipment.as_ref())
+        db::update_recipe(&*self.conn, id, name, &recipe, equipment.as_ref())
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify();
         Ok(())
@@ -192,7 +175,7 @@ impl RecipeDb {
 
     #[wasm_bindgen(js_name = "setRecipeEquipment")]
     pub fn set_recipe_equipment(&self, id: &str, equipment: Option<EquipmentType>, equipment_id: Option<String>) -> Result<(), JsError> {
-        db::set_recipe_equipment(&self.conn, id, equipment.as_ref(), equipment_id.as_deref())
+        db::set_recipe_equipment(&*self.conn, id, equipment.as_ref(), equipment_id.as_deref())
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify();
         Ok(())
@@ -200,7 +183,7 @@ impl RecipeDb {
 
     #[wasm_bindgen(js_name = "deleteRecipe")]
     pub fn delete_recipe(&self, id: &str) -> Result<(), JsError> {
-        db::delete_recipe(&self.conn, id)
+        db::delete_recipe(&*self.conn, id)
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify();
         Ok(())
@@ -211,7 +194,7 @@ impl RecipeDb {
         let data: serde_json::Value = serde_wasm_bindgen::from_value(data)
             .map_err(|e| JsError::new(&e.to_string()))?;
         let data_json = serde_json::to_string(&data).unwrap();
-        let row = batch::create_batch(&self.conn, name, recipe_id, &data_json)
+        let row = batch::create_batch(&*self.conn, name, recipe_id, &data_json)
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify_batches();
         Ok(row.id)
@@ -219,7 +202,7 @@ impl RecipeDb {
 
     #[wasm_bindgen(js_name = "getBatch")]
     pub fn get_batch(&self, id: &str) -> Result<JsValue, JsError> {
-        let row = batch::get_batch(&self.conn, id)
+        let row = batch::get_batch(&*self.conn, id)
             .map_err(|e| JsError::new(&e.to_string()))?;
         match row {
             Some(r) if !r.is_deleted => {
@@ -239,7 +222,7 @@ impl RecipeDb {
 
     #[wasm_bindgen(js_name = "listBatches")]
     pub fn list_batches(&self) -> Result<JsValue, JsError> {
-        let rows = batch::list_batches(&self.conn)
+        let rows = batch::list_batches(&*self.conn)
             .map_err(|e| JsError::new(&e.to_string()))?;
         let docs: Vec<serde_json::Value> = rows
             .into_iter()
@@ -261,7 +244,7 @@ impl RecipeDb {
         let data: serde_json::Value = serde_wasm_bindgen::from_value(data)
             .map_err(|e| JsError::new(&e.to_string()))?;
         let data_json = serde_json::to_string(&data).unwrap();
-        batch::update_batch(&self.conn, id, name, &data_json)
+        batch::update_batch(&*self.conn, id, name, &data_json)
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify_batches();
         Ok(())
@@ -269,7 +252,7 @@ impl RecipeDb {
 
     #[wasm_bindgen(js_name = "deleteBatch")]
     pub fn delete_batch(&self, id: &str) -> Result<(), JsError> {
-        batch::delete_batch(&self.conn, id)
+        batch::delete_batch(&*self.conn, id)
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify_batches();
         Ok(())
@@ -277,7 +260,7 @@ impl RecipeDb {
 
     #[wasm_bindgen(js_name = "getSettings")]
     pub fn get_settings(&self) -> Result<JsValue, JsError> {
-        let row = settings::get_settings(&self.conn)
+        let row = settings::get_settings(&*self.conn)
             .map_err(|e| JsError::new(&e.to_string()))?;
         match row {
             Some(r) => {
@@ -294,7 +277,7 @@ impl RecipeDb {
         let data: serde_json::Value = serde_wasm_bindgen::from_value(data)
             .map_err(|e| JsError::new(&e.to_string()))?;
         let data_json = serde_json::to_string(&data).unwrap();
-        settings::save_settings(&self.conn, &data_json)
+        settings::save_settings(&*self.conn, &data_json)
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify_settings();
         Ok(())
@@ -304,7 +287,7 @@ impl RecipeDb {
 
     #[wasm_bindgen(js_name = "listEquipmentProfiles")]
     pub fn list_equipment_profiles(&self) -> Result<JsValue, JsError> {
-        let rows = equipment_profile::list_equipment_profiles(&self.conn)
+        let rows = equipment_profile::list_equipment_profiles(&*self.conn)
             .map_err(|e| JsError::new(&e.to_string()))?;
         let profiles: Vec<serde_json::Value> = rows
             .into_iter()
@@ -318,20 +301,20 @@ impl RecipeDb {
 
     #[wasm_bindgen(js_name = "createEquipmentProfile")]
     pub fn create_equipment_profile(&self, profile: brewdio_core::equipment_profile::EquipmentProfile) -> Result<String, JsError> {
-        let row = equipment_profile::create_equipment_profile(&self.conn, &profile)
+        let row = equipment_profile::create_equipment_profile(&*self.conn, &profile)
             .map_err(|e| JsError::new(&e.to_string()))?;
         Ok(row.id)
     }
 
     #[wasm_bindgen(js_name = "updateEquipmentProfile")]
     pub fn update_equipment_profile(&self, id: &str, profile: brewdio_core::equipment_profile::EquipmentProfile) -> Result<(), JsError> {
-        equipment_profile::update_equipment_profile(&self.conn, id, &profile)
+        equipment_profile::update_equipment_profile(&*self.conn, id, &profile)
             .map_err(|e| JsError::new(&e.to_string()))
     }
 
     #[wasm_bindgen(js_name = "deleteEquipmentProfile")]
     pub fn delete_equipment_profile(&self, id: &str) -> Result<(), JsError> {
-        equipment_profile::delete_equipment_profile(&self.conn, id)
+        equipment_profile::delete_equipment_profile(&*self.conn, id)
             .map_err(|e| JsError::new(&e.to_string()))
     }
 }

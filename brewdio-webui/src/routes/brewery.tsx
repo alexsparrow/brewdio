@@ -84,8 +84,8 @@ function BreweryComponent() {
   const equipmentProfiles = useMemo(() => {
     const profiles = getEquipment();
     return profiles.map((e) => ({
-      id: e.name.toLowerCase().replace(/\s+/g, '-'),
-      equipment: e,
+      id: e.equipment.name.toLowerCase().replace(/\s+/g, '-'),
+      equipment: e.equipment,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     }));

@@ -5,8 +5,8 @@ edition = "2021"
 
 [features]
 default = ["native"]
-native = ["rusqlite/bundled", "tokio", "tokio-tungstenite", "futures-util"]
-wasm = ["sqlite-wasm-rs", "wasm-bindgen", "wasm-bindgen-futures", "js-sys", "web-time", "getrandom"]
+native = ["rusqlite/bundled", "tokio"]
+wasm = ["sqlite-wasm-rs", "wasm-bindgen", "wasm-bindgen-futures", "js-sys", "web-time", "getrandom", "wasmtimer"]
 
 [dependencies]
 # Always (pure, WASM-safe)
@@ -17,12 +17,15 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 ulid = { version = "1", features = ["serde"] }
 rand = "0.9"
+log = "0.4"
+
+# Cross-platform sync
+tokio-tungstenite-wasm = "0.8"
+futures-util = "0.3"
 
 # Native only
 rusqlite = { version = "0.34", features = ["bundled"], optional = true }
 tokio = { version = "1", features = ["full"], optional = true }
-tokio-tungstenite = { version = "0.26", features = ["native-tls"], optional = true }
-futures-util = { version = "0.3", optional = true }
 
 # WASM only
 sqlite-wasm-rs = { version = "0.3", default-features = false, features = ["precompiled"], optional = true }
@@ -31,3 +34,4 @@ wasm-bindgen-futures = { version = "0.4", optional = true }
 js-sys = { version = "0.3", optional = true }
 web-time = { version = "1", optional = true }
 getrandom = { version = "0.3", features = ["wasm_js"], optional = true }
+wasmtimer = { version = "0.4", optional = true }

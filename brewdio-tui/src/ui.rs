@@ -2,7 +2,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem, Paragraph},
+    widgets::{Bar, BarChart, BarGroup, Block, Borders, List, ListItem, Paragraph},
     Frame,
 };
 
@@ -675,11 +675,15 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
     row_idx += 1;
 
     // Batch size row
-    let batch_line = Line::from(vec![
-        Span::styled(" Batch: ", Style::default().fg(Color::DarkGray)),
-        Span::raw(app.batch_size_display()),
-    ]);
-    frame.render_widget(Paragraph::new(batch_line), rows[row_idx]);
+    let mut batch_spans = vec![Span::styled(" Batch: ", Style::default().fg(Color::DarkGray))];
+    if let Some(doc) = app.current_doc.as_ref() {
+        let bs = &doc.recipe.batch_size;
+        let unit_str = format!("{:?}", bs.unit).to_lowercase();
+        batch_spans.extend(qty_amt(bs.value, &unit_str, Color::Reset));
+    } else {
+        batch_spans.push(Span::raw("(none)"));
+    }
+    frame.render_widget(Paragraph::new(Line::from(batch_spans)), rows[row_idx]);
     row_idx += 1;
 
     // Brew date row (batch edit only)
@@ -1045,6 +1049,7 @@ fn draw_tab_content(frame: &mut Frame, app: &App, area: Rect) {
         Tab::Fermentables => draw_fermentables_tab(frame, app, area),
         Tab::Hops => draw_hops_tab(frame, app, area),
         Tab::Cultures => draw_cultures_tab(frame, app, area),
+        Tab::Water => draw_water_tab(frame, app, area),
         Tab::Batches => draw_recipe_batches_tab(frame, app, area),
         Tab::History => draw_history_tab(frame, app, area),
         _ => {
@@ -1059,6 +1064,217 @@ fn draw_tab_content(frame: &mut Frame, app: &App, area: Rect) {
             );
             frame.render_widget(content, area);
         }
+    }
+}
+
+fn draw_water_tab(frame: &mut Frame, app: &App, area: Rect) {
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(" Water ");
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+
+    let result = match app.compute_water() {
+        Some(r) => r,
+        None => {
+            let empty = Paragraph::new(Line::from(Span::styled(
+                "  No recipe loaded",
+                Style::default().fg(Color::DarkGray),
+            )));
+            frame.render_widget(empty, inner);
+            return;
+        }
+    };
+
+    // Compute beer color from SRM for bar styling
+    let doc = app.current_doc.as_ref().unwrap();
+    let recipe = &doc.recipe;
+    let srm = brewdio_core::color::calculate_color(
+        &recipe.ingredients.fermentable_additions,
+        &recipe.batch_size,
+    );
+    let [r, g, b] = brewdio_core::olfarve::srm_to_srgb(srm, None);
+    let beer_color = Color::Rgb(
+        (r * 255.0) as u8,
+        (g * 255.0) as u8,
+        (b * 255.0) as u8,
+    );
+    let strike_color = Color::Rgb(100, 149, 237); // cornflower blue
+
+    let vol_unit = &result.total_water_needed.unit;
+    let vol_label = format!("{:?}", vol_unit).to_lowercase();
+
+    // Layout: strike info (top) | bar chart (middle) | stage breakdown (bottom)
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(5), // Strike/sparge info
+            Constraint::Min(8),   // Bar chart
+            Constraint::Length(7), // Stage breakdown
+        ])
+        .split(inner);
+
+    // ── Strike & Sparge Info ──
+    let strike = &result.strike_water;
+    let temp_label = format!("{:?}", strike.temperature.unit);
+    let temp_unit_str = format!("°{}", temp_label);
+
+    let mut total_spans = vec![Span::styled(" Total Water  ", Style::default().fg(Color::DarkGray))];
+    total_spans.extend(qty_f2(result.total_water_needed.value, &vol_label, strike_color));
+
+    let mut strike_spans = vec![Span::styled(" Strike       ", Style::default().fg(Color::DarkGray))];
+    strike_spans.extend(qty_f2(strike.volume.value, &vol_label, strike_color));
+    strike_spans.push(Span::styled("  heat to ", Style::default().fg(Color::DarkGray)));
+    strike_spans.extend(qty_spans(&format!("{:.1}", strike.temperature.value), &temp_unit_str, Color::White));
+
+    let mut info_lines: Vec<Line> = vec![
+        Line::from(total_spans),
+        Line::from(strike_spans),
+    ];
+
+    if let Some(ref sparge) = result.sparge_water {
+        let mut sparge_spans = vec![Span::styled(" Sparge       ", Style::default().fg(Color::DarkGray))];
+        sparge_spans.extend(qty_f2(sparge.volume.value, &vol_label, strike_color));
+        sparge_spans.push(Span::styled("  heat to ", Style::default().fg(Color::DarkGray)));
+        sparge_spans.extend(qty_spans(&format!("{:.1}", sparge.temperature.value), &temp_unit_str, Color::White));
+        info_lines.push(Line::from(sparge_spans));
+    }
+
+    let boil_time = recipe
+        .boil
+        .as_ref()
+        .map(|b| b.boil_time.value as f64)
+        .unwrap_or(60.0);
+
+    let mut batch_spans = vec![Span::styled(" ", Style::default())];
+    batch_spans.extend(qty_amt(recipe.batch_size.value, &format!("{:?}", recipe.batch_size.unit).to_lowercase(), Color::DarkGray));
+    batch_spans.push(Span::styled(
+        format!(" batch, {:.0} min boil", boil_time),
+        Style::default().fg(Color::DarkGray),
+    ));
+    info_lines.push(Line::from(batch_spans));
+
+    frame.render_widget(Paragraph::new(info_lines), chunks[0]);
+
+    // ── Bar Chart: volumes at each stage ──
+    let stages = &result.calculated_stages;
+    let scale = 100u64;
+    let num_bars = stages.len().max(1);
+
+    let bars: Vec<Bar> = stages
+        .iter()
+        .map(|stage| {
+            let vol = stage.volume_in;
+            let label = match stage.id.as_str() {
+                "source" => "Strike",
+                "mash" => "Mash",
+                "kettle" => "Kettle",
+                "fermenter" => "Ferm",
+                "packaging" => "Pkg",
+                _ => &stage.label,
+            };
+            let color = if stage.is_source {
+                strike_color
+            } else {
+                beer_color
+            };
+            Bar::default()
+                .value((vol * scale as f64) as u64)
+                .label(Line::from(label.to_string()))
+                .text_value(format!("{:.2} {}", vol, vol_label))
+                .style(Style::default().fg(color))
+                .value_style(Style::default().fg(Color::White).bg(color))
+        })
+        .collect();
+
+    // Calculate bar width to fill available space, with 1-char gaps
+    let available = chunks[1].width as usize;
+    let total_gaps = num_bars.saturating_sub(1);
+    let bar_w = available
+        .saturating_sub(total_gaps)
+        .checked_div(num_bars)
+        .unwrap_or(5)
+        .max(3) as u16;
+
+    // Center the chart horizontally
+    let chart_width = (bar_w as usize * num_bars + total_gaps).min(available);
+    let h_pad = (available.saturating_sub(chart_width)) / 2;
+    let chart_area = Rect {
+        x: chunks[1].x + h_pad as u16,
+        y: chunks[1].y,
+        width: chart_width as u16,
+        height: chunks[1].height,
+    };
+
+    let chart = BarChart::default()
+        .data(BarGroup::default().bars(&bars))
+        .bar_width(bar_w)
+        .bar_gap(1);
+
+    frame.render_widget(chart, chart_area);
+
+    // ── Stage Breakdown ──
+    let non_source_stages: Vec<_> = stages.iter().filter(|s| !s.is_source).collect();
+
+    let stage_constraints: Vec<Constraint> = non_source_stages
+        .iter()
+        .map(|_| Constraint::Ratio(1, non_source_stages.len() as u32))
+        .collect();
+
+    let stage_cols = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints(stage_constraints)
+        .split(chunks[2]);
+
+    for (i, stage) in non_source_stages.iter().enumerate() {
+        let mut in_spans = vec![Span::styled("  in  ", Style::default().fg(Color::DarkGray))];
+        in_spans.extend(qty_f2(stage.volume_in, &vol_label, Color::White));
+
+        let mut out_spans = vec![Span::styled("  out ", Style::default().fg(Color::DarkGray))];
+        out_spans.extend(qty_f2(stage.volume_out, &vol_label, Color::White));
+
+        let mut lines: Vec<Line> = vec![
+            Line::from(Span::styled(
+                format!(" {}", stage.label),
+                Style::default().fg(Color::White).add_modifier(Modifier::BOLD),
+            )),
+            Line::from(in_spans),
+            Line::from(out_spans),
+        ];
+
+        // Show individual losses
+        // Losses are in gal internally; total_loss is already in output units.
+        // Compute each loss's share of the converted total.
+        let raw_total: f64 = stage.losses.iter().map(|l| match l.loss_type {
+            brewdio_core::water::WaterLossType::Rate => l.value * (boil_time / 60.0),
+            brewdio_core::water::WaterLossType::Flat => l.value,
+        }).sum();
+        for loss in &stage.losses {
+            let raw_val = match loss.loss_type {
+                brewdio_core::water::WaterLossType::Rate => loss.value * (boil_time / 60.0),
+                brewdio_core::water::WaterLossType::Flat => loss.value,
+            };
+            let loss_display = if raw_total > 0.0 {
+                (raw_val / raw_total) * stage.total_loss
+            } else {
+                0.0
+            };
+            let short_label = match loss.id.as_str() {
+                "grainAbs" => "grain",
+                "tunDead" => "tun",
+                "boilOff" => "boil",
+                "trub" => "trub",
+                "trub_ferm" => "yeast",
+                "lines" => "xfer",
+                _ => &loss.label,
+            };
+            let mut loss_spans = vec![Span::styled("  ", Style::default())];
+            loss_spans.extend(qty_spans(&format!("-{:.2}", loss_display), &vol_label, Color::Red));
+            loss_spans.push(Span::styled(format!(" {}", short_label), Style::default().fg(Color::DarkGray)));
+            lines.push(Line::from(loss_spans));
+        }
+
+        frame.render_widget(Paragraph::new(lines), stage_cols[i]);
     }
 }
 
@@ -1290,7 +1506,8 @@ fn draw_fermentables_tab(frame: &mut Frame, app: &App, area: Rect) {
                         (v.value, format!("{:?}", v.unit).to_lowercase())
                     }
                 };
-                let amount_str = format!("{} {}", format_amount(amount_val), amount_unit);
+                let amount_val_str = format_amount(amount_val);
+                let amount_str = format!("{} {}", amount_val_str, amount_unit);
                 let name = &addition.name;
 
                 // Calculate padding: total width minus prefix(3) - swatch(3) - name - amount
@@ -1310,13 +1527,16 @@ fn draw_fermentables_tab(frame: &mut Frame, app: &App, area: Rect) {
                     Style::default()
                 };
 
-                ListItem::new(Line::from(vec![
+                let val_color = if is_selected { Color::Yellow } else { Color::Reset };
+
+                let mut spans = vec![
                     Span::styled(prefix, style),
                     Span::styled("██ ", Style::default().fg(swatch_color)),
                     Span::styled(name.clone(), style),
                     Span::styled(" ".repeat(padding), Style::default()),
-                    Span::styled(amount_str, style),
-                ]))
+                ];
+                spans.extend(qty_amt(amount_val, &amount_unit, val_color));
+                ListItem::new(Line::from(spans))
             })
             .collect();
 
@@ -1338,6 +1558,32 @@ fn format_amount(value: f64) -> String {
         let s = format!("{:.2}", value);
         s.trim_end_matches('0').trim_end_matches('.').to_string()
     }
+}
+
+/// Render a quantity with unit as two spans: value bold, unit dim.
+/// `value_str` is the formatted number, `unit_str` is the unit label.
+/// Returns spans styled with `color` for the value and dimmed for the unit.
+fn qty_spans(value_str: &str, unit_str: &str, color: Color) -> Vec<Span<'static>> {
+    vec![
+        Span::styled(
+            value_str.to_string(),
+            Style::default().fg(color).add_modifier(Modifier::BOLD),
+        ),
+        Span::styled(
+            format!(" {}", unit_str),
+            Style::default().fg(Color::DarkGray),
+        ),
+    ]
+}
+
+/// Convenience: format a f64 value (2 decimal places) + unit as styled spans.
+fn qty_f2(value: f64, unit_str: &str, color: Color) -> Vec<Span<'static>> {
+    qty_spans(&format!("{:.2}", value), unit_str, color)
+}
+
+/// Format an amount value (smart decimal trimming) + unit as styled spans.
+fn qty_amt(value: f64, unit_str: &str, color: Color) -> Vec<Span<'static>> {
+    qty_spans(&format_amount(value), unit_str, color)
 }
 
 fn draw_fermentable_dialog(frame: &mut Frame, app: &App, area: Rect) {
@@ -1554,7 +1800,9 @@ fn draw_hops_tab(frame: &mut Frame, app: &App, area: Rect) {
                     Style::default()
                 };
 
-                ListItem::new(Line::from(vec![
+                let val_color = if is_selected { Color::Yellow } else { Color::Reset };
+
+                let mut spans = vec![
                     Span::styled(prefix, style),
                     Span::styled(name.clone(), style),
                     Span::styled("  ", Style::default()),
@@ -1567,8 +1815,9 @@ fn draw_hops_tab(frame: &mut Frame, app: &App, area: Rect) {
                         },
                     ),
                     Span::styled(" ".repeat(padding), Style::default()),
-                    Span::styled(amount_str, style),
-                ]))
+                ];
+                spans.extend(qty_amt(amount_val, &amount_unit, val_color));
+                ListItem::new(Line::from(spans))
             })
             .collect();
 
@@ -1937,18 +2186,18 @@ fn draw_cultures_tab(frame: &mut Frame, app: &App, area: Rect) {
                 let is_selected = i == app.culture_list_index;
 
                 let prefix = if is_selected { " ► " } else { "   " };
-                let amount_str = match &addition.amount {
+                let (amount_val, amount_unit_str) = match &addition.amount {
                     CultureAdditionTypeAmount::UnitType(u) => {
-                        let unit_label = format!("{:?}", u.unit).to_lowercase();
-                        format!("{} {}", format_amount(u.value), unit_label)
+                        (u.value, format!("{:?}", u.unit).to_lowercase())
                     }
                     CultureAdditionTypeAmount::MassType(m) => {
-                        format!("{} {}", format_amount(m.value), format!("{:?}", m.unit).to_lowercase())
+                        (m.value, format!("{:?}", m.unit).to_lowercase())
                     }
                     CultureAdditionTypeAmount::VolumeType(v) => {
-                        format!("{} {}", format_amount(v.value), format!("{:?}", v.unit).to_lowercase())
+                        (v.value, format!("{:?}", v.unit).to_lowercase())
                     }
                 };
+                let amount_str = format!("{} {}", format_amount(amount_val), amount_unit_str);
                 let name = &addition.name;
 
                 let total_width = inner.width as usize;
@@ -1967,12 +2216,15 @@ fn draw_cultures_tab(frame: &mut Frame, app: &App, area: Rect) {
                     Style::default()
                 };
 
-                ListItem::new(Line::from(vec![
+                let val_color = if is_selected { Color::Yellow } else { Color::Reset };
+
+                let mut spans = vec![
                     Span::styled(prefix, style),
                     Span::styled(name.clone(), style),
                     Span::styled(" ".repeat(padding), Style::default()),
-                    Span::styled(amount_str, style),
-                ]))
+                ];
+                spans.extend(qty_amt(amount_val, &amount_unit_str, val_color));
+                ListItem::new(Line::from(spans))
             })
             .collect();
 

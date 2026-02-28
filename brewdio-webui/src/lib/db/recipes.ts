@@ -1,54 +1,13 @@
-import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { RecipeType, EquipmentType } from 'brewdio-wasm';
-import type { RecipeDb as RecipeDbClass } from 'brewdio-wasm';
+import { getAppDb } from './app-db';
 
 // Re-export the recipe document type used throughout the app.
-// This replaces the old Dexie-based RecipeDocument from db.ts.
 export interface RecipeDocument {
   id: string;
   name: string;
   recipe: RecipeType;
   equipment?: EquipmentType;
-}
-
-// ---------------------------------------------------------------------------
-// Singleton RecipeDb instance
-// ---------------------------------------------------------------------------
-
-let recipeDb: RecipeDbClass | null = null;
-
-/** Call once during app initialisation (before React renders). */
-export function initRecipeDb(db: RecipeDbClass) {
-  recipeDb = db;
-}
-
-export function getRecipeDb(): RecipeDbClass {
-  if (!recipeDb) throw new Error('RecipeDb not initialised – call initRecipeDb() first');
-  return recipeDb;
-}
-
-/**
- * Wire up the WASM change-notification callbacks so that external mutations
- * (e.g. incoming sync) automatically invalidate the TanStack Query cache.
- */
-export function registerChangeCallback(queryClient: QueryClient) {
-  const db = getRecipeDb();
-  db.onRecipesChange(() => {
-    console.log("[db] invalidating recipes queries");
-    queryClient.invalidateQueries({ queryKey: ['recipes'] });
-  });
-  db.onBatchesChange(() => {
-    console.log("[db] invalidating batches queries");
-    queryClient.invalidateQueries({ queryKey: ['batches'] });
-  });
-  db.onSettingsChange(() => {
-    console.log("[db] invalidating settings queries");
-    queryClient.invalidateQueries({ queryKey: ['settings'] });
-  });
-  db.onEquipmentChange(() => {
-    console.log("[db] invalidating equipment-profiles queries");
-    queryClient.invalidateQueries({ queryKey: ['equipment-profiles'] });
-  });
 }
 
 // ---------------------------------------------------------------------------
@@ -69,7 +28,7 @@ export function useRecipes() {
   return useQuery<RecipeDocument[]>({
     queryKey: recipeKeys.all,
     queryFn: () => {
-      const db = getRecipeDb();
+      const db = getAppDb();
       return db.listRecipes() as unknown as RecipeDocument[];
     },
   });
@@ -80,7 +39,7 @@ export function useRecipe(id: string) {
   return useQuery<RecipeDocument | null>({
     queryKey: recipeKeys.detail(id),
     queryFn: () => {
-      const db = getRecipeDb();
+      const db = getAppDb();
       const result = db.getRecipe(id);
       return (result ?? null) as unknown as RecipeDocument | null;
     },
@@ -95,7 +54,7 @@ export function useCreateRecipe() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ name, recipe }: { name: string; recipe: RecipeType }) => {
-      const db = getRecipeDb();
+      const db = getAppDb();
       const id = db.createRecipe(name, recipe);
       return Promise.resolve(id);
     },
@@ -109,7 +68,7 @@ export function useUpdateRecipe() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, name, recipe }: { id: string; name: string; recipe: RecipeType }) => {
-      const db = getRecipeDb();
+      const db = getAppDb();
       db.updateRecipe(id, name, recipe);
       return Promise.resolve();
     },
@@ -124,7 +83,7 @@ export function useDeleteRecipe() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => {
-      const db = getRecipeDb();
+      const db = getAppDb();
       db.deleteRecipe(id);
       return Promise.resolve();
     },
@@ -140,31 +99,31 @@ export function useDeleteRecipe() {
 
 /** Create a recipe imperatively. Returns the new recipe ID. */
 export function createRecipeImperative(name: string, recipe: RecipeType): string {
-  const db = getRecipeDb();
+  const db = getAppDb();
   return db.createRecipe(name, recipe);
 }
 
 /** Update a recipe imperatively. */
 export function updateRecipeImperative(id: string, name: string, recipe: RecipeType): void {
-  const db = getRecipeDb();
+  const db = getAppDb();
   db.updateRecipe(id, name, recipe);
 }
 
 /** Delete a recipe imperatively. */
 export function deleteRecipeImperative(id: string): void {
-  const db = getRecipeDb();
+  const db = getAppDb();
   db.deleteRecipe(id);
 }
 
 /** List all recipes imperatively. */
 export function listRecipesImperative(): RecipeDocument[] {
-  const db = getRecipeDb();
+  const db = getAppDb();
   return db.listRecipes() as unknown as RecipeDocument[];
 }
 
 /** Get a recipe by ID imperatively. */
 export function getRecipeImperative(id: string): RecipeDocument | null {
-  const db = getRecipeDb();
+  const db = getAppDb();
   const result = db.getRecipe(id);
   return (result ?? null) as unknown as RecipeDocument | null;
 }
