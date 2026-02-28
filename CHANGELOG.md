@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2](https://github.com/brewdio/brewdio/compare/v0.2.1...v0.2.2) (2026-02-28)
+
+
+### Bug Fixes
+
+* more deployment fixes ([d05a4a7](https://github.com/brewdio/brewdio/commit/d05a4a7e68a67de5eaa0fd9177e3d98d84876ea9))
+* wasm-tests ([4816e29](https://github.com/brewdio/brewdio/commit/4816e2937c71e96a5e26d6f39c7b4d930784a549))
+
 ## [0.2.1](https://github.com/brewdio/brewdio/compare/v0.2.0...v0.2.1) (2026-02-28)
 
 
