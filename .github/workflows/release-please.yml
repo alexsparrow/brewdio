@@ -126,9 +126,10 @@ jobs:
         run: bun run build
         working-directory: brewdio-webui
 
-      - name: Deploy to Netlify
-        run: npx netlify-cli deploy --prod --no-build
-        working-directory: brewdio-webui
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: brewdio-webui
+          directory: brewdio-webui/dist
