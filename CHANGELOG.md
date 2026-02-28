@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/brewdio/brewdio/compare/v0.2.0...v0.2.1) (2026-02-28)
+
+
+### Bug Fixes
+
+* netlify deploy ([748d003](https://github.com/brewdio/brewdio/commit/748d0030e17b18b827c2a38b00849a89baad1b8d))
+* release fixes ([8a65cd1](https://github.com/brewdio/brewdio/commit/8a65cd1e30d26f5c69baf7b23adb56641365ea79))
+
 ## [0.2.0](https://github.com/brewdio/brewdio/compare/v0.1.0...v0.2.0) (2026-02-28)
 
 
