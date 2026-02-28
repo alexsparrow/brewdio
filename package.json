@@ -1,6 +1,6 @@
 {
   "name": "brewdio",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "workspaces": [
     "brewdio-webui",
     "brewdio-wasm/pkg"

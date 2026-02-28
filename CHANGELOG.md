@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.7](https://github.com/brewdio/brewdio/compare/v0.2.6...v0.2.7) (2026-02-28)
+
+
+### Bug Fixes
+
+* docs build ([d5e5530](https://github.com/brewdio/brewdio/commit/d5e5530a899f6d8d446d10542045aaf6b7c02a68))
+
 ## [0.2.6](https://github.com/brewdio/brewdio/compare/v0.2.5...v0.2.6) (2026-02-28)
 
 
