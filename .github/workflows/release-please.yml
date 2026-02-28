@@ -68,10 +68,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install system dependencies (Linux)
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libssl-dev pkg-config
-
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -128,7 +124,7 @@ jobs:
         working-directory: brewdio-webui
 
       - name: Deploy to Netlify
-        run: npx netlify-cli deploy --prod-if-unlocked
+        run: npx netlify-cli deploy --prod --no-build
         working-directory: brewdio-webui
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
