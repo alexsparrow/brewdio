@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.6](https://github.com/brewdio/brewdio/compare/v0.2.5...v0.2.6) (2026-02-28)
+
+
+### Bug Fixes
+
+* Include tag in version ([14f0665](https://github.com/brewdio/brewdio/commit/14f066591a429c59bbea28939d725b5bd869f238))
+
 ## [0.2.5](https://github.com/brewdio/brewdio/compare/v0.2.4...v0.2.5) (2026-02-28)
 
 
