@@ -33,11 +33,13 @@ brewdio is a modern, privacy-focused brewing companion that puts you in control 
 
 ### User Experience
 - **Local-First** — All data stored locally using SQLite (IndexedDB-backed in the browser, native on desktop)
-- **Dark Mode** — Beautiful dark mode support
+- **Two Interfaces** — Full-featured web UI and terminal UI sharing the same data layer and sync protocol
+- **Vim-Style TUI** — Navigate recipes, manage ingredients, and track batches entirely from the terminal with keyboard-driven workflows
+- **Dark Mode** — Beautiful dark mode support in the web UI
 - **Retro Dials** — Playful retro-cockpit gauge displays for calculated values
+- **Live Vitals** — Real-time OG, FG, ABV, IBU, and SRM with color-coded BJCP style range bars (TUI and web)
 - **Inline Editing** — Edit recipe values directly without cumbersome forms
 - **JSON Editor** — Power users can edit raw BeerJSON with Monaco, optional Vim mode
-- **Terminal UI** — Full-featured TUI for recipe and batch management from the command line
 
 ---
 
@@ -81,7 +83,24 @@ brewdio/
 | `brewdio-persistence` | SQLite-backed storage with Automerge CRDT sync. Compiles to both native (rusqlite) and WASM (sqlite-wasm-rs). |
 | `brewdio-wasm` | wasm-bindgen bindings that expose core + persistence + SyncWorker to JavaScript/TypeScript. |
 | `brewdio-server` | Axum WebSocket relay server. Receives changes from one client and broadcasts to all others via `tokio::sync::broadcast`. |
-| `brewdio-tui` | Terminal UI built with ratatui. Recipes, batches, settings, background sync. |
+| `brewdio-tui` | Terminal UI built with ratatui. Full recipe/batch/settings management with vim-style navigation, live vitals, ingredient search, equipment profiles, and background sync. |
+
+### Terminal UI
+
+The `brewdio-tui/` crate is a full-featured terminal interface built with [ratatui](https://ratatui.rs/):
+
+- **Vim-style navigation** — `j/k` movement, `n` to create, `d` to delete, `q` to go back
+- **Three main tabs** — Recipes, Batches, Settings (switch with `Tab` or `1`/`2`/`3`)
+- **Recipe editor** — Multi-panel layout with header, live vitals panel, and tabbed ingredient lists
+- **Live vitals** — Real-time OG, FG, ABV, IBU, and SRM with color-coded range bars showing BJCP style guidance
+- **Multi-step ingredient dialogs** — Fuzzy-searchable selection for fermentables, hops, and cultures with amount/unit/timing steps
+- **Equipment profiles** — 40+ built-in profiles with efficiency %, searchable selector with confirmation prompt
+- **Batch management** — Create batches from recipes, edit brew dates, independent batch notes
+- **Trash & recovery** — Soft-delete recipes with `d`, toggle trash view with `r`, undelete with `u`
+- **Notes editor** — Multiline modal editor for recipe and batch notes
+- **Change history** — View Automerge CRDT change log with timestamps and actor IDs
+- **Background sync** — Set `BREWDIO_SERVER_URL` to enable; status indicator in top-right corner (green = connected)
+- **XDG data directory** — Database stored at `~/.local/share/brewdio/brewdio.db`
 
 ### Web UI
 
