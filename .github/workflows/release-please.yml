@@ -128,8 +128,7 @@ jobs:
         working-directory: brewdio-webui
 
       - name: Deploy to Netlify
-        run: npx netlify-cli deploy --prod-if-unlocked --dir=dist
-        working-directory: brewdio-webui
+        run: npx netlify-cli deploy --prod-if-unlocked --dir=brewdio-webui/dist
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
