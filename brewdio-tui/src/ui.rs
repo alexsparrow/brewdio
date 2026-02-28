@@ -2,7 +2,7 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Bar, BarChart, BarGroup, Block, Borders, List, ListItem, Paragraph},
+    widgets::{Bar, BarChart, BarGroup, Block, Borders, Clear, List, ListItem, Paragraph},
     Frame,
 };
 
@@ -2470,11 +2470,8 @@ fn draw_notes_popup(frame: &mut Frame, app: &App) {
     let popup_height = (area.height * 3 / 4).max(10).min(area.height.saturating_sub(2));
     let popup_area = centered_rect(popup_width, popup_height, area);
 
-    // Clear background
-    frame.render_widget(
-        Paragraph::new("").style(Style::default().bg(Color::Black)),
-        popup_area,
-    );
+    // Clear the area behind the popup so it's fully opaque
+    frame.render_widget(Clear, popup_area);
 
     let title = match app.notes_target {
         NotesTarget::Recipe => " Recipe Notes ",
