@@ -1,12 +1,11 @@
 [build]
-  base = "brewdio-webui"
   command = """
     rustup default stable && \
     curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh && \
     cd ../brewdio-wasm && wasm-pack build --target web --release && \
     cd ../brewdio-webui && bun install && bun run build
   """
-  publish = "brewdio-webui/dist"
+  publish = "dist"
 
 [build.environment]
   NODE_ENV = "production"
