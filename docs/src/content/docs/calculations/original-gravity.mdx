@@ -1,0 +1,66 @@
+---
+title: Original Gravity (OG)
+description: How brewdio calculates original gravity from fermentables, batch size, and efficiency.
+---
+
+Original gravity predicts the sugar concentration of wort before fermentation. brewdio computes it from the grain bill, batch size, and mash efficiency.
+
+## Formula
+
+The calculation has three steps:
+
+### 1. Yield to Points Per Gallon (PPG)
+
+Each fermentable's fine-grind yield percentage is converted to PPG:
+
+```
+PPG = (fine_grind_yield / 100) × 46.21
+```
+
+The constant **46.21** is the maximum PPG for pure sucrose.
+
+### 2. Total gravity units
+
+Gravity contributions are summed across the grain bill:
+
+```
+gravity_units = Σ (PPG × weight_lb)
+```
+
+### 3. Original gravity
+
+Efficiency and post-boil volume are applied:
+
+```
+OG = 1 + (gravity_units × efficiency / 100) / post_boil_volume_gal / 1000
+```
+
+Post-boil volume adds a **0.53 gal** offset to the target batch size to account for cooling contraction and trub loss.
+
+## Example
+
+A typical pale ale with **10 lb** of 2-row malt (80% fine-grind yield), **5 gal** batch size, and **72%** mash efficiency:
+
+| Step | Value |
+|------|-------|
+| PPG | (80 / 100) × 46.21 = **36.97** |
+| Gravity units | 36.97 × 10 = **369.7** |
+| With efficiency | 369.7 × 72 / 100 = **266.2** |
+| Post-boil volume | 5 + 0.53 = **5.53 gal** |
+| Gravity points | 266.2 / 5.53 = **48.1** |
+| **OG** | 1 + 48.1 / 1000 = **1.048** |
+
+## Inputs
+
+| Parameter | BeerJSON type | Description |
+|-----------|--------------|-------------|
+| `fermentables` | `FermentableAdditionType[]` | Grain bill with amounts and yield data |
+| `batch_size` | `VolumeType` | Target batch volume (any unit) |
+| `efficiency` | `PercentType` | Mash efficiency percentage |
+
+## Behavior notes
+
+- Fermentables with no `fine_grind` yield contribute zero gravity.
+- Volume-based fermentable amounts (e.g. liquid extract by volume) are skipped.
+- Weight units (lb, kg, g) are converted internally to pounds.
+- Volume units (gal, L) are converted internally to gallons.

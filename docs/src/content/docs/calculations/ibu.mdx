@@ -1,0 +1,80 @@
+---
+title: IBU (International Bitterness Units)
+description: How brewdio calculates bitterness using the Tinseth method.
+---
+
+brewdio uses the **Tinseth method** to estimate IBU from hop additions, batch size, and original gravity.
+
+## Formula
+
+For each boil hop addition:
+
+```
+IBU = bigness_factor × boil_time_factor × mg_per_litre_alpha_acids
+```
+
+The total IBU is the sum across all boil hop additions.
+
+### Bigness factor
+
+Accounts for reduced hop utilization in higher-gravity worts:
+
+```
+bigness_factor = 1.65 × 0.000125 ^ (OG - 1)
+```
+
+### Boil time factor
+
+Models utilization as an exponential function of boil time:
+
+```
+boil_time_factor = (1 - e ^ (-0.04 × time_min)) / 4.15
+```
+
+Longer boil times extract more bitterness, approaching a maximum around 60–90 minutes.
+
+### Alpha acid concentration
+
+Converts hop amount and alpha acid percentage to milligrams per litre:
+
+```
+mg/L = (alpha_acid / 100) × amount_oz × 7490 / batch_size_gal
+```
+
+## Example
+
+**1 oz** of hops at **10% alpha acid**, **60 min** boil, **5 gal** batch, OG **1.050**:
+
+| Component | Value |
+|-----------|-------|
+| Bigness factor | 1.65 × 0.000125^0.050 = **1.23** |
+| Boil time factor | (1 - e^(-0.04 × 60)) / 4.15 = **0.219** |
+| mg/L alpha acids | (10/100) × 1 × 7490 / 5 = **149.8** |
+| **IBU** | 1.23 × 0.219 × 149.8 ≈ **40.4** |
+
+## Hop filtering
+
+Only **boil additions** contribute to IBU. brewdio filters hops by their `use` field:
+
+| Use type | Counted? |
+|----------|----------|
+| `add_to_boil` | Yes |
+| No use specified | Yes (defaults to boil) |
+| `add_to_fermentation` (dry hop) | No |
+| `add_to_package` | No |
+
+## Inputs
+
+| Parameter | BeerJSON type | Description |
+|-----------|--------------|-------------|
+| `hops` | `HopAdditionType[]` | Hop additions with alpha acid, amount, timing |
+| `batch_size` | `VolumeType` | Target batch volume |
+| `og` | `f64` | Original gravity |
+
+## Behavior notes
+
+- Hop amounts can be in oz, g, or kg — all are converted to ounces internally.
+- Boil times can be in minutes or hours.
+- A hop with 0% alpha acid or 0-minute boil contributes zero IBU.
+- Higher gravity worts reduce hop utilization (lower IBU for the same hops).
+- Doubling batch size halves IBU (linear relationship with volume).

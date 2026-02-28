@@ -1,0 +1,37 @@
+---
+title: Alcohol By Volume (ABV)
+description: How brewdio calculates ABV from original and final gravity.
+---
+
+ABV estimates the alcohol content of the finished beer based on the gravity drop during fermentation.
+
+## Formula
+
+```
+ABV = (OG - FG) × 131.25
+```
+
+This is the standard simplified formula widely used in homebrewing. The constant **131.25** converts specific-gravity points into an approximate alcohol percentage by volume.
+
+## Example
+
+A beer with OG **1.050** and FG **1.010**:
+
+```
+ABV = (1.050 - 1.010) × 131.25
+    = 0.040 × 131.25
+    = 5.25%
+```
+
+## Inputs
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `og` | `f64` | Original gravity |
+| `fg` | `f64` | Final gravity |
+
+## Behavior notes
+
+- If OG equals FG (no fermentation), ABV is zero.
+- Higher OG with the same FG produces higher ABV.
+- Lower FG with the same OG produces higher ABV.

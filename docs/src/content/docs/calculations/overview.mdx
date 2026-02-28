@@ -1,0 +1,26 @@
+---
+title: Calculations Overview
+description: How brewdio's calculation engine works.
+---
+
+brewdio ships a core calculation engine (`brewdio-core`) written in Rust and compiled to WebAssembly. Every recipe and batch computation — gravity, bitterness, color, carbonation, water volumes — runs through this library.
+
+## Data format
+
+All inputs and outputs follow the [BeerJSON](https://beerjson.github.io/beerjson/) schema. Fermentables, hops, cultures, and equipment are represented as BeerJSON types, so brewdio can import and export standard recipe files.
+
+## Modules
+
+| Module | What it computes |
+|--------|-----------------|
+| [Original Gravity](/calculations/original-gravity/) | OG from fermentables, batch size, and mash efficiency |
+| [Final Gravity](/calculations/final-gravity/) | FG from OG and yeast attenuation |
+| [ABV](/calculations/abv/) | Alcohol by volume from OG and FG |
+| [IBU](/calculations/ibu/) | Bitterness using the Tinseth method |
+| [Color](/calculations/color/) | Beer color (SRM) using the Morey equation |
+| [Carbonation](/calculations/carbonation/) | Priming sugar amounts and forced-carbonation pressure |
+| [Water](/calculations/water/) | Strike/sparge volumes and temperatures |
+
+## Unit handling
+
+Every calculation accepts BeerJSON unit types (lb/kg/g, gal/L, °F/°C, SRM/EBC/Lovibond, etc.) and converts internally. You can pass values in any supported unit and get correct results.

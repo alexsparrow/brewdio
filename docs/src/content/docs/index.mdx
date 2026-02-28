@@ -1,0 +1,33 @@
+---
+title: Welcome to brewdio
+description: Documentation for brewdio — the open-source brewing toolkit.
+template: splash
+hero:
+  tagline: The open-source brewing toolkit.
+  actions:
+    - text: Get Started
+      link: /getting-started/installation/
+      icon: right-arrow
+    - text: Calculations
+      link: /calculations/overview/
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Explore
+
+<CardGrid stagger>
+  <Card title="Getting Started" icon="rocket">
+    Install brewdio and brew your first batch.
+  </Card>
+  <Card title="Data Model & Calculations" icon="setting">
+    Learn how brewdio computes OG, FG, ABV, IBU, color, carbonation, and water volumes.
+  </Card>
+  <Card title="Guides" icon="open-book">
+    Recipes, batches, and workflow walkthroughs.
+  </Card>
+  <Card title="Reference" icon="document">
+    BeerJSON schema and API reference.
+  </Card>
+</CardGrid>

@@ -1,0 +1,68 @@
+---
+title: Beer Color (SRM)
+description: How brewdio calculates beer color using the Morey equation.
+---
+
+brewdio estimates beer color in **SRM** (Standard Reference Method) using the **Morey equation**, the most widely accepted model for predicting beer color from grain bills.
+
+## Formula
+
+### 1. Malt Color Units (MCU)
+
+For each fermentable, calculate its color contribution:
+
+```
+MCU = (weight_lb × lovibond) / batch_size_gal
+```
+
+Total MCU is the sum across all fermentables.
+
+### 2. Morey equation
+
+Convert total MCU to SRM:
+
+```
+SRM = 1.4922 × MCU ^ 0.6859
+```
+
+The power function means the relationship between grain color and beer color is **non-linear** — doubling the dark grain does not double the SRM. This accurately models how color compounds interact in solution.
+
+## Example
+
+A grain bill of **9 lb** pale malt (2L) and **1 lb** Crystal 60 in a **5 gal** batch:
+
+| Grain | MCU |
+|-------|-----|
+| 9 lb × 2L / 5 gal | **3.6** |
+| 1 lb × 60L / 5 gal | **12.0** |
+| **Total MCU** | **15.6** |
+
+```
+SRM = 1.4922 × 15.6 ^ 0.6859 ≈ 10.9
+```
+
+This corresponds to an amber/light copper color.
+
+## Color unit handling
+
+brewdio accepts fermentable color values in any of these units and converts internally:
+
+| Input unit | Conversion |
+|------------|-----------|
+| SRM | Converted to Lovibond via `SRM → Lovibond` |
+| Lovibond | Used directly |
+| EBC | Converted to SRM first (`SRM = EBC / 1.97`), then to Lovibond |
+
+## Inputs
+
+| Parameter | BeerJSON type | Description |
+|-----------|--------------|-------------|
+| `fermentables` | `FermentableAdditionType[]` | Grain bill with amounts and color values |
+| `batch_size` | `VolumeType` | Target batch volume |
+
+## Behavior notes
+
+- Volume-based fermentable amounts are skipped (only mass-based amounts contribute).
+- Larger batch sizes produce lighter beer (same grain spread across more liquid).
+- An empty grain bill returns 0 SRM.
+- Weight units (lb, kg, g) are converted to pounds internally.

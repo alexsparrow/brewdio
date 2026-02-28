@@ -1,0 +1,88 @@
+---
+title: Water Calculations
+description: How brewdio calculates strike water, sparge water, and total water volumes.
+---
+
+brewdio's water calculator determines how much water you need for your brew day and at what temperatures. It works backwards from your target batch size, accounting for losses at every stage of the process.
+
+## Strike water
+
+### Volume
+
+Strike water volume is based on a water-to-grain ratio:
+
+```
+strike_water_gal = grain_weight_lb × ratio_qt_per_lb / 4
+```
+
+The default ratio is **1.25 qt/lb** but can be overridden by mash step configuration.
+
+### Temperature (Palmer formula)
+
+The strike water must be hotter than the target mash temperature to compensate for heat absorption by the grain:
+
+```
+T_strike = (0.2 / R) × (T_mash - T_grain) + T_mash
+```
+
+Where **R** is the water-to-grain ratio in qt/lb, **T_mash** is the target mash temperature, and **T_grain** is the grain temperature (all in °F).
+
+## Sparge water
+
+Sparge water makes up the difference between total water needed and strike water volume. The default sparge temperature is **168°F** (76°C).
+
+## Stage-based water calculation
+
+brewdio models the brewing process as a series of stages, each with its own losses. It works **backwards** from the target batch size, adding losses at each stage to determine total water needed.
+
+### Default stages and losses
+
+| Stage | Loss type | Default value |
+|-------|-----------|--------------|
+| **Mash Tun** | Grain absorption | 0.125 gal/lb |
+| | Tun deadspace | 0.25 gal |
+| **Boil Kettle** | Boil-off rate | 1.0 gal/hr |
+| | Trub/hop loss | 0.5 gal |
+| **Fermenter** | Yeast/cake loss | 0.5 gal |
+| **Packaging** | Transfer loss | 0.1 gal |
+
+All defaults can be overridden by providing equipment profiles (BeerJSON `EquipmentType`).
+
+### How it works
+
+Starting from the target batch size, the calculator adds back each stage's losses in reverse order:
+
+1. **Packaging** — add transfer loss
+2. **Fermenter** — add yeast/cake loss
+3. **Boil Kettle** — add trub loss + (boil-off rate × boil time)
+4. **Mash Tun** — add grain absorption + deadspace
+
+The result at the top is the total water needed.
+
+## Inputs
+
+| Parameter | BeerJSON type | Description |
+|-----------|--------------|-------------|
+| `target_batch_size` | `VolumeType` | Desired final volume |
+| `boil_time` | `TimeType` | Boil duration |
+| `grain_bill` | `FermentableAdditionType[]` | Fermentables (for grain weight) |
+| `mash_steps` | `MashStepType[]` | Mash step targets (temperature, ratio) |
+| `grain_temperature` | `TemperatureType` | Ambient grain temperature |
+| `equipment` | `EquipmentType` (optional) | Equipment profile with custom loss values |
+
+## Output
+
+The calculator returns:
+
+- **Total water needed** — sum of strike + sparge
+- **Strike water** — volume and temperature
+- **Sparge water** — volume and temperature
+- **Stage volumes** — volume in and volume out for mash, kettle, and fermenter
+- **Calculated stages** — detailed per-stage breakdown with individual losses
+
+## Behavior notes
+
+- Only grain-type fermentables contribute to grain weight (extracts are excluded).
+- All units (gal/L, lb/kg, °F/°C) are accepted and converted internally.
+- Equipment profile values override the built-in defaults for each loss.
+- Boil-off is a **rate** loss (multiplied by boil time); all other losses are **flat**.

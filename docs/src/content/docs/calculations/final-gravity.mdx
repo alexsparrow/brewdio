@@ -1,0 +1,41 @@
+---
+title: Final Gravity (FG)
+description: How brewdio calculates final gravity from OG and yeast attenuation.
+---
+
+Final gravity estimates the residual sugar left after fermentation. It determines how dry or sweet the finished beer will be.
+
+## Formula
+
+```
+FG = OG - (OG - 1) × attenuation
+```
+
+Where `attenuation` is expressed as a decimal (e.g. 0.75 for 75%).
+
+## Attenuation source
+
+brewdio reads the attenuation from the **first culture** (yeast) in the recipe's culture additions. If no cultures are provided or the culture has no attenuation value, a default of **75%** is used.
+
+## Example
+
+With OG **1.050** and a yeast with **75%** apparent attenuation:
+
+```
+FG = 1.050 - (1.050 - 1.0) × 0.75
+   = 1.050 - 0.0375
+   = 1.0125
+```
+
+## Inputs
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `og` | `f64` | Previously calculated original gravity |
+| `cultures` | `CultureAdditionType[]` | Yeast/culture additions with attenuation data |
+
+## Behavior notes
+
+- Only the first culture's attenuation is used; additional cultures are ignored.
+- Higher attenuation produces a lower (drier) final gravity.
+- The default 75% attenuation is a reasonable middle ground for most ale yeasts.

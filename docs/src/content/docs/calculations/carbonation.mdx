@@ -1,0 +1,99 @@
+---
+title: Carbonation
+description: How brewdio calculates priming sugar and forced carbonation pressure.
+---
+
+brewdio's carbonation calculator handles both **priming sugar** (bottle/natural conditioning) and **forced carbonation** (kegging with CO2). It accounts for residual CO2 already dissolved in the beer after fermentation.
+
+## Residual CO2
+
+Beer retains dissolved CO2 from fermentation. The amount depends on temperature — colder beer holds more CO2. brewdio uses the Fix (1999) approximation:
+
+```
+residual_vols = 3.0378 - 0.050062 × T_f + 0.00026555 × T_f²
+```
+
+At typical ale fermentation temperatures (18–22°C / 64–72°F), residual CO2 is roughly **0.80–0.90 volumes**.
+
+## Priming sugar
+
+The amount of priming sugar needed depends on the CO2 deficit (target minus residual) and the beer volume.
+
+### CO2 needed
+
+```
+needed_vols = target_vols - residual_vols
+co2_grams = needed_vols × 1.96 × beer_litres
+```
+
+The constant **1.96** is grams of CO2 per volume of CO2 per litre of beer.
+
+### Sugar amounts
+
+Each sugar type has a different fermentability factor:
+
+| Sugar type | Factor | Basis |
+|-----------|--------|-------|
+| Corn sugar (dextrose) | 1 / 0.510 ≈ 1.96 | ~51% fermentable by weight for CO2 |
+| Table sugar (sucrose) | 1 / 0.538 ≈ 1.86 | Slightly more efficient than corn sugar |
+| DME (dry malt extract) | 1 / 0.408 ≈ 2.45 | Less efficient, need more |
+
+```
+sugar_grams = co2_grams × factor
+```
+
+### Example
+
+**19 L** of beer at **20°C**, targeting **2.5 volumes** CO2:
+
+| Step | Value |
+|------|-------|
+| Residual CO2 | ~0.84 vols |
+| Needed CO2 | 2.5 - 0.84 = **1.66 vols** |
+| CO2 grams | 1.66 × 1.96 × 19 = **61.8 g** |
+| Corn sugar | 61.8 × 1.96 = **~121 g** |
+| Table sugar | 61.8 × 1.86 = **~115 g** |
+| DME | 61.8 × 2.45 = **~151 g** |
+
+## Forced carbonation
+
+For kegged beer, brewdio calculates the CO2 pressure needed using the **ASBC** (American Society of Brewing Chemists) formula:
+
+```
+P = -16.6999
+    - 0.0101059 × T
+    + 0.00116512 × T²
+    + 0.173354  × T × V
+    + 4.24267   × V
+    - 0.0684226 × V²
+```
+
+Where **T** is temperature in °F, **V** is target volumes CO2, and **P** is gauge pressure in PSI.
+
+At a typical serving temperature of **2°C** (36°F) targeting **2.5 volumes**, expect roughly **11–13 PSI**.
+
+## Inputs
+
+| Parameter | BeerJSON type | Description |
+|-----------|--------------|-------------|
+| `target_carbonation` | `CarbonationType` | Target CO2 level (volumes or g/L) |
+| `beer_temperature` | `TemperatureType` | Current beer temperature (°C or °F) |
+| `beer_volume` | `VolumeType` | Volume of beer to carbonate |
+| `units` | `CarbonationOutputOptions` | Output units for mass and pressure |
+
+## Output
+
+The calculator returns:
+
+- **Residual CO2** in volumes
+- **Priming sugar** amounts for corn sugar, table sugar, and DME
+- **Forced carbonation** pressure
+
+Output units default to grams and kPa but can be configured to oz/lb and PSI/bar.
+
+## Behavior notes
+
+- If the target carbonation is below residual CO2, priming sugar amounts are clamped to zero.
+- Forced carbonation pressure is clamped to a minimum of zero (never negative).
+- Temperature can be provided in °F or °C.
+- Carbonation can be specified in volumes or g/L (1 vol ≈ 1.96 g/L).
