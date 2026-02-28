@@ -41,6 +41,7 @@ export default defineConfig({
             { label: 'API', slug: 'reference/api' },
           ],
         },
+        { label: 'Changelog', slug: 'changelog' },
       ],
     }),
   ],
