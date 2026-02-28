@@ -42,6 +42,10 @@ async function init() {
   const syncServer = localStorage.getItem("brewdio_server");
   if (syncServer) startSync(syncServer);
 
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js");
+  }
+
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>

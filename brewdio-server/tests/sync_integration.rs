@@ -52,7 +52,7 @@ async fn client_to_server_sync() {
 
     {
         let c = client_conn.lock().unwrap();
-        db::create_recipe(&*c, "Client IPA", &sample_recipe(), None).unwrap();
+        db::create_recipe(&*c, "Client IPA", &sample_recipe(), None, None).unwrap();
     }
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -60,7 +60,7 @@ async fn client_to_server_sync() {
     let _server = brewdio_server::start_server(listener, server_conn.clone());
 
     let url = format!("ws://{}/ws", addr);
-    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Arc::new(AtomicBool::new(false)));
+    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Arc::new(AtomicBool::new(false)), Arc::new(AtomicBool::new(false)));
 
     let recipes = timeout(Duration::from_secs(10), async {
         loop {
@@ -97,7 +97,7 @@ async fn server_to_client_sync() {
 
     {
         let c = server_conn.lock().unwrap();
-        db::create_recipe(&*c, "Server Stout", &sample_recipe(), None).unwrap();
+        db::create_recipe(&*c, "Server Stout", &sample_recipe(), None, None).unwrap();
     }
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -105,7 +105,7 @@ async fn server_to_client_sync() {
     let _server = brewdio_server::start_server(listener, server_conn.clone());
 
     let url = format!("ws://{}/ws", addr);
-    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Arc::new(AtomicBool::new(false)));
+    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Arc::new(AtomicBool::new(false)), Arc::new(AtomicBool::new(false)));
 
     let recipes = timeout(Duration::from_secs(10), async {
         loop {
@@ -152,6 +152,8 @@ async fn shared_recipe_sync_preserves_is_deleted() {
             id: recipe_id.to_string(),
             name: "Server Version".to_string(),
             recipe: recipe.clone(),
+            equipment: None,
+            equipment_id: None,
             is_deleted: false,
         };
         let am_data = reconcile_to_automerge(&doc, None).unwrap();
@@ -168,6 +170,8 @@ async fn shared_recipe_sync_preserves_is_deleted() {
             id: recipe_id.to_string(),
             name: "Client Version".to_string(),
             recipe: recipe.clone(),
+            equipment: None,
+            equipment_id: None,
             is_deleted: false,
         };
         let am_data = reconcile_to_automerge(&doc, None).unwrap();
@@ -185,7 +189,7 @@ async fn shared_recipe_sync_preserves_is_deleted() {
     let _server = brewdio_server::start_server(listener, server_conn.clone());
 
     let url = format!("ws://{}/ws", addr);
-    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Arc::new(AtomicBool::new(false)));
+    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Arc::new(AtomicBool::new(false)), Arc::new(AtomicBool::new(false)));
 
     // Wait for sync to converge (names should match on both sides)
     timeout(Duration::from_secs(10), async {
@@ -232,13 +236,14 @@ async fn batch_client_to_server_sync() {
     // Create a batch on the client
     {
         let c = client_conn.lock().unwrap();
-        let equip = &brewdio_core::data::equipment()[0];
+        let profile = &brewdio_core::data::equipment()[0];
         batch::create_batch_from_recipe(
             &*c,
             "Test Batch",
             "recipe-1",
             &sample_recipe(),
-            equip,
+            &profile.equipment,
+            &profile.id,
         )
         .unwrap();
     }
@@ -248,7 +253,7 @@ async fn batch_client_to_server_sync() {
     let _server = brewdio_server::start_server(listener, server_conn.clone());
 
     let url = format!("ws://{}/ws", addr);
-    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Arc::new(AtomicBool::new(false)));
+    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Arc::new(AtomicBool::new(false)), Arc::new(AtomicBool::new(false)));
 
     let batches = timeout(Duration::from_secs(10), async {
         loop {
@@ -286,7 +291,7 @@ async fn settings_client_to_server_sync() {
     let _server = brewdio_server::start_server(listener, server_conn.clone());
 
     let url = format!("ws://{}/ws", addr);
-    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Arc::new(AtomicBool::new(false)));
+    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Arc::new(AtomicBool::new(false)), Arc::new(AtomicBool::new(false)));
 
     let synced_settings = timeout(Duration::from_secs(10), async {
         loop {

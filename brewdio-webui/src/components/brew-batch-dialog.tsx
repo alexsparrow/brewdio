@@ -41,7 +41,7 @@ export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
 
   const [batchName, setBatchName] = useState(defaultBatchName);
   const recipeEquipmentName = recipe.equipment?.name;
-  const initialEquipmentName = recipeEquipmentName || defaultEquipment?.name || "Default Setup";
+  const initialEquipmentName = recipeEquipmentName || defaultEquipment?.equipment.name || "Default Setup";
 
   const [selectedEquipmentName, setSelectedEquipmentName] = useState(initialEquipmentName);
 
@@ -53,7 +53,7 @@ export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
       const currentBatches = batches?.filter(b => b.recipeId === recipe.id) || [];
       const newBatchNumber = currentBatches.length + 1;
       setBatchName(`${recipe.recipe.name} Batch ${newBatchNumber}`);
-      setSelectedEquipmentName(recipe.equipment?.name || defaultEquipment?.name || "Default Setup");
+      setSelectedEquipmentName(recipe.equipment?.name || defaultEquipment?.equipment.name || "Default Setup");
     }
   };
 
@@ -61,15 +61,15 @@ export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
     setIsCreating(true);
     try {
       // Get selected equipment
-      const equipment = equipmentProfiles.find(e => e.name === selectedEquipmentName) || defaultEquipment;
+      const profile = equipmentProfiles.find(e => e.equipment.name === selectedEquipmentName) || defaultEquipment;
 
       const batchId = createBatchImperative(
         batchName.trim() || defaultBatchName,
         recipe.id,
         {
-          equipmentId: equipment?.name || "default",
+          equipmentId: profile?.id || "default",
           recipe: structuredClone(recipe.recipe),
-          equipment: structuredClone(equipment),
+          equipment: structuredClone(profile?.equipment),
           brewDate: Date.now(),
           createdAt: Date.now(),
           updatedAt: Date.now(),
@@ -126,8 +126,8 @@ export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             >
               {equipmentProfiles.map((profile) => (
-                <option key={profile.name} value={profile.name}>
-                  {profile.name}
+                <option key={profile.id} value={profile.equipment.name}>
+                  {profile.equipment.name}
                 </option>
               ))}
             </select>
