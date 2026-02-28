@@ -48,8 +48,8 @@ function sampleRecipeDocument(id: string, name: string) {
 describe("SyncSession", () => {
   test("new session can reconcile and hydrate", () => {
     const session = new SyncSession();
-    session.reconcile_json(sampleRecipeDocument("test-1", "Test Beer"));
-    const hydrated = JSON.parse(session.hydrate_json());
+    session.reconcileJson(sampleRecipeDocument("test-1", "Test Beer"));
+    const hydrated = JSON.parse(session.hydrateJson());
 
     expect(hydrated.id).toBe("test-1");
     expect(hydrated.name).toBe("Test Beer");
@@ -58,11 +58,11 @@ describe("SyncSession", () => {
 
   test("from_bytes roundtrip", () => {
     const session1 = new SyncSession();
-    session1.reconcile_json(sampleRecipeDocument("test-2", "Roundtrip Beer"));
-    const bytes = session1.save_doc();
+    session1.reconcileJson(sampleRecipeDocument("test-2", "Roundtrip Beer"));
+    const bytes = session1.saveDoc();
 
-    const session2 = SyncSession.from_bytes(new Uint8Array(bytes));
-    const hydrated = JSON.parse(session2.hydrate_json());
+    const session2 = SyncSession.fromBytes(new Uint8Array(bytes));
+    const hydrated = JSON.parse(session2.hydrateJson());
 
     expect(hydrated.id).toBe("test-2");
     expect(hydrated.name).toBe("Roundtrip Beer");
@@ -70,42 +70,42 @@ describe("SyncSession", () => {
 
   test("save and restore state", () => {
     const session1 = new SyncSession();
-    session1.reconcile_json(sampleRecipeDocument("test-3", "Stateful Beer"));
-    const docBytes = session1.save_doc();
-    const stateBytes = session1.save_state();
+    session1.reconcileJson(sampleRecipeDocument("test-3", "Stateful Beer"));
+    const docBytes = session1.saveDoc();
+    const stateBytes = session1.saveState();
 
-    const session2 = SyncSession.from_doc_and_state(
+    const session2 = SyncSession.fromDocAndState(
       new Uint8Array(docBytes),
       new Uint8Array(stateBytes)
     );
-    const hydrated = JSON.parse(session2.hydrate_json());
+    const hydrated = JSON.parse(session2.hydrateJson());
     expect(hydrated.name).toBe("Stateful Beer");
   });
 
   test("two sessions converge via sync messages", () => {
     // Session A creates a recipe
     const sessionA = new SyncSession();
-    sessionA.reconcile_json(sampleRecipeDocument("recipe-1", "Original Beer"));
+    sessionA.reconcileJson(sampleRecipeDocument("recipe-1", "Original Beer"));
 
     // Session B starts empty
     const sessionB = new SyncSession();
 
     // Exchange sync messages until convergence
-    let msg: any = sessionA.generate_sync_message();
+    let msg: any = sessionA.generateSyncMessage();
     let rounds = 0;
     const maxRounds = 20;
 
     while (msg !== undefined && rounds < maxRounds) {
       const msgBytes = msg instanceof Uint8Array ? msg : new Uint8Array(msg);
-      const reply = sessionB.receive_sync_message(msgBytes);
+      const reply = sessionB.receiveSyncMessage(msgBytes);
 
       if (reply === undefined || typeof reply === "string") {
         // Check if A also needs to send
-        msg = sessionA.generate_sync_message();
+        msg = sessionA.generateSyncMessage();
       } else {
         const replyBytes =
           reply instanceof Uint8Array ? reply : new Uint8Array(reply);
-        msg = sessionA.receive_sync_message(replyBytes);
+        msg = sessionA.receiveSyncMessage(replyBytes);
         if (msg === undefined || typeof msg === "string") {
           msg = undefined;
         }
@@ -114,8 +114,8 @@ describe("SyncSession", () => {
     }
 
     // Both should now have the same document
-    const hydratedA = JSON.parse(sessionA.hydrate_json());
-    const hydratedB = JSON.parse(sessionB.hydrate_json());
+    const hydratedA = JSON.parse(sessionA.hydrateJson());
+    const hydratedB = JSON.parse(sessionB.hydrateJson());
 
     expect(hydratedA.id).toBe("recipe-1");
     expect(hydratedB.id).toBe("recipe-1");
@@ -125,36 +125,36 @@ describe("SyncSession", () => {
   test("concurrent edits converge", () => {
     // Both start from the same doc
     const sessionA = new SyncSession();
-    sessionA.reconcile_json(sampleRecipeDocument("recipe-2", "Base Beer"));
-    const baseBytes = sessionA.save_doc();
+    sessionA.reconcileJson(sampleRecipeDocument("recipe-2", "Base Beer"));
+    const baseBytes = sessionA.saveDoc();
 
-    const sessionB = SyncSession.from_bytes(new Uint8Array(baseBytes));
+    const sessionB = SyncSession.fromBytes(new Uint8Array(baseBytes));
 
     // A changes the name
-    sessionA.reconcile_json(sampleRecipeDocument("recipe-2", "Beer Alpha"));
+    sessionA.reconcileJson(sampleRecipeDocument("recipe-2", "Beer Alpha"));
 
     // B changes the name differently
-    sessionB.reconcile_json(sampleRecipeDocument("recipe-2", "Beer Beta"));
+    sessionB.reconcileJson(sampleRecipeDocument("recipe-2", "Beer Beta"));
 
     // Sync until convergence
-    let msg: any = sessionA.generate_sync_message();
+    let msg: any = sessionA.generateSyncMessage();
     let rounds = 0;
 
     while (rounds < 20) {
       if (msg === undefined) {
-        msg = sessionA.generate_sync_message();
+        msg = sessionA.generateSyncMessage();
         if (msg === undefined) break;
       }
 
       const msgBytes = msg instanceof Uint8Array ? msg : new Uint8Array(msg);
-      const reply = sessionB.receive_sync_message(msgBytes);
+      const reply = sessionB.receiveSyncMessage(msgBytes);
 
       if (reply === undefined || typeof reply === "string") {
-        msg = sessionA.generate_sync_message();
+        msg = sessionA.generateSyncMessage();
       } else {
         const replyBytes =
           reply instanceof Uint8Array ? reply : new Uint8Array(reply);
-        const response = sessionA.receive_sync_message(replyBytes);
+        const response = sessionA.receiveSyncMessage(replyBytes);
         msg =
           response === undefined || typeof response === "string"
             ? undefined
@@ -164,19 +164,19 @@ describe("SyncSession", () => {
     }
 
     // Both should converge to the same name (Automerge LWW)
-    const hydratedA = JSON.parse(sessionA.hydrate_json());
-    const hydratedB = JSON.parse(sessionB.hydrate_json());
+    const hydratedA = JSON.parse(sessionA.hydrateJson());
+    const hydratedB = JSON.parse(sessionB.hydrateJson());
     expect(hydratedA.name).toBe(hydratedB.name);
   });
 
   test("is_synced returns correct state", () => {
     const session = new SyncSession();
-    session.reconcile_json(sampleRecipeDocument("test-4", "Synced Beer"));
+    session.reconcileJson(sampleRecipeDocument("test-4", "Synced Beer"));
 
     // A fresh session with no peer should report as synced (nothing to send)
-    // Note: is_synced checks if generate_sync_message would return None
+    // Note: isSynced checks if generateSyncMessage would return None
     // For a session that hasn't started syncing, this is true
-    expect(typeof session.is_synced()).toBe("boolean");
+    expect(typeof session.isSynced()).toBe("boolean");
   });
 });
 
@@ -260,8 +260,8 @@ describe("Protocol integration", () => {
 
     // Create a recipe's AM data via SyncSession
     const session = new SyncSession();
-    session.reconcile_json(sampleRecipeDocument("new-recipe", "New Beer"));
-    const amData = Array.from(new Uint8Array(session.save_doc()));
+    session.reconcileJson(sampleRecipeDocument("new-recipe", "New Beer"));
+    const amData = Array.from(new Uint8Array(session.saveDoc()));
 
     const ws = new WebSocket(`ws://localhost:${port}`);
     await new Promise<void>((resolve) => {
@@ -305,7 +305,7 @@ describe("Protocol integration", () => {
           receivedMessages.push(msg);
 
           if (msg.type === "SyncDoc" && msg.data) {
-            const reply = serverSession.receive_sync_message(
+            const reply = serverSession.receiveSyncMessage(
               new Uint8Array(msg.data)
             );
             if (reply !== undefined && typeof reply !== "string") {
@@ -327,7 +327,7 @@ describe("Protocol integration", () => {
 
     // Client creates a recipe and initiates sync
     const clientSession = new SyncSession();
-    clientSession.reconcile_json(
+    clientSession.reconcileJson(
       sampleRecipeDocument("sync-recipe", "Sync Beer")
     );
 
@@ -337,7 +337,7 @@ describe("Protocol integration", () => {
     });
 
     // Start sync: generate first message
-    const firstMsg = clientSession.generate_sync_message();
+    const firstMsg = clientSession.generateSyncMessage();
     expect(firstMsg).not.toBeUndefined();
 
     const syncDocMsg: SyncMessage = {
@@ -354,7 +354,7 @@ describe("Protocol integration", () => {
       ws.onmessage = (event) => {
         const msg: SyncMessage = JSON.parse(event.data);
         if (msg.type === "SyncDoc" && msg.data) {
-          const reply = clientSession.receive_sync_message(
+          const reply = clientSession.receiveSyncMessage(
             new Uint8Array(msg.data)
           );
           if (reply !== undefined && typeof reply !== "string") {
@@ -380,7 +380,7 @@ describe("Protocol integration", () => {
     expect(receivedMessages[0].type).toBe("SyncDoc");
 
     // Server should now have the recipe
-    const serverHydrated = JSON.parse(serverSession.hydrate_json());
+    const serverHydrated = JSON.parse(serverSession.hydrateJson());
     expect(serverHydrated.name).toBe("Sync Beer");
 
     ws.close();

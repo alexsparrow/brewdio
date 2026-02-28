@@ -1,12 +1,12 @@
 import { test, expect, describe } from "bun:test";
 import {
-  calculate_abv,
-  calculate_og,
-  calculate_fg,
-  calculate_ibu,
-  calculate_color,
-  calculate_water,
-  calculate_carbonation,
+  calculateAbv,
+  calculateOg,
+  calculateFg,
+  calculateIbu,
+  calculateColor,
+  calculateWater,
+  calculateCarbonation,
 } from "brewdio-wasm";
 
 import type {
@@ -23,14 +23,14 @@ import type {
 // ABV
 // ============================================================================
 
-describe("calculate_abv", () => {
+describe("calculateAbv", () => {
   test("standard beer", () => {
-    const abv = calculate_abv(1.050, 1.010);
+    const abv = calculateAbv(1.050, 1.010);
     expect(abv).toBeCloseTo(5.25, 1);
   });
 
   test("zero difference returns 0", () => {
-    expect(calculate_abv(1.040, 1.040)).toBe(0);
+    expect(calculateAbv(1.040, 1.040)).toBe(0);
   });
 });
 
@@ -38,7 +38,7 @@ describe("calculate_abv", () => {
 // OG
 // ============================================================================
 
-describe("calculate_og", () => {
+describe("calculateOg", () => {
   test("simple grain bill", () => {
     const fermentables: FermentableAdditionType[] = [
       {
@@ -54,7 +54,7 @@ describe("calculate_og", () => {
     const batch_size: VolumeType = { value: 5, unit: "gal" };
     const efficiency: PercentType = { value: 72, unit: "%" };
 
-    const og = calculate_og(fermentables, batch_size, efficiency);
+    const og = calculateOg(fermentables, batch_size, efficiency);
     expect(og).toBeGreaterThan(1.0);
     expect(og).toBeLessThan(1.1);
   });
@@ -64,7 +64,7 @@ describe("calculate_og", () => {
 // FG
 // ============================================================================
 
-describe("calculate_fg", () => {
+describe("calculateFg", () => {
   test("with yeast attenuation", () => {
     const cultures: CultureAdditionType[] = [
       {
@@ -76,7 +76,7 @@ describe("calculate_fg", () => {
       },
     ];
 
-    const fg = calculate_fg(1.050, cultures);
+    const fg = calculateFg(1.050, cultures);
     expect(fg).toBeGreaterThan(1.0);
     expect(fg).toBeLessThan(1.050);
   });
@@ -86,7 +86,7 @@ describe("calculate_fg", () => {
 // IBU
 // ============================================================================
 
-describe("calculate_ibu", () => {
+describe("calculateIbu", () => {
   test("single hop addition", () => {
     const hops: HopAdditionType[] = [
       {
@@ -101,7 +101,7 @@ describe("calculate_ibu", () => {
     ];
     const batch_size: VolumeType = { value: 5, unit: "gal" };
 
-    const ibu = calculate_ibu(hops, batch_size, 1.050);
+    const ibu = calculateIbu(hops, batch_size, 1.050);
     expect(ibu).toBeGreaterThan(0);
     expect(ibu).toBeLessThan(100);
   });
@@ -111,7 +111,7 @@ describe("calculate_ibu", () => {
 // Color (SRM calculation)
 // ============================================================================
 
-describe("calculate_color", () => {
+describe("calculateColor", () => {
   test("pale grain bill", () => {
     const fermentables: FermentableAdditionType[] = [
       {
@@ -126,7 +126,7 @@ describe("calculate_color", () => {
     ];
     const batch_size: VolumeType = { value: 5, unit: "gal" };
 
-    const srm = calculate_color(fermentables, batch_size);
+    const srm = calculateColor(fermentables, batch_size);
     expect(srm).toBeGreaterThan(0);
     expect(srm).toBeLessThan(20);
   });
@@ -136,7 +136,7 @@ describe("calculate_color", () => {
 // Water Calculator
 // ============================================================================
 
-describe("calculate_water", () => {
+describe("calculateWater", () => {
   test("basic water calculation", () => {
     const input: WaterCalculatorInput = {
       target_batch_size: { value: 5, unit: "gal" },
@@ -165,7 +165,7 @@ describe("calculate_water", () => {
       units: undefined,
     };
 
-    const result = calculate_water(input);
+    const result = calculateWater(input);
     expect(result).toBeDefined();
     expect(result.totalWaterNeeded).toBeDefined();
     expect(result.totalWaterNeeded.value).toBeGreaterThan(0);
@@ -179,7 +179,7 @@ describe("calculate_water", () => {
 // Carbonation Calculator
 // ============================================================================
 
-describe("calculate_carbonation", () => {
+describe("calculateCarbonation", () => {
   test("basic carbonation calculation", () => {
     const input: CarbonationInput = {
       target_carbonation: { value: 2.5, unit: "vols" },
@@ -188,7 +188,7 @@ describe("calculate_carbonation", () => {
       units: undefined,
     };
 
-    const result = calculate_carbonation(input);
+    const result = calculateCarbonation(input);
     expect(result).toBeDefined();
     expect(result.priming_sugar).toBeDefined();
     expect(result.priming_sugar.corn_sugar.value).toBeGreaterThan(0);
