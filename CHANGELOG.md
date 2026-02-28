@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.5](https://github.com/brewdio/brewdio/compare/v0.2.4...v0.2.5) (2026-02-28)
+
+
+### Bug Fixes
+
+* Release fixes again ([8dda442](https://github.com/brewdio/brewdio/commit/8dda442b25a537f7fa14efd765dc03d8b4dfcc7a))
+
 ## [0.2.4](https://github.com/brewdio/brewdio/compare/v0.2.3...v0.2.4) (2026-02-28)
 
 
