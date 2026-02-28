@@ -7,6 +7,18 @@ use serde_json::Value;
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
+    println!("cargo:rerun-if-changed=../.git/HEAD");
+    println!("cargo:rerun-if-changed=../.git/refs/tags");
+
+    let version = std::process::Command::new("git")
+        .args(["describe", "--tags", "--always", "--dirty"])
+        .output()
+        .ok()
+        .and_then(|o| if o.status.success() { String::from_utf8(o.stdout).ok() } else { None })
+        .map(|s| s.trim().to_string())
+        .unwrap_or_else(|| "unknown".to_string());
+
+    println!("cargo:rustc-env=BREWDIO_VERSION={}", version);
 
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let tarball_path = out_dir.join("beerjson.tar.gz");

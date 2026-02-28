@@ -94,9 +94,9 @@ function RootComponent() {
                 <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink to="/">Home</BreadcrumbLink>
                 </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
                 {currentBatch ? (
                   <>
+                    <BreadcrumbSeparator className="hidden md:block" />
                     <BreadcrumbItem>
                       <BreadcrumbLink to={`/recipes/${currentBatch.recipeId}`}>
                         {batchRecipeName}
@@ -109,6 +109,7 @@ function RootComponent() {
                   </>
                 ) : currentRecipe ? (
                   <>
+                    <BreadcrumbSeparator className="hidden md:block" />
                     <BreadcrumbItem>
                       <BreadcrumbLink to={`/recipes/${recipeId}`}>
                         {currentRecipe.recipe.name}
@@ -123,11 +124,7 @@ function RootComponent() {
                       </>
                     )}
                   </>
-                ) : (
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>Recipes</BreadcrumbPage>
-                  </BreadcrumbItem>
-                )}
+                ) : null}
               </BreadcrumbList>
             </Breadcrumb>
           </div>

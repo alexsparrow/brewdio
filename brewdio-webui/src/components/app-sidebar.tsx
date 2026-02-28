@@ -30,6 +30,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SyncStatus } from "@/components/sync-status";
+import { getVersion } from "brewdio-wasm";
 
 // Static navigation items
 const staticNavItems = [
@@ -247,6 +248,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <ThemeToggle />
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <span className="px-2 py-1 text-xs text-muted-foreground">{getVersion()}</span>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

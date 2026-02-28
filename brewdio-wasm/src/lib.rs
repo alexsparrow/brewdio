@@ -17,6 +17,11 @@ pub fn init_panic_hook() {
     console_log::init_with_level(log::Level::Info).ok();
 }
 
+#[wasm_bindgen(js_name = "getVersion")]
+pub fn get_version() -> String {
+    brewdio_core::VERSION.to_string()
+}
+
 /// Serialize to JsValue using JSON-compatible mode (produces plain objects, not Maps).
 pub(crate) fn to_js<T: serde::Serialize>(value: &T) -> Result<JsValue, serde_wasm_bindgen::Error> {
     value.serialize(&serde_wasm_bindgen::Serializer::json_compatible())

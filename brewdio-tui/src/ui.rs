@@ -1,5 +1,5 @@
 use ratatui::{
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
     widgets::{Bar, BarChart, BarGroup, Block, Borders, List, ListItem, Paragraph},
@@ -16,6 +16,12 @@ pub fn draw(frame: &mut Frame, app: &App) {
         Screen::RecipeEdit { .. } => draw_recipe_edit(frame, app),
         Screen::BatchEdit { .. } => draw_batch_edit(frame, app),
     }
+}
+
+fn help_block() -> Block<'static> {
+    Block::default()
+        .borders(Borders::ALL)
+        .title_bottom(Line::from(format!(" {} ", brewdio_core::VERSION)).alignment(Alignment::Right))
 }
 
 fn draw_home(frame: &mut Frame, app: &App) {
@@ -99,7 +105,7 @@ fn draw_home(frame: &mut Frame, app: &App) {
             }
         }
     };
-    frame.render_widget(help.block(Block::default().borders(Borders::ALL)), chunks[2]);
+    frame.render_widget(help.block(help_block()), chunks[2]);
 }
 
 fn draw_recipes_tab(frame: &mut Frame, app: &App, area: Rect) {
@@ -465,7 +471,7 @@ fn draw_recipe_edit(frame: &mut Frame, app: &App) {
         " [n]ame  [s]tyle  [e]quip  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
     };
     let help = Paragraph::new(Line::from(Span::raw(help_text)))
-        .block(Block::default().borders(Borders::ALL));
+        .block(help_block());
     frame.render_widget(help, outer[3]);
 
     // Confirm equipment change popup overlay
@@ -564,7 +570,7 @@ fn draw_batch_edit(frame: &mut Frame, app: &App) {
         " [n]ame  [b]rew date  [e]quip  [v]ol  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
     };
     let help = Paragraph::new(Line::from(Span::raw(help_text)))
-        .block(Block::default().borders(Borders::ALL));
+        .block(help_block());
     frame.render_widget(help, outer[3]);
 
     // Confirm equipment change popup overlay

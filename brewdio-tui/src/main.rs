@@ -19,6 +19,11 @@ use crossterm::event::KeyEvent;
 use app::{App, BatchSizeDialogStep, CultureDialogStep, FermentableDialogStep, HopDialogStep, HomeTab, NotesTarget, Screen, Tab, CULTURE_UNITS, MASS_UNITS, VOLUME_UNITS, USE_TYPES};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    if std::env::args().any(|a| a == "--version" || a == "-V") {
+        println!("brewdio {}", brewdio_core::VERSION);
+        return Ok(());
+    }
+
     // Resolve DB path
     let proj_dirs = directories::ProjectDirs::from("com", "brewdio", "brewdio")
         .expect("Could not determine data directory");
