@@ -1,9 +1,10 @@
 [build]
+  # Since the Base Directory is already 'packages/marketing-site',
+  # the command runs relative to this folder.
+  command = "bun run build"
   publish = "dist"
-  command = "npm run build"
-[build.processing.html]
-  pretty_urls = false
-[[headers]]
-  for = "/_astro/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+
+[build.environment]
+  # This only affects the Marketing Site build
+  NODE_ENV = "production"
+  BUN_FLAGS = "--ignore-scripts"
