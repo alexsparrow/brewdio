@@ -27,3 +27,6 @@ dist-ssr
 /target/
 
 brewdio.db
+
+# wasm-pack build output (stub package.json is force-tracked)
+brewdio-wasm/pkg/

@@ -1,0 +1,15 @@
+{
+  "name": "brewdio-wasm",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "brewdio_wasm_bg.wasm",
+    "brewdio_wasm.js",
+    "brewdio_wasm.d.ts"
+  ],
+  "main": "brewdio_wasm.js",
+  "types": "brewdio_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

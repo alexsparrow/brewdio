@@ -12,8 +12,8 @@ export const headerData = {
     },
   ],
   actions: [
-    { text: 'GitHub', href: '#', target: '_blank' as const, icon: 'tabler:brand-github', variant: 'secondary' as const },
-    { text: 'Open Web App', href: '#', variant: 'primary' as const },
+    { text: 'GitHub', href: 'https://github.com/alexsparrow/brewdio', target: '_blank' as const, icon: 'tabler:brand-github', variant: 'secondary' as const },
+    { text: 'Open Web App', href: 'https://app.brewdio.beer', variant: 'primary' as const },
   ],
 };
 
@@ -29,18 +29,18 @@ export const footerData = {
     {
       title: 'Resources',
       links: [
-        { text: 'GitHub', href: '#' },
+        { text: 'GitHub', href: 'https://github.com/alexsparrow/brewdio' },
         { text: 'Documentation', href: '#' },
       ],
     },
   ],
   secondaryLinks: [
-    { text: 'License: MIT', href: '#' },
+    { text: 'License: MIT', href: 'https://github.com/alexsparrow/brewdio/blob/main/LICENSE' },
   ],
   socialLinks: [
-    { ariaLabel: 'Github', icon: 'tabler:brand-github', href: '#' },
+    { ariaLabel: 'Github', icon: 'tabler:brand-github', href: 'https://github.com/alexsparrow/brewdio' },
   ],
   footNote: `
-    <a class="text-blue-600 underline dark:text-muted" href="#">brewdio</a> — Open-source brewing software. MIT License.
+    <a class="text-blue-600 underline dark:text-muted" href="https://app.brewdio.beer">brewdio</a> — Open-source brewing software. MIT License.
   `,
 };
