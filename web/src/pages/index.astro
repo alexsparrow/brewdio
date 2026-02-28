@@ -7,6 +7,9 @@ import Features2 from '~/components/widgets/Features2.astro';
 import Content from '~/components/widgets/Content.astro';
 import CallToAction from '~/components/widgets/CallToAction.astro';
 
+import webuiImage from '~/assets/images/webui.png';
+import tuiImage from '~/assets/images/tui.png';
+
 const metadata = {
   title: 'brewdio — Open-source brewing software',
   ignoreTitleTemplate: true,
@@ -120,7 +123,7 @@ const metadata = {
     tagline="Web Interface"
     title="A modern brewing workspace"
     image={{
-      src: '/images/webui.png',
+      src: webuiImage,
       alt: 'brewdio web interface showing water requirements and brewing vessel diagram',
     }}
     items={[
@@ -155,7 +158,7 @@ const metadata = {
     tagline="Terminal Interface"
     title="For power users"
     image={{
-      src: '/images/tui.png',
+      src: tuiImage,
       alt: 'brewdio terminal interface showing recipe details and water calculations',
     }}
     items={[
