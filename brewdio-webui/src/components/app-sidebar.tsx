@@ -9,6 +9,7 @@ import {
   Beaker,
   Flame,
   Droplets,
+  BookOpen,
 } from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useBatches } from "@/lib/db/batches";
@@ -248,6 +249,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <ThemeToggle />
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <a href="https://docs.brewdio.beer" target="_blank" rel="noopener noreferrer">
+                <BookOpen />
+                <span>Docs</span>
+              </a>
+            </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <span className="px-2 py-1 text-xs text-muted-foreground">{getVersion()}</span>

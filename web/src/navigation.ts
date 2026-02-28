@@ -30,7 +30,7 @@ export const footerData = {
       title: 'Resources',
       links: [
         { text: 'GitHub', href: 'https://github.com/brewdio/brewdio' },
-        { text: 'Documentation', href: '#' },
+        { text: 'Documentation', href: 'https://docs.brewdio.beer' },
       ],
     },
   ],
