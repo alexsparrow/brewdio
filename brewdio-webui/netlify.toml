@@ -1,5 +1,6 @@
 [build]
   command = """
+    rustup default stable && \
     curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh && \
     cd ../brewdio-wasm && wasm-pack build --target web --release && \
     cd ../brewdio-webui && bun install && bun run build
