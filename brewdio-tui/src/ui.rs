@@ -6,8 +6,9 @@ use ratatui::{
     Frame,
 };
 
-use crate::app::{App, BatchSizeDialogStep, CultureDialogStep, FermentableDialogStep, HopDialogStep, HomeTab, NotesTarget, Screen, Tab, VitalDisplay, CULTURE_UNITS, MASS_UNITS, VOLUME_UNITS, USE_TYPES, format_hop_timing, use_type_label};
+use crate::app::{App, BatchSizeDialogStep, CultureDialogStep, FermentableDialogStep, HopDialogStep, HomeTab, NotesTarget, Screen, SettingEditState, Tab, VitalDisplay, CULTURE_UNITS, MASS_UNITS, VOLUME_UNITS, USE_TYPES, format_hop_timing, use_type_label};
 use brewdio_core::beerjson_types::{CultureAdditionTypeAmount, FermentableAdditionTypeAmount, HopAdditionTypeAmount, UseType};
+use brewdio_persistence::settings::{SettingKind, SETTINGS_DESCRIPTORS};
 
 
 pub fn draw(frame: &mut Frame, app: &App) {
@@ -89,19 +90,44 @@ fn draw_home(frame: &mut Frame, app: &App) {
             Span::raw("uit"),
         ])),
         HomeTab::Settings => {
-            if app.editing_setting {
-                Paragraph::new(Line::from(Span::raw(
-                    " Type to edit, [Enter] confirm, [Esc] cancel",
-                )))
-            } else {
-                Paragraph::new(Line::from(vec![
-                    Span::styled(" [Enter]", Style::default().fg(Color::Cyan)),
-                    Span::raw(" edit  "),
-                    Span::styled("[Tab]", Style::default().fg(Color::Cyan)),
-                    Span::raw(" next  "),
-                    Span::styled("[q]", Style::default().fg(Color::Cyan)),
-                    Span::raw("uit"),
-                ]))
+            match &app.setting_edit {
+                Some(SettingEditState::Selector { .. }) => {
+                    let desc = SETTINGS_DESCRIPTORS.get(app.settings_index)
+                        .map(|d| d.description)
+                        .unwrap_or("");
+                    Paragraph::new(Line::from(vec![
+                        Span::styled(" [←/→]", Style::default().fg(Color::Cyan)),
+                        Span::raw(" change  "),
+                        Span::styled("[Enter]", Style::default().fg(Color::Cyan)),
+                        Span::raw(" confirm  "),
+                        Span::styled("[Esc]", Style::default().fg(Color::Cyan)),
+                        Span::raw(" cancel  "),
+                        Span::styled(desc, Style::default().fg(Color::DarkGray)),
+                    ]))
+                }
+                Some(SettingEditState::TextInput { .. }) => {
+                    let desc = SETTINGS_DESCRIPTORS.get(app.settings_index)
+                        .map(|d| d.description)
+                        .unwrap_or("");
+                    Paragraph::new(Line::from(vec![
+                        Span::raw(" Type to edit, "),
+                        Span::styled("[Enter]", Style::default().fg(Color::Cyan)),
+                        Span::raw(" confirm, "),
+                        Span::styled("[Esc]", Style::default().fg(Color::Cyan)),
+                        Span::raw(" cancel  "),
+                        Span::styled(desc, Style::default().fg(Color::DarkGray)),
+                    ]))
+                }
+                None => {
+                    Paragraph::new(Line::from(vec![
+                        Span::styled(" [Enter]", Style::default().fg(Color::Cyan)),
+                        Span::raw(" edit  "),
+                        Span::styled("[Tab]", Style::default().fg(Color::Cyan)),
+                        Span::raw(" next  "),
+                        Span::styled("[q]", Style::default().fg(Color::Cyan)),
+                        Span::raw("uit"),
+                    ]))
+                }
             }
         }
     };
@@ -343,11 +369,10 @@ fn draw_batches_tab(frame: &mut Frame, app: &App, area: Rect) {
 }
 
 fn draw_settings_tab(frame: &mut Frame, app: &App, area: Rect) {
-    let items: Vec<ListItem> = app
-        .settings_entries
+    let items: Vec<ListItem> = SETTINGS_DESCRIPTORS
         .iter()
         .enumerate()
-        .map(|(i, entry)| {
+        .map(|(i, desc)| {
             let prefix = if i == app.settings_index {
                 " ► "
             } else {
@@ -360,13 +385,23 @@ fn draw_settings_tab(frame: &mut Frame, app: &App, area: Rect) {
             } else {
                 Style::default()
             };
-            let value_display = if i == app.settings_index && app.editing_setting {
-                format!("{}▏", app.setting_input)
+
+            let value_display = if i == app.settings_index {
+                match &app.setting_edit {
+                    Some(SettingEditState::Selector { options, index }) => {
+                        format!("◄ {} ►", options[*index])
+                    }
+                    Some(SettingEditState::TextInput { input }) => {
+                        format!("{}▏", input)
+                    }
+                    None => setting_display_value(&app.settings_doc, desc),
+                }
             } else {
-                entry.value.clone()
+                setting_display_value(&app.settings_doc, desc)
             };
+
             ListItem::new(Line::from(Span::styled(
-                format!("{}{:<24}{}", prefix, entry.key, value_display),
+                format!("{}{:<24}{}", prefix, desc.key, value_display),
                 style,
             )))
         })
@@ -374,6 +409,20 @@ fn draw_settings_tab(frame: &mut Frame, app: &App, area: Rect) {
 
     let list = List::new(items).block(Block::default().borders(Borders::ALL).title(" Settings "));
     frame.render_widget(list, area);
+}
+
+fn setting_display_value(doc: &brewdio_persistence::settings::SettingsDocument, desc: &brewdio_persistence::settings::SettingDescriptor) -> String {
+    let value = doc.get_value(desc.key);
+    match desc.kind {
+        SettingKind::Secret => {
+            if value.is_empty() {
+                "(not set)".to_string()
+            } else {
+                "\u{2022}\u{2022}\u{2022}\u{2022}\u{2022}\u{2022}".to_string()
+            }
+        }
+        _ => value,
+    }
 }
 
 fn draw_recipe_edit(frame: &mut Frame, app: &App) {

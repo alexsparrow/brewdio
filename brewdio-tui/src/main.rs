@@ -120,7 +120,7 @@ fn run_loop(
 
 fn handle_home_input(app: &mut App, key: KeyCode) {
     // Tab switching (all tabs) — disabled while editing a setting value
-    if !app.editing_setting {
+    if app.setting_edit.is_none() {
         match key {
             KeyCode::Tab => {
                 app.home_tab = app.home_tab.next();
@@ -214,41 +214,96 @@ fn handle_batches_tab_input(app: &mut App, key: KeyCode) {
 }
 
 fn handle_settings_tab_input(app: &mut App, key: KeyCode) {
-    if app.editing_setting {
-        match key {
-            KeyCode::Enter => {
-                // Confirm edit
-                if app.settings_index < app.settings_entries.len() {
-                    app.settings_entries[app.settings_index].value = app.setting_input.clone();
-                    app.save_setting_value();
+    use brewdio_persistence::settings::{SettingKind, SETTINGS_DESCRIPTORS, SETTINGS_DESCRIPTORS as SD};
+    use app::SettingEditState;
+
+    if let Some(ref mut edit) = app.setting_edit {
+        match edit {
+            SettingEditState::Selector { ref options, ref mut index } => {
+                match key {
+                    KeyCode::Left | KeyCode::Char('h') => {
+                        if *index > 0 {
+                            *index -= 1;
+                        } else {
+                            *index = options.len() - 1;
+                        }
+                    }
+                    KeyCode::Right | KeyCode::Char('l') => {
+                        *index = (*index + 1) % options.len();
+                    }
+                    KeyCode::Enter => {
+                        let value = options[*index].clone();
+                        let desc = &SD[app.settings_index];
+                        app.settings_doc.set_value(desc.key, &value);
+                        app.save_settings();
+                        app.setting_edit = None;
+                    }
+                    KeyCode::Esc => {
+                        app.setting_edit = None;
+                    }
+                    _ => {}
                 }
-                app.editing_setting = false;
             }
-            KeyCode::Esc => {
-                app.editing_setting = false;
+            SettingEditState::TextInput { ref mut input } => {
+                match key {
+                    KeyCode::Enter => {
+                        let desc = &SD[app.settings_index];
+                        app.settings_doc.set_value(desc.key, input);
+                        app.save_settings();
+                        app.setting_edit = None;
+                    }
+                    KeyCode::Esc => {
+                        app.setting_edit = None;
+                    }
+                    KeyCode::Backspace => {
+                        input.pop();
+                    }
+                    KeyCode::Char(c) => {
+                        input.push(c);
+                    }
+                    _ => {}
+                }
             }
-            KeyCode::Backspace => {
-                app.setting_input.pop();
-            }
-            KeyCode::Char(c) => {
-                app.setting_input.push(c);
-            }
-            _ => {}
         }
         return;
     }
 
+    let descriptor_count = SETTINGS_DESCRIPTORS.len();
+
     match key {
         KeyCode::Enter => {
-            if app.settings_index < app.settings_entries.len() {
-                app.setting_input = app.settings_entries[app.settings_index].value.clone();
-                app.editing_setting = true;
+            if app.settings_index < descriptor_count {
+                let desc = &SETTINGS_DESCRIPTORS[app.settings_index];
+                let current = app.settings_doc.get_value(desc.key);
+                app.setting_edit = Some(match desc.kind {
+                    SettingKind::Bool => {
+                        let options = vec!["true".to_string(), "false".to_string()];
+                        let index = if current == "true" { 0 } else { 1 };
+                        SettingEditState::Selector { options, index }
+                    }
+                    SettingKind::VolumeUnit => {
+                        let options: Vec<String> = VOLUME_UNITS.iter().map(|u| format!("{:?}", u).to_lowercase()).collect();
+                        let index = options.iter().position(|o| *o == current).unwrap_or(0);
+                        SettingEditState::Selector { options, index }
+                    }
+                    SettingKind::MassUnit => {
+                        let options: Vec<String> = MASS_UNITS.iter().map(|u| format!("{:?}", u).to_lowercase()).collect();
+                        let index = options.iter().position(|o| *o == current).unwrap_or(0);
+                        SettingEditState::Selector { options, index }
+                    }
+                    SettingKind::TemperatureUnit => {
+                        let options = vec!["F".to_string(), "C".to_string()];
+                        let index = options.iter().position(|o| *o == current).unwrap_or(0);
+                        SettingEditState::Selector { options, index }
+                    }
+                    SettingKind::Secret | SettingKind::Text => {
+                        SettingEditState::TextInput { input: current }
+                    }
+                });
             }
         }
         KeyCode::Char('j') | KeyCode::Down => {
-            if !app.settings_entries.is_empty()
-                && app.settings_index < app.settings_entries.len() - 1
-            {
+            if descriptor_count > 0 && app.settings_index < descriptor_count - 1 {
                 app.settings_index += 1;
             }
         }

@@ -2,7 +2,7 @@ use brewdio_core::beerjson_types::{EquipmentType, RecipeType};
 
 use crate::batch::{self, BatchDocument};
 use crate::connection::{Connection, DbError, Value};
-use crate::automerge::{extract_fields_from_automerge, extract_string_field_from_automerge, new_ulid, reconcile_to_automerge};
+use crate::automerge::{extract_fields_from_automerge, new_ulid, reconcile_to_automerge};
 use crate::equipment_profile::{self, EquipmentProfileDocument};
 use crate::protocol::DocType;
 use crate::recipe::{RecipeDocument, RecipeRow};
@@ -392,15 +392,16 @@ impl RemoteMergeable for SettingsDocument {
         am_data: &[u8],
         exists: bool,
     ) -> Result<(), DbError> {
+        let data_json = serde_json::to_string(doc).unwrap_or_else(|_| "{}".to_string());
         if exists {
             conn.execute(
                 "UPDATE settings SET data = ?1, am_data = ?2 WHERE id = ?3",
-                &[Value::Text(&doc.data), Value::Blob(am_data), Value::Text(id)],
+                &[Value::Text(&data_json), Value::Blob(am_data), Value::Text(id)],
             )?;
         } else {
             conn.execute(
                 "INSERT INTO settings (id, data, am_data, is_dirty) VALUES (?1, ?2, ?3, FALSE)",
-                &[Value::Text(id), Value::Text(&doc.data), Value::Blob(am_data)],
+                &[Value::Text(id), Value::Text(&data_json), Value::Blob(am_data)],
             )?;
         }
         Ok(())
@@ -412,16 +413,20 @@ impl RemoteMergeable for SettingsDocument {
         am_data: &[u8],
         exists: bool,
     ) -> Result<(), DbError> {
-        let data_str = extract_string_field_from_automerge(am_data, "data").unwrap_or_else(|| {
-            if exists {
-                if let Ok(Some(row)) = settings::get_settings(conn) {
-                    if row.data != "{}" {
-                        return row.data;
-                    }
+        // Try to preserve existing data column if we can't hydrate
+        let data_str = if exists {
+            if let Ok(Some(row)) = settings::get_settings(conn) {
+                if row.data != "{}" {
+                    row.data
+                } else {
+                    "{}".to_string()
                 }
+            } else {
+                "{}".to_string()
             }
+        } else {
             "{}".to_string()
-        });
+        };
         if exists {
             conn.execute(
                 "UPDATE settings SET data = ?1, am_data = ?2 WHERE id = ?3",

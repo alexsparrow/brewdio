@@ -260,24 +260,19 @@ impl AppDb {
 
     #[wasm_bindgen(js_name = "getSettings")]
     pub fn get_settings(&self) -> Result<JsValue, JsError> {
-        let row = settings::get_settings(&*self.conn)
+        let doc = settings::get_settings_document(&*self.conn)
             .map_err(|e| JsError::new(&e.to_string()))?;
-        match row {
-            Some(r) => {
-                let data: serde_json::Value = serde_json::from_str(&r.data)
-                    .unwrap_or(serde_json::Value::Null);
-                crate::to_js(&data).map_err(|e| JsError::new(&e.to_string()))
-            }
-            None => Ok(JsValue::NULL),
-        }
+        // Serialize to serde_json::Value to produce the same camelCase JSON shape
+        let data = serde_json::to_value(&doc)
+            .unwrap_or(serde_json::Value::Null);
+        crate::to_js(&data).map_err(|e| JsError::new(&e.to_string()))
     }
 
     #[wasm_bindgen(js_name = "saveSettings")]
     pub fn save_settings(&self, data: JsValue) -> Result<(), JsError> {
-        let data: serde_json::Value = serde_wasm_bindgen::from_value(data)
+        let doc: settings::SettingsDocument = serde_wasm_bindgen::from_value(data)
             .map_err(|e| JsError::new(&e.to_string()))?;
-        let data_json = serde_json::to_string(&data).unwrap();
-        settings::save_settings(&*self.conn, &data_json)
+        settings::save_settings(&*self.conn, &doc)
             .map_err(|e| JsError::new(&e.to_string()))?;
         self.notify_settings();
         Ok(())

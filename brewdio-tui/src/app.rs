@@ -298,19 +298,12 @@ pub struct BatchListItem {
     pub brew_date: String,
 }
 
-pub struct SettingsEntry {
-    pub key: String,
-    pub value: String,
+pub enum SettingEditState {
+    /// Freeform text input (Text and Secret kinds)
+    TextInput { input: String },
+    /// Cycle through options (Bool, VolumeUnit, MassUnit, TemperatureUnit)
+    Selector { options: Vec<String>, index: usize },
 }
-
-const DEFAULT_SETTINGS: &[(&str, &str)] = &[
-    ("vimMode", "false"),
-    ("defaultVolumeUnit", "gal"),
-    ("defaultMassUnit", "lb"),
-    ("defaultTemperatureUnit", "F"),
-    ("openaiApiKey", ""),
-    ("defaultAuthor", "Brewdio User"),
-];
 
 pub struct App {
     pub conn: Arc<Mutex<Connection>>,
@@ -328,10 +321,9 @@ pub struct App {
     pub batches: Vec<BatchListItem>,
     pub batch_list_index: usize,
     // Settings state
-    pub settings_entries: Vec<SettingsEntry>,
+    pub settings_doc: settings::SettingsDocument,
     pub settings_index: usize,
-    pub editing_setting: bool,
-    pub setting_input: String,
+    pub setting_edit: Option<SettingEditState>,
     // Recipe edit state
     pub current_doc: Option<RecipeDocument>,
     pub edit_focus: EditFocus,
@@ -389,10 +381,9 @@ impl App {
             confirm_delete: None,
             batches: Vec::new(),
             batch_list_index: 0,
-            settings_entries: Vec::new(),
+            settings_doc: settings::SettingsDocument::default(),
             settings_index: 0,
-            editing_setting: false,
-            setting_input: String::new(),
+            setting_edit: None,
             current_doc: None,
             edit_focus: EditFocus::Name,
             active_tab: Tab::Fermentables,
@@ -521,58 +512,25 @@ impl App {
     }
 
     pub fn refresh_settings(&mut self) {
-        let existing = settings::get_settings(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()))
-            .ok()
-            .flatten();
-
-        let saved: serde_json::Map<String, JsonValue> = existing
-            .as_ref()
-            .and_then(|row| serde_json::from_str(&row.data).ok())
-            .unwrap_or_default();
-
-        self.settings_entries = DEFAULT_SETTINGS
-            .iter()
-            .map(|(key, default)| {
-                let value = saved
-                    .get(*key)
-                    .map(|v| match v {
-                        JsonValue::String(s) => s.clone(),
-                        other => other.to_string(),
-                    })
-                    .unwrap_or_else(|| default.to_string());
-                SettingsEntry {
-                    key: key.to_string(),
-                    value,
-                }
-            })
-            .collect();
+        let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
+        let existing_row = settings::get_settings(&*conn).ok().flatten();
+        self.settings_doc = settings::get_settings_document(&*conn).unwrap_or_default();
 
         // Ensure settings are persisted with valid am_data (needed for sync)
-        let needs_save = match existing {
+        let needs_save = match existing_row {
             None => true,
             Some(ref row) => row.am_data.is_empty() || row.data == "{}",
         };
         if needs_save {
-            self.save_setting_value();
+            let _ = settings::save_settings(&*conn, &self.settings_doc);
         }
     }
 
-    pub fn save_setting_value(&mut self) {
-        // Build JSON from current entries
-        let mut map = serde_json::Map::new();
-        for entry in &self.settings_entries {
-            // Try to preserve booleans
-            let val = if entry.value == "true" {
-                JsonValue::Bool(true)
-            } else if entry.value == "false" {
-                JsonValue::Bool(false)
-            } else {
-                JsonValue::String(entry.value.clone())
-            };
-            map.insert(entry.key.clone(), val);
-        }
-        let json = serde_json::to_string(&map).unwrap_or_else(|_| "{}".to_string());
-        let _ = settings::save_settings(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), &json);
+    pub fn save_settings(&mut self) {
+        let _ = settings::save_settings(
+            &*self.conn.lock().unwrap_or_else(|e| e.into_inner()),
+            &self.settings_doc,
+        );
     }
 
     pub fn create_recipe(&mut self) {

@@ -283,7 +283,9 @@ async fn settings_client_to_server_sync() {
     // Save settings on the client
     {
         let c = client_conn.lock().unwrap();
-        settings::save_settings(&*c, r#"{"vimMode":true}"#).unwrap();
+        let mut doc = settings::SettingsDocument::default();
+        doc.vim_mode = true;
+        settings::save_settings(&*c, &doc).unwrap();
     }
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
