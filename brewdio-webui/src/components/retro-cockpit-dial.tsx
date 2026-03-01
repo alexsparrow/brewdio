@@ -339,7 +339,7 @@ export const RetroCockpitDial: React.FC<RetroCockpitDialProps> = ({
           fontFamily="monospace"
           fontWeight="bold"
         >
-          {label === "ABV" ? `${Math.round(value)}%` : Math.round(value)}
+          {label === "ABV" ? `${value.toFixed(1)}%` : Math.round(value)}
         </text>
 
         <text
