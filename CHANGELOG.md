@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0](https://github.com/brewdio/brewdio/compare/v0.4.0...v0.5.0) (2026-03-01)
+
+
+### Features
+
+* Optimise wasm ([cf95b2f](https://github.com/brewdio/brewdio/commit/cf95b2f448bff8a37fdbcd1367c86f280ff43052))
+
+
+### Bug Fixes
+
+* webui build ([71d2c0e](https://github.com/brewdio/brewdio/commit/71d2c0e050206e5739143af97ede4899fc2dc03f))
+
 ## [0.4.0](https://github.com/brewdio/brewdio/compare/v0.3.0...v0.4.0) (2026-03-01)
 
 
