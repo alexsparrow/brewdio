@@ -20,9 +20,11 @@ import { Beaker } from "lucide-react";
 
 interface BrewBatchDialogProps {
   recipe: RecipeDocument;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
+export function BrewBatchDialog({ recipe, open: controlledOpen, onOpenChange }: BrewBatchDialogProps) {
   const navigate = useNavigate();
   const { data: batches } = useBatches();
   const queryClient = useQueryClient();
@@ -31,7 +33,9 @@ export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
   const equipmentProfiles = getEquipment();
   const defaultEquipment = equipmentProfiles[0];
 
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const [isCreating, setIsCreating] = useState(false);
 
   // Generate default batch name
@@ -88,12 +92,14 @@ export function BrewBatchDialog({ recipe }: BrewBatchDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="default">
-          <Beaker className="h-4 w-4 mr-2" />
-          Brew
-        </Button>
-      </DialogTrigger>
+      {controlledOpen === undefined && (
+        <DialogTrigger asChild>
+          <Button variant="default">
+            <Beaker className="h-4 w-4 mr-2" />
+            Brew
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Brew New Batch</DialogTitle>

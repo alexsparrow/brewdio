@@ -10,10 +10,13 @@ import {
   Flame,
   Droplets,
   BookOpen,
+  Search,
 } from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useBatches } from "@/lib/db/batches";
 import { useRecipes } from "@/lib/db/recipes";
+import { executeCommand } from "@/lib/commands/command-registry";
+import { useIsMac } from "@/hooks/use-platform";
 
 import { NavMain } from "@/components/nav-main";
 import {
@@ -27,6 +30,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -98,7 +102,7 @@ function RecipeMenuItems({
           {/* Recipe Overview */}
           {showRecipeOverview && (
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton tooltip="Recipe Overview" asChild>
                 <Link to={baseRoute} params={params}>
                   <Home />
                   <span>Recipe Overview</span>
@@ -110,7 +114,7 @@ function RecipeMenuItems({
           {/* Recipe Sections */}
           {recipeContextNav.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton tooltip={item.title} asChild>
                 <Link to={baseRoute} params={params} hash={item.url}>
                   <item.icon />
                   <span>{item.title}</span>
@@ -121,7 +125,7 @@ function RecipeMenuItems({
 
           {/* Mash */}
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton tooltip="Mash" asChild>
               <Link to={`${baseRoute}/mash` as string} params={params}>
                 <Flame />
                 <span>Mash</span>
@@ -131,7 +135,7 @@ function RecipeMenuItems({
 
           {/* Water */}
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton tooltip="Water" asChild>
               <Link to={`${baseRoute}/water` as string} params={params}>
                 <Droplets />
                 <span>Water</span>
@@ -142,7 +146,7 @@ function RecipeMenuItems({
           {/* Batches - Only show in recipe mode */}
           {showBatches && (
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton tooltip="Batches" asChild>
                 <Link to={`${baseRoute}/batches` as string} params={params}>
                   <Beaker />
                   <span>Batches</span>
@@ -154,7 +158,7 @@ function RecipeMenuItems({
           {/* JSON Editor */}
           {showJsonEditor && (
             <SidebarMenuItem>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton tooltip="JSON Editor" asChild>
                 <Link to={`${baseRoute}/json` as string} params={params}>
                   <Code />
                   <span>JSON Editor</span>
@@ -169,6 +173,9 @@ function RecipeMenuItems({
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const isMac = useIsMac();
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
   const router = useRouterState();
   const isRecipeView = router.location.pathname.startsWith("/recipes/");
   const isBatchView = router.location.pathname.startsWith("/batches/");
@@ -206,10 +213,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
+              tooltip="brewdio"
+              className="data-[slot=sidebar-menu-button]:!p-1.5 group-data-[collapsible=icon]:justify-center"
             >
               <Link to="/">
-                <span className="text-base font-semibold">brewdio.</span>
+                <span className="text-base font-semibold">
+                  {isCollapsed ? "b." : "brewdio."}
+                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -245,22 +255,44 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip="Search"
+              onClick={() => executeCommand("palette.open")}
+              className="text-muted-foreground"
+            >
+              <Search className="h-4 w-4" />
+              <span>Search</span>
+              <kbd className="ml-auto inline-flex h-5 items-center gap-0.5 rounded border bg-muted px-1.5 text-[10px] font-medium text-muted-foreground pointer-events-none group-data-[collapsible=icon]:hidden">
+                {isMac ? "\u2318" : "Ctrl+"}K
+              </kbd>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
             <SyncStatus />
           </SidebarMenuItem>
           <SidebarMenuItem>
             <ThemeToggle />
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton tooltip="Docs" asChild>
               <a href="https://docs.brewdio.beer" target="_blank" rel="noopener noreferrer">
                 <BookOpen />
                 <span>Docs</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          <SidebarMenuItem>
-            <span className="px-2 py-1 text-xs text-muted-foreground">{getVersion()}</span>
-          </SidebarMenuItem>
+          {!isCollapsed && (
+            <SidebarMenuItem>
+              <a
+                href="https://docs.brewdio.beer/changelog/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-2 py-1 text-xs text-muted-foreground hover:underline"
+              >
+                {getVersion()}
+              </a>
+            </SidebarMenuItem>
+          )}
         </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />

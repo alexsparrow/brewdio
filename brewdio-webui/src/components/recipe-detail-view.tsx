@@ -5,8 +5,9 @@ import { InlineEditableWithUnit } from "@/components/inline-editable";
 import { EditableNotes } from "@/components/editable-notes";
 import { Button } from "@/components/ui/button";
 import { Trash2, Pencil } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useCalculation } from "@/hooks/use-calculation";
+import { useCommandHandler } from "@/hooks/use-command";
 import { RetroCockpitDial } from "@/components/retro-cockpit-dial";
 import { GravitySightGlass } from "@/components/gravity-sight-glass";
 import { Screw } from "@/components/screw";
@@ -57,6 +58,53 @@ export function RecipeDetailView({
   const abv = useCalculation<number>("abv");
   const color = useCalculation<number>("color");
   const ibu = useCalculation<number>("ibu");
+
+  // Command-controlled dialog state
+  const [fermentableDialogOpen, setFermentableDialogOpen] = useState(false);
+  const [hopDialogOpen, setHopDialogOpen] = useState(false);
+  const [cultureDialogOpen, setCultureDialogOpen] = useState(false);
+
+  // Register command handlers for ingredient dialogs and section scrolling
+  useCommandHandler(
+    "recipe.addFermentable",
+    useCallback(() => setFermentableDialogOpen(true), [])
+  );
+  useCommandHandler(
+    "recipe.addHop",
+    useCallback(() => setHopDialogOpen(true), [])
+  );
+  useCommandHandler(
+    "recipe.addCulture",
+    useCallback(() => setCultureDialogOpen(true), [])
+  );
+  useCommandHandler(
+    "recipe.scrollFermentables",
+    useCallback(
+      () => document.getElementById("fermentables")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      []
+    )
+  );
+  useCommandHandler(
+    "recipe.scrollHops",
+    useCallback(
+      () => document.getElementById("hops")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      []
+    )
+  );
+  useCommandHandler(
+    "recipe.scrollCultures",
+    useCallback(
+      () => document.getElementById("cultures")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      []
+    )
+  );
+  useCommandHandler(
+    "recipe.scrollNotes",
+    useCallback(
+      () => document.querySelector("[data-notes]")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      []
+    )
+  );
 
   const styleRanges = useMemo(() => {
     if (!beerRecipe) return null;
@@ -302,6 +350,11 @@ export function RecipeDetailView({
           />
         </div>
       </div>
+
+      {/* Command-controlled dialogs (no trigger, opened via keyboard shortcuts) */}
+      <AddFermentableDialog open={fermentableDialogOpen} onOpenChange={setFermentableDialogOpen} />
+      <AddHopDialog open={hopDialogOpen} onOpenChange={setHopDialogOpen} />
+      <AddCultureDialog open={cultureDialogOpen} onOpenChange={setCultureDialogOpen} />
 
       <div id="fermentables" className="border rounded-lg p-4 scroll-mt-20">
         <div className="flex items-center justify-between mb-3">

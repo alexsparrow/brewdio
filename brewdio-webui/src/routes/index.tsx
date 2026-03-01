@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useCallback, useState } from "react";
 import { useBatches } from "@/lib/db/batches";
 import { useRecipes } from "@/lib/db/recipes";
 import { CreateRecipeDialog } from "@/components/create-recipe-dialog";
 import { DeleteRecipeDialog } from "@/components/delete-recipe-dialog";
 import { Calendar, Beaker } from "lucide-react";
+import { useCommandHandler } from "@/hooks/use-command";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -12,6 +14,12 @@ export const Route = createFileRoute("/")({
 function HomeComponent() {
   const { data: recipes, status: recipesStatus } = useRecipes();
   const { data: batches, status: batchesStatus } = useBatches();
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+
+  useCommandHandler(
+    "recipe.create",
+    useCallback(() => setCreateDialogOpen(true), [])
+  );
 
   // Sort batches by brew date (most recent first)
   const sortedBatches = batches ? [...batches].sort((a, b) => b.brewDate - a.brewDate) : [];
@@ -27,6 +35,9 @@ function HomeComponent() {
 
   return (
     <div className="flex flex-col gap-8">
+      {/* Command-controlled create dialog */}
+      <CreateRecipeDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
+
       {/* Recipes Section */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">

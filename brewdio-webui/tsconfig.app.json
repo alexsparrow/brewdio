@@ -11,7 +11,8 @@
     /* shadcn */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "tinykeys": ["./node_modules/tinykeys/dist/tinykeys.d.ts"]
     },
 
     /* Bundler mode */

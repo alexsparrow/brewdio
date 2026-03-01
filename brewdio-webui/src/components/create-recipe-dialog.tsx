@@ -17,8 +17,15 @@ import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
 import { Plus } from "lucide-react";
 
-export function CreateRecipeDialog() {
-  const [open, setOpen] = useState(false);
+interface CreateRecipeDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function CreateRecipeDialog({ open: controlledOpen, onOpenChange }: CreateRecipeDialogProps = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const navigate = useNavigate();
   const { data: settings } = useSettings();
   const availableStyles = getAvailableStyles();
@@ -53,12 +60,14 @@ export function CreateRecipeDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Create Recipe
-        </Button>
-      </DialogTrigger>
+      {controlledOpen === undefined && (
+        <DialogTrigger asChild>
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            Create Recipe
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create New Recipe</DialogTitle>

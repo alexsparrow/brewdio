@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { getSyncStatus, onSyncStatusChange } from "@/lib/sync";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
 
-type SyncStatus = ReturnType<typeof getSyncStatus>;
+type SyncStatusType = ReturnType<typeof getSyncStatus>;
 
 const statusConfig: Record<
-  SyncStatus | "offline",
+  SyncStatusType | "offline",
   { label: string; dotClass: string }
 > = {
   offline: { label: "Offline", dotClass: "bg-gray-400" },
@@ -16,7 +17,7 @@ const statusConfig: Record<
 
 export function SyncStatus() {
   const serverConfigured = !!localStorage.getItem("brewdio_server");
-  const [status, setStatus] = useState<SyncStatus>(getSyncStatus());
+  const [status, setStatus] = useState<SyncStatusType>(getSyncStatus());
 
   useEffect(() => {
     return onSyncStatusChange(setStatus);
@@ -26,15 +27,14 @@ export function SyncStatus() {
   const { label, dotClass } = statusConfig[displayStatus];
 
   return (
-    <Link
-      to="/settings"
-      className="flex items-center gap-2 w-full px-2 py-1.5 text-sm rounded-md hover:bg-sidebar-accent transition-colors"
-    >
-      <span
-        className={`inline-block h-2 w-2 rounded-full ${dotClass}`}
-        aria-hidden
-      />
-      <span>{label}</span>
-    </Link>
+    <SidebarMenuButton tooltip={label} asChild>
+      <Link to="/settings">
+        <span
+          className={`inline-block shrink-0 rounded-full ${dotClass} h-2 w-2 group-data-[collapsible=icon]:h-4 group-data-[collapsible=icon]:w-4`}
+          aria-hidden
+        />
+        <span>{label}</span>
+      </Link>
+    </SidebarMenuButton>
   );
 }

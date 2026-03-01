@@ -28,6 +28,8 @@ interface AddCultureDialogProps {
   existingCulture?: CultureAdditionType;
   index?: number;
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const unitTypes: UnitUnitType[] = ["1", "unit", "each", "dimensionless", "pkg"];
@@ -36,8 +38,12 @@ export function AddCultureDialog({
   existingCulture,
   index,
   trigger,
+  open: controlledOpen,
+  onOpenChange,
 }: AddCultureDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const { update } = useRecipeEdit();
   const isEditing = existingCulture !== undefined && index !== undefined;
 
@@ -93,14 +99,16 @@ export function AddCultureDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button size="sm" className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add Culture
-          </Button>
-        )}
-      </DialogTrigger>
+      {controlledOpen === undefined && (
+        <DialogTrigger asChild>
+          {trigger || (
+            <Button size="sm" className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add Culture
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Culture (Yeast)" : "Add Culture (Yeast)"}</DialogTitle>

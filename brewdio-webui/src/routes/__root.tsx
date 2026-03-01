@@ -1,7 +1,8 @@
-import { createRootRoute, Outlet, useRouterState } from "@tanstack/react-router";
+import { createRootRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useCallback } from "react";
 import { useBatches } from "@/lib/db/batches";
 import { useRecipes } from "@/lib/db/recipes";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ChatSidebar } from "@/components/chat-sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -16,12 +17,21 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { stores, wireCalculations } from "@/lib/calculate";
 import { OG, FG, ABV, Color, IBU } from "@/lib/calculations";
+import { KeyboardShortcutsProvider } from "@/components/keyboard-shortcuts-provider";
+import { CommandPalette } from "@/components/command-palette";
+import { KeyboardShortcutsDialog } from "@/components/keyboard-shortcuts-dialog";
+import { useCommandHandler } from "@/hooks/use-command";
 
 export const Route = createRootRoute({
   component: RootComponent,
 });
 
 let calculationsWired = false;
+
+function getSidebarDefault(): boolean {
+  const match = document.cookie.match(/(?:^|;\s*)sidebar_state=(\w+)/);
+  return match ? match[1] === "true" : true;
+}
 
 function RootComponent() {
   // Wire calculations on first render (WASM is initialized by this point)
@@ -82,7 +92,11 @@ function RootComponent() {
   const isJsonEditor = routerState.location.pathname.endsWith('/json');
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={getSidebarDefault()}>
+      <GlobalCommandHandlers />
+      <KeyboardShortcutsProvider />
+      <CommandPalette />
+      <KeyboardShortcutsDialog />
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
@@ -136,4 +150,31 @@ function RootComponent() {
       <ChatSidebar recipeId={recipeId} />
     </SidebarProvider>
   );
+}
+
+function GlobalCommandHandlers() {
+  const navigate = useNavigate();
+  const { toggleSidebar } = useSidebar();
+
+  useCommandHandler("sidebar.toggle", toggleSidebar);
+  useCommandHandler(
+    "navigate.home",
+    useCallback(() => navigate({ to: "/" }), [navigate])
+  );
+  useCommandHandler(
+    "navigate.settings",
+    useCallback(() => navigate({ to: "/settings" }), [navigate])
+  );
+  useCommandHandler(
+    "theme.toggle",
+    useCallback(() => {
+      const html = document.documentElement;
+      const isDark = html.classList.contains("dark");
+      const newTheme = isDark ? "light" : "dark";
+      html.classList.toggle("dark", newTheme === "dark");
+      localStorage.setItem("theme", newTheme);
+    }, [])
+  );
+
+  return null;
 }
