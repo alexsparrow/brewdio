@@ -1,6 +1,10 @@
 use brewdio_core::beerjson_types::{EquipmentType, RecipeType};
 use serde::{Deserialize, Serialize};
 
+use crate::connection::DbError;
+use crate::protocol::DocType;
+use crate::traits::{SyncDocument, SyncRow};
+
 /// Row representation for SQLite storage.
 #[derive(Debug, Clone)]
 pub struct RecipeRow {
@@ -47,6 +51,22 @@ impl RecipeRow {
             equipment_id: self.equipment_id.clone(),
             is_deleted: self.is_deleted,
         })
+    }
+}
+
+impl SyncDocument for RecipeDocument {
+    fn id(&self) -> &str { &self.id }
+    fn is_deleted(&self) -> bool { self.is_deleted }
+    fn set_is_deleted(&mut self, deleted: bool) { self.is_deleted = deleted; }
+}
+
+impl SyncRow for RecipeRow {
+    type Document = RecipeDocument;
+    fn doc_type() -> DocType { DocType::Recipe }
+    fn id(&self) -> &str { &self.id }
+    fn am_data(&self) -> &[u8] { &self.am_data }
+    fn into_document(&self) -> Result<RecipeDocument, DbError> {
+        self.to_document().map_err(|e| DbError(e.to_string()))
     }
 }
 

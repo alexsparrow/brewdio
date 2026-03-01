@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::connection::{Connection, DbError, Value};
 use crate::automerge::{current_time_millis, new_ulid, reconcile_to_automerge};
+use crate::protocol::DocType;
+use crate::traits::{SyncDocument, SyncRow};
 
 #[derive(Debug, Clone, Serialize, Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate)]
 #[serde(rename_all = "camelCase")]
@@ -50,6 +52,22 @@ impl BatchRow {
             data,
             is_deleted: self.is_deleted,
         })
+    }
+}
+
+impl SyncDocument for BatchDocument {
+    fn id(&self) -> &str { &self.id }
+    fn is_deleted(&self) -> bool { self.is_deleted }
+    fn set_is_deleted(&mut self, deleted: bool) { self.is_deleted = deleted; }
+}
+
+impl SyncRow for BatchRow {
+    type Document = BatchDocument;
+    fn doc_type() -> DocType { DocType::Batch }
+    fn id(&self) -> &str { &self.id }
+    fn am_data(&self) -> &[u8] { &self.am_data }
+    fn into_document(&self) -> Result<BatchDocument, DbError> {
+        self.to_document().map_err(|e| DbError(e.to_string()))
     }
 }
 
@@ -166,17 +184,7 @@ pub fn update_batch(
 
 pub fn delete_batch(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
     let existing = get_batch(conn, id)?;
-    if let Some(row) = existing {
-        let mut doc = row.to_document().map_err(|e| DbError(e.to_string()))?;
-        doc.is_deleted = true;
-        let am_data = reconcile_to_automerge(&doc, Some(&row.am_data)).map_err(|e| DbError(e))?;
-
-        conn.execute(
-            "UPDATE batch SET is_deleted = TRUE, is_dirty = TRUE, am_data = ?1 WHERE id = ?2",
-            &[Value::Blob(&am_data), Value::Text(id)],
-        )?;
-    }
-    Ok(())
+    crate::traits::set_deleted(conn, existing, id, true)
 }
 
 pub fn create_batch_from_recipe(
@@ -211,27 +219,6 @@ pub fn count_batches_for_recipe(
         |row| row.get_text(0),
     )?;
     Ok(ids.len())
-}
-
-// --- Sync-related functions ---
-
-pub fn list_all_batch_ids(conn: &(impl Connection + ?Sized)) -> Result<Vec<String>, DbError> {
-    conn.query_map("SELECT id FROM batch", &[], |row| row.get_text(0))
-}
-
-pub fn list_dirty_batches(conn: &(impl Connection + ?Sized)) -> Result<Vec<BatchRow>, DbError> {
-    conn.query_map(
-        "SELECT id, name, recipe_id, data, am_data, is_deleted, is_dirty FROM batch WHERE is_dirty = TRUE",
-        &[],
-        row_from_query,
-    )
-}
-
-pub fn clear_dirty_batch(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
-    conn.execute(
-        "UPDATE batch SET is_dirty = FALSE WHERE id = ?1",
-        &[Value::Text(id)],
-    )
 }
 
 #[cfg(test)]

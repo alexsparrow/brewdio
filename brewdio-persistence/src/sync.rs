@@ -544,9 +544,9 @@ mod tests {
         assert!(!row_b.is_deleted);
 
         // Now simulate the sync: server sends NewDoc with its recipe to client
-        crate::db::apply_remote_merge(&conn_b, &row_a.id, &row_a.am_data).unwrap();
+        crate::db::apply_remote_merge_doc(&conn_b, crate::protocol::DocType::Recipe, &row_a.id, &row_a.am_data).unwrap();
         // Client sends NewDoc with its recipe to server
-        crate::db::apply_remote_merge(&conn_a, &row_b.id, &row_b.am_data).unwrap();
+        crate::db::apply_remote_merge_doc(&conn_a, crate::protocol::DocType::Recipe, &row_b.id, &row_b.am_data).unwrap();
 
         // Verify both recipes on both sides are not deleted
         let a_on_a = crate::db::get_recipe(&conn_a, &row_a.id).unwrap().unwrap();

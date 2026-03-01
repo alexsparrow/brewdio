@@ -8,6 +8,7 @@ pub mod recipe;
 pub mod settings;
 pub mod sync;
 pub mod sync_worker;
+pub mod traits;
 
 #[cfg(feature = "native")]
 pub mod connection_native;

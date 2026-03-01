@@ -54,6 +54,17 @@ const MIGRATIONS: &[&str] = &[
 
     ALTER TABLE recipe ADD COLUMN equipment_id TEXT;
     "#,
+    // V3 → V4: Generalize sync_state for all doc types
+    r#"
+    DROP TABLE IF EXISTS sync_state;
+    CREATE TABLE sync_state (
+        doc_type TEXT NOT NULL,
+        doc_id TEXT NOT NULL,
+        peer_id TEXT NOT NULL DEFAULT 'server',
+        state BLOB NOT NULL,
+        PRIMARY KEY (doc_type, doc_id, peer_id)
+    );
+    "#,
 ];
 
 /// Run all pending migrations and update PRAGMA user_version.

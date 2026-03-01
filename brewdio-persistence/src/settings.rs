@@ -62,32 +62,6 @@ pub fn save_settings(conn: &(impl Connection + ?Sized), data: &str) -> Result<()
     )
 }
 
-// --- Sync-related functions ---
-
-pub fn list_all_settings_ids(conn: &(impl Connection + ?Sized)) -> Result<Vec<String>, DbError> {
-    conn.query_map("SELECT id FROM settings", &[], |row| row.get_text(0))
-}
-
-pub fn list_dirty_settings(conn: &(impl Connection + ?Sized)) -> Result<Vec<SettingsRow>, DbError> {
-    conn.query_map(
-        "SELECT id, data, am_data, is_dirty FROM settings WHERE is_dirty = TRUE",
-        &[],
-        |row| SettingsRow {
-            id: row.get_text(0),
-            data: row.get_text(1),
-            am_data: row.get_blob(2),
-            is_dirty: row.get_bool(3),
-        },
-    )
-}
-
-pub fn clear_dirty_settings(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
-    conn.execute(
-        "UPDATE settings SET is_dirty = FALSE WHERE id = ?1",
-        &[Value::Text(id)],
-    )
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

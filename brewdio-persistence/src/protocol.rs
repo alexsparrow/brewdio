@@ -10,6 +10,24 @@ pub enum DocType {
     EquipmentProfile,
 }
 
+impl DocType {
+    pub fn table_name(&self) -> &'static str {
+        match self {
+            DocType::Recipe => "recipe",
+            DocType::Batch => "batch",
+            DocType::Settings => "settings",
+            DocType::EquipmentProfile => "equipment_profile",
+        }
+    }
+
+    pub const ALL: &[DocType] = &[
+        DocType::Recipe,
+        DocType::Batch,
+        DocType::Settings,
+        DocType::EquipmentProfile,
+    ];
+}
+
 /// Wire protocol messages for Automerge sync over WebSocket.
 /// Serialized as JSON and sent as WebSocket text frames.
 #[derive(Debug, Clone, Serialize, Deserialize)]

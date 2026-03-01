@@ -2,11 +2,12 @@ use brewdio_core::beerjson_types::{EquipmentType, RecipeType};
 
 use crate::batch::{self, BatchDocument};
 use crate::connection::{Connection, DbError, Value};
-use crate::automerge::{extract_fields_from_automerge, extract_string_field_from_automerge, hydrate_from_automerge, new_ulid, reconcile_to_automerge};
+use crate::automerge::{extract_fields_from_automerge, extract_string_field_from_automerge, new_ulid, reconcile_to_automerge};
 use crate::equipment_profile::{self, EquipmentProfileDocument};
 use crate::protocol::DocType;
 use crate::recipe::{RecipeDocument, RecipeRow};
 use crate::settings::{self, SettingsDocument};
+use crate::traits::{set_deleted, apply_remote_merge_generic, RemoteMergeable};
 
 fn row_from_query(row: &dyn crate::connection::Row) -> RecipeRow {
     RecipeRow {
@@ -206,85 +207,43 @@ pub fn list_all_recipes(conn: &(impl Connection + ?Sized)) -> Result<Vec<RecipeR
 /// Restore a soft-deleted recipe by setting `is_deleted = false`.
 pub fn undelete_recipe(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
     let existing = get_recipe(conn, id)?;
-    if let Some(row) = existing {
-        let mut doc = row.to_document().expect("Failed to deserialize recipe");
-        doc.is_deleted = false;
-        let am_data = reconcile_to_automerge(&doc, Some(&row.am_data)).map_err(|e| DbError(e))?;
-
-        conn.execute(
-            "UPDATE recipe SET is_deleted = FALSE, is_dirty = TRUE, am_data = ?1 WHERE id = ?2",
-            &[Value::Blob(&am_data), Value::Text(id)],
-        )?;
-    }
-
-    Ok(())
+    set_deleted(conn, existing, id, false)
 }
 
 /// Soft-delete a recipe by setting `is_deleted = true`.
 pub fn delete_recipe(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
     let existing = get_recipe(conn, id)?;
-    if let Some(row) = existing {
-        let mut doc = row.to_document().expect("Failed to deserialize recipe");
-        doc.is_deleted = true;
-        let am_data = reconcile_to_automerge(&doc, Some(&row.am_data)).map_err(|e| DbError(e))?;
-
-        conn.execute(
-            "UPDATE recipe SET is_deleted = TRUE, is_dirty = TRUE, am_data = ?1 WHERE id = ?2",
-            &[Value::Blob(&am_data), Value::Text(id)],
-        )?;
-    }
-
-    Ok(())
+    set_deleted(conn, existing, id, true)
 }
 
 // --- Sync-related functions ---
 
-/// List all recipes that have local changes not yet synced.
-pub fn list_dirty_recipes(conn: &(impl Connection + ?Sized)) -> Result<Vec<RecipeRow>, DbError> {
-    conn.query_map(
-        "SELECT id, name, recipe, equipment, equipment_id, am_data, is_deleted, is_dirty FROM recipe WHERE is_dirty = TRUE",
-        &[],
-        row_from_query,
-    )
-}
-
-/// Clear the dirty flag for a recipe (after successful sync).
-pub fn clear_dirty(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
-    conn.execute(
-        "UPDATE recipe SET is_dirty = FALSE WHERE id = ?1",
-        &[Value::Text(id)],
-    )
-}
-
-/// List all recipe IDs (including deleted).
-pub fn list_all_recipe_ids(conn: &(impl Connection + ?Sized)) -> Result<Vec<String>, DbError> {
-    conn.query_map("SELECT id FROM recipe", &[], |row| row.get_text(0))
-}
-
-/// Get the stored Automerge sync state for a (recipe, peer) pair.
+/// Get the stored Automerge sync state for a (doc_type, doc_id, peer) triple.
 pub fn get_sync_state(
     conn: &(impl Connection + ?Sized),
-    recipe_id: &str,
+    doc_type: DocType,
+    doc_id: &str,
     peer_id: &str,
 ) -> Result<Option<Vec<u8>>, DbError> {
     conn.query_one(
-        "SELECT state FROM sync_state WHERE recipe_id = ?1 AND peer_id = ?2",
-        &[Value::Text(recipe_id), Value::Text(peer_id)],
+        "SELECT state FROM sync_state WHERE doc_type = ?1 AND doc_id = ?2 AND peer_id = ?3",
+        &[Value::Text(doc_type.table_name()), Value::Text(doc_id), Value::Text(peer_id)],
         |row| row.get_blob(0),
     )
 }
 
-/// Save (upsert) Automerge sync state for a (recipe, peer) pair.
+/// Save (upsert) Automerge sync state for a (doc_type, doc_id, peer) triple.
 pub fn save_sync_state(
     conn: &(impl Connection + ?Sized),
-    recipe_id: &str,
+    doc_type: DocType,
+    doc_id: &str,
     peer_id: &str,
     state: &[u8],
 ) -> Result<(), DbError> {
     conn.execute(
-        "INSERT INTO sync_state (recipe_id, peer_id, state) VALUES (?1, ?2, ?3)
-         ON CONFLICT (recipe_id, peer_id) DO UPDATE SET state = excluded.state",
-        &[Value::Text(recipe_id), Value::Text(peer_id), Value::Blob(state)],
+        "INSERT INTO sync_state (doc_type, doc_id, peer_id, state) VALUES (?1, ?2, ?3, ?4)
+         ON CONFLICT (doc_type, doc_id, peer_id) DO UPDATE SET state = excluded.state",
+        &[Value::Text(doc_type.table_name()), Value::Text(doc_id), Value::Text(peer_id), Value::Blob(state)],
     )
 }
 
@@ -297,93 +256,244 @@ pub fn clear_sync_states_for_peer(conn: &(impl Connection + ?Sized), peer_id: &s
     )
 }
 
-/// Apply a remotely-merged Automerge document. Updates the JSON and name columns
-/// from the merged AM state. Does NOT set `is_dirty` since the change came from the server.
-/// If the recipe doesn't exist locally, inserts it with `is_dirty = FALSE`.
-///
-/// If full autosurgeon hydration fails (e.g. due to untagged enum types),
-/// falls back to extracting `name` and `is_deleted` directly from the Automerge
-/// document and still stores the `am_data` so CRDT sync can continue.
-pub fn apply_remote_merge(
-    conn: &(impl Connection + ?Sized),
-    recipe_id: &str,
-    am_data: &[u8],
-) -> Result<(), DbError> {
-    let existing = get_recipe(conn, recipe_id)?;
+// --- RemoteMergeable implementations ---
 
-    // Log the existing state before merge
-    if let Some(ref row) = existing {
-        let batch_size_before: Option<f64> = serde_json::from_str::<serde_json::Value>(&row.recipe)
-            .ok()
-            .and_then(|v| v.get("batch_size")?.get("value")?.as_f64());
+impl RemoteMergeable for RecipeDocument {
+    fn apply_hydrated(
+        conn: &(impl Connection + ?Sized),
+        id: &str,
+        doc: &Self,
+        am_data: &[u8],
+        exists: bool,
+    ) -> Result<(), DbError> {
         log::info!(
-            "[apply_remote_merge] recipe={} existing batch_size.value={:?} is_dirty={}",
-            recipe_id, batch_size_before, row.is_dirty
+            "[apply_remote_merge] recipe={} hydration OK: name={:?} batch_size.value={} is_deleted={}",
+            id, doc.name, doc.recipe.batch_size.value, doc.is_deleted
         );
-    } else {
-        log::info!("[apply_remote_merge] recipe={} (new, no existing row)", recipe_id);
+        let recipe_json = serde_json::to_string(&doc.recipe).expect("Failed to serialize recipe");
+        let equipment_json = doc.equipment.as_ref().map(|eq| {
+            serde_json::to_string(eq).expect("Failed to serialize equipment")
+        });
+        if exists {
+            conn.execute(
+                "UPDATE recipe SET name = ?1, recipe = ?2, equipment = ?3, equipment_id = ?4, am_data = ?5, is_deleted = ?6 WHERE id = ?7",
+                &[
+                    Value::Text(&doc.name),
+                    Value::Text(&recipe_json),
+                    Value::OptionalText(equipment_json.as_deref()),
+                    Value::OptionalText(doc.equipment_id.as_deref()),
+                    Value::Blob(am_data),
+                    Value::Bool(doc.is_deleted),
+                    Value::Text(id),
+                ],
+            )?;
+        } else {
+            conn.execute(
+                "INSERT INTO recipe (id, name, recipe, equipment, equipment_id, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, FALSE)",
+                &[
+                    Value::Text(id),
+                    Value::Text(&doc.name),
+                    Value::Text(&recipe_json),
+                    Value::OptionalText(equipment_json.as_deref()),
+                    Value::OptionalText(doc.equipment_id.as_deref()),
+                    Value::Blob(am_data),
+                    Value::Bool(doc.is_deleted),
+                ],
+            )?;
+        }
+        Ok(())
     }
 
-    match hydrate_from_automerge::<RecipeDocument>(am_data) {
-        Ok(doc) => {
-            log::info!(
-                "[apply_remote_merge] recipe={} hydration OK: name={:?} batch_size.value={} is_deleted={}",
-                recipe_id, doc.name, doc.recipe.batch_size.value, doc.is_deleted
-            );
-            let recipe_json = serde_json::to_string(&doc.recipe).expect("Failed to serialize recipe");
-            let equipment_json = doc.equipment.as_ref().map(|eq| {
-                serde_json::to_string(eq).expect("Failed to serialize equipment")
-            });
-            if existing.is_some() {
-                conn.execute(
-                    "UPDATE recipe SET name = ?1, recipe = ?2, equipment = ?3, equipment_id = ?4, am_data = ?5, is_deleted = ?6 WHERE id = ?7",
-                    &[
-                        Value::Text(&doc.name),
-                        Value::Text(&recipe_json),
-                        Value::OptionalText(equipment_json.as_deref()),
-                        Value::OptionalText(doc.equipment_id.as_deref()),
-                        Value::Blob(am_data),
-                        Value::Bool(doc.is_deleted),
-                        Value::Text(recipe_id),
-                    ],
-                )?;
-            } else {
-                conn.execute(
-                    "INSERT INTO recipe (id, name, recipe, equipment, equipment_id, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, FALSE)",
-                    &[
-                        Value::Text(recipe_id),
-                        Value::Text(&doc.name),
-                        Value::Text(&recipe_json),
-                        Value::OptionalText(equipment_json.as_deref()),
-                        Value::OptionalText(doc.equipment_id.as_deref()),
-                        Value::Blob(am_data),
-                        Value::Bool(doc.is_deleted),
-                    ],
-                )?;
-            }
+    fn apply_fallback(
+        conn: &(impl Connection + ?Sized),
+        id: &str,
+        am_data: &[u8],
+        exists: bool,
+    ) -> Result<(), DbError> {
+        let (name, is_deleted) = extract_fields_from_automerge(am_data);
+        if exists {
+            conn.execute(
+                "UPDATE recipe SET name = ?1, am_data = ?2, is_deleted = ?3 WHERE id = ?4",
+                &[Value::Text(&name), Value::Blob(am_data), Value::Bool(is_deleted), Value::Text(id)],
+            )?;
+        } else {
+            conn.execute(
+                "INSERT INTO recipe (id, name, recipe, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, FALSE)",
+                &[Value::Text(id), Value::Text(&name), Value::Text("{}"), Value::Blob(am_data), Value::Bool(is_deleted)],
+            )?;
         }
-        Err(e) => {
-            log::warn!(
-                "[apply_remote_merge] recipe={} hydration FAILED: {:?} — falling back to name/is_deleted only",
-                recipe_id, e
-            );
-            // Fallback: extract name/is_deleted directly from automerge doc
-            let (name, is_deleted) = extract_fields_from_automerge(am_data);
-            if existing.is_some() {
-                conn.execute(
-                    "UPDATE recipe SET name = ?1, am_data = ?2, is_deleted = ?3 WHERE id = ?4",
-                    &[Value::Text(&name), Value::Blob(am_data), Value::Bool(is_deleted), Value::Text(recipe_id)],
-                )?;
-            } else {
-                conn.execute(
-                    "INSERT INTO recipe (id, name, recipe, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, FALSE)",
-                    &[Value::Text(recipe_id), Value::Text(&name), Value::Text("{}"), Value::Blob(am_data), Value::Bool(is_deleted)],
-                )?;
-            }
+        Ok(())
+    }
+}
+
+impl RemoteMergeable for BatchDocument {
+    fn apply_hydrated(
+        conn: &(impl Connection + ?Sized),
+        id: &str,
+        doc: &Self,
+        am_data: &[u8],
+        exists: bool,
+    ) -> Result<(), DbError> {
+        let data_json =
+            serde_json::to_string(&doc.data).expect("Failed to serialize batch data");
+        if exists {
+            conn.execute(
+                "UPDATE batch SET name = ?1, data = ?2, am_data = ?3, is_deleted = ?4 WHERE id = ?5",
+                &[
+                    Value::Text(&doc.name),
+                    Value::Text(&data_json),
+                    Value::Blob(am_data),
+                    Value::Bool(doc.is_deleted),
+                    Value::Text(id),
+                ],
+            )?;
+        } else {
+            conn.execute(
+                "INSERT INTO batch (id, name, recipe_id, data, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, ?6, FALSE)",
+                &[
+                    Value::Text(id),
+                    Value::Text(&doc.name),
+                    Value::Text(&doc.recipe_id),
+                    Value::Text(&data_json),
+                    Value::Blob(am_data),
+                    Value::Bool(doc.is_deleted),
+                ],
+            )?;
         }
+        Ok(())
     }
 
-    Ok(())
+    fn apply_fallback(
+        conn: &(impl Connection + ?Sized),
+        id: &str,
+        am_data: &[u8],
+        exists: bool,
+    ) -> Result<(), DbError> {
+        if exists {
+            conn.execute(
+                "UPDATE batch SET am_data = ?1 WHERE id = ?2",
+                &[Value::Blob(am_data), Value::Text(id)],
+            )?;
+        } else {
+            conn.execute(
+                "INSERT INTO batch (id, name, recipe_id, data, am_data, is_deleted, is_dirty) VALUES (?1, '', '', '{}', ?2, FALSE, FALSE)",
+                &[Value::Text(id), Value::Blob(am_data)],
+            )?;
+        }
+        Ok(())
+    }
+}
+
+impl RemoteMergeable for SettingsDocument {
+    fn apply_hydrated(
+        conn: &(impl Connection + ?Sized),
+        id: &str,
+        doc: &Self,
+        am_data: &[u8],
+        exists: bool,
+    ) -> Result<(), DbError> {
+        if exists {
+            conn.execute(
+                "UPDATE settings SET data = ?1, am_data = ?2 WHERE id = ?3",
+                &[Value::Text(&doc.data), Value::Blob(am_data), Value::Text(id)],
+            )?;
+        } else {
+            conn.execute(
+                "INSERT INTO settings (id, data, am_data, is_dirty) VALUES (?1, ?2, ?3, FALSE)",
+                &[Value::Text(id), Value::Text(&doc.data), Value::Blob(am_data)],
+            )?;
+        }
+        Ok(())
+    }
+
+    fn apply_fallback(
+        conn: &(impl Connection + ?Sized),
+        id: &str,
+        am_data: &[u8],
+        exists: bool,
+    ) -> Result<(), DbError> {
+        let data_str = extract_string_field_from_automerge(am_data, "data").unwrap_or_else(|| {
+            if exists {
+                if let Ok(Some(row)) = settings::get_settings(conn) {
+                    if row.data != "{}" {
+                        return row.data;
+                    }
+                }
+            }
+            "{}".to_string()
+        });
+        if exists {
+            conn.execute(
+                "UPDATE settings SET data = ?1, am_data = ?2 WHERE id = ?3",
+                &[Value::Text(&data_str), Value::Blob(am_data), Value::Text(id)],
+            )?;
+        } else {
+            conn.execute(
+                "INSERT INTO settings (id, data, am_data, is_dirty) VALUES (?1, ?2, ?3, FALSE)",
+                &[Value::Text(id), Value::Text(&data_str), Value::Blob(am_data)],
+            )?;
+        }
+        Ok(())
+    }
+}
+
+impl RemoteMergeable for EquipmentProfileDocument {
+    fn apply_hydrated(
+        conn: &(impl Connection + ?Sized),
+        id: &str,
+        doc: &Self,
+        am_data: &[u8],
+        exists: bool,
+    ) -> Result<(), DbError> {
+        let data_json = serde_json::to_string(&doc.equipment).expect("Failed to serialize equipment");
+        let efficiency_json = serde_json::to_string(&doc.efficiency).expect("Failed to serialize efficiency");
+        if exists {
+            conn.execute(
+                "UPDATE equipment_profile SET name = ?1, data = ?2, efficiency = ?3, am_data = ?4, is_deleted = ?5 WHERE id = ?6",
+                &[
+                    Value::Text(&doc.name),
+                    Value::Text(&data_json),
+                    Value::Text(&efficiency_json),
+                    Value::Blob(am_data),
+                    Value::Bool(doc.is_deleted),
+                    Value::Text(id),
+                ],
+            )?;
+        } else {
+            conn.execute(
+                "INSERT INTO equipment_profile (id, name, data, efficiency, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, ?6, FALSE)",
+                &[
+                    Value::Text(id),
+                    Value::Text(&doc.name),
+                    Value::Text(&data_json),
+                    Value::Text(&efficiency_json),
+                    Value::Blob(am_data),
+                    Value::Bool(doc.is_deleted),
+                ],
+            )?;
+        }
+        Ok(())
+    }
+
+    fn apply_fallback(
+        conn: &(impl Connection + ?Sized),
+        id: &str,
+        am_data: &[u8],
+        exists: bool,
+    ) -> Result<(), DbError> {
+        if exists {
+            conn.execute(
+                "UPDATE equipment_profile SET am_data = ?1 WHERE id = ?2",
+                &[Value::Blob(am_data), Value::Text(id)],
+            )?;
+        } else {
+            conn.execute(
+                "INSERT INTO equipment_profile (id, name, data, efficiency, am_data, is_deleted, is_dirty) VALUES (?1, '', '{}', '{}', ?2, FALSE, FALSE)",
+                &[Value::Text(id), Value::Blob(am_data)],
+            )?;
+        }
+        Ok(())
+    }
 }
 
 // --- Generic sync dispatch functions ---
@@ -411,14 +521,8 @@ pub fn mark_dirty_doc(
     doc_type: DocType,
     id: &str,
 ) -> Result<(), DbError> {
-    let (table, col) = match doc_type {
-        DocType::Recipe => ("recipe", "id"),
-        DocType::Batch => ("batch", "id"),
-        DocType::Settings => ("settings", "id"),
-        DocType::EquipmentProfile => ("equipment_profile", "id"),
-    };
     conn.execute(
-        &format!("UPDATE {} SET is_dirty = TRUE WHERE {} = ?1", table, col),
+        &format!("UPDATE {} SET is_dirty = TRUE WHERE id = ?1", doc_type.table_name()),
         &[Value::Text(id)],
     )
 }
@@ -429,12 +533,10 @@ pub fn clear_dirty_doc(
     doc_type: DocType,
     id: &str,
 ) -> Result<(), DbError> {
-    match doc_type {
-        DocType::Recipe => clear_dirty(conn, id),
-        DocType::Batch => batch::clear_dirty_batch(conn, id),
-        DocType::Settings => settings::clear_dirty_settings(conn, id),
-        DocType::EquipmentProfile => equipment_profile::clear_dirty_equipment_profile(conn, id),
-    }
+    conn.execute(
+        &format!("UPDATE {} SET is_dirty = FALSE WHERE id = ?1", doc_type.table_name()),
+        &[Value::Text(id)],
+    )
 }
 
 /// List all dirty documents across all types.
@@ -442,17 +544,15 @@ pub fn list_dirty_docs(
     conn: &(impl Connection + ?Sized),
 ) -> Result<Vec<(DocType, String)>, DbError> {
     let mut result = Vec::new();
-    for row in list_dirty_recipes(conn)? {
-        result.push((DocType::Recipe, row.id));
-    }
-    for row in batch::list_dirty_batches(conn)? {
-        result.push((DocType::Batch, row.id));
-    }
-    for row in settings::list_dirty_settings(conn)? {
-        result.push((DocType::Settings, row.id));
-    }
-    for row in equipment_profile::list_dirty_equipment_profiles(conn)? {
-        result.push((DocType::EquipmentProfile, row.id));
+    for &doc_type in DocType::ALL {
+        let ids: Vec<String> = conn.query_map(
+            &format!("SELECT id FROM {} WHERE is_dirty = TRUE", doc_type.table_name()),
+            &[],
+            |row| row.get_text(0),
+        )?;
+        for id in ids {
+            result.push((doc_type, id));
+        }
     }
     Ok(result)
 }
@@ -462,12 +562,11 @@ pub fn list_all_doc_ids(
     conn: &(impl Connection + ?Sized),
     doc_type: DocType,
 ) -> Result<Vec<String>, DbError> {
-    match doc_type {
-        DocType::Recipe => list_all_recipe_ids(conn),
-        DocType::Batch => batch::list_all_batch_ids(conn),
-        DocType::Settings => settings::list_all_settings_ids(conn),
-        DocType::EquipmentProfile => equipment_profile::list_all_equipment_profile_ids(conn),
-    }
+    conn.query_map(
+        &format!("SELECT id FROM {}", doc_type.table_name()),
+        &[],
+        |row| row.get_text(0),
+    )
 }
 
 /// Apply a remotely-merged Automerge document, dispatching to the right type.
@@ -478,164 +577,23 @@ pub fn apply_remote_merge_doc(
     am_data: &[u8],
 ) -> Result<(), DbError> {
     match doc_type {
-        DocType::Recipe => apply_remote_merge(conn, id, am_data),
-        DocType::Batch => apply_remote_merge_batch(conn, id, am_data),
-        DocType::Settings => apply_remote_merge_settings(conn, id, am_data),
-        DocType::EquipmentProfile => apply_remote_merge_equipment_profile(conn, id, am_data),
-    }
-}
-
-/// Apply a remotely-merged Automerge batch document.
-pub fn apply_remote_merge_batch(
-    conn: &(impl Connection + ?Sized),
-    batch_id: &str,
-    am_data: &[u8],
-) -> Result<(), DbError> {
-    let existing = batch::get_batch(conn, batch_id)?;
-
-    match hydrate_from_automerge::<BatchDocument>(am_data) {
-        Ok(doc) => {
-            let data_json =
-                serde_json::to_string(&doc.data).expect("Failed to serialize batch data");
-            if existing.is_some() {
-                conn.execute(
-                    "UPDATE batch SET name = ?1, data = ?2, am_data = ?3, is_deleted = ?4 WHERE id = ?5",
-                    &[
-                        Value::Text(&doc.name),
-                        Value::Text(&data_json),
-                        Value::Blob(am_data),
-                        Value::Bool(doc.is_deleted),
-                        Value::Text(batch_id),
-                    ],
-                )?;
-            } else {
-                conn.execute(
-                    "INSERT INTO batch (id, name, recipe_id, data, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, ?6, FALSE)",
-                    &[
-                        Value::Text(batch_id),
-                        Value::Text(&doc.name),
-                        Value::Text(&doc.recipe_id),
-                        Value::Text(&data_json),
-                        Value::Blob(am_data),
-                        Value::Bool(doc.is_deleted),
-                    ],
-                )?;
-            }
+        DocType::Recipe => {
+            let exists = get_recipe(conn, id)?.is_some();
+            apply_remote_merge_generic::<RecipeDocument>(conn, id, am_data, exists)
         }
-        Err(_) => {
-            if existing.is_some() {
-                conn.execute(
-                    "UPDATE batch SET am_data = ?1 WHERE id = ?2",
-                    &[Value::Blob(am_data), Value::Text(batch_id)],
-                )?;
-            } else {
-                conn.execute(
-                    "INSERT INTO batch (id, name, recipe_id, data, am_data, is_deleted, is_dirty) VALUES (?1, '', '', '{}', ?2, FALSE, FALSE)",
-                    &[Value::Text(batch_id), Value::Blob(am_data)],
-                )?;
-            }
+        DocType::Batch => {
+            let exists = batch::get_batch(conn, id)?.is_some();
+            apply_remote_merge_generic::<BatchDocument>(conn, id, am_data, exists)
+        }
+        DocType::Settings => {
+            let exists = settings::get_settings(conn)?.is_some();
+            apply_remote_merge_generic::<SettingsDocument>(conn, id, am_data, exists)
+        }
+        DocType::EquipmentProfile => {
+            let exists = equipment_profile::get_equipment_profile(conn, id)?.is_some();
+            apply_remote_merge_generic::<EquipmentProfileDocument>(conn, id, am_data, exists)
         }
     }
-
-    Ok(())
-}
-
-/// Apply a remotely-merged Automerge settings document.
-pub fn apply_remote_merge_settings(
-    conn: &(impl Connection + ?Sized),
-    settings_id: &str,
-    am_data: &[u8],
-) -> Result<(), DbError> {
-    let existing = settings::get_settings(conn)?;
-
-    // Try full hydration first; on failure, extract `data` field directly from the
-    // automerge doc (handles schema changes like removed `is_dirty` field).
-    let data_str = match hydrate_from_automerge::<SettingsDocument>(am_data) {
-        Ok(doc) => doc.data,
-        Err(_) => {
-            // Fallback: extract the "data" key directly from the automerge doc
-            // (handles schema changes like removed fields)
-            extract_string_field_from_automerge(am_data, "data").unwrap_or_else(|| {
-                // If we already have good data, keep it rather than overwriting with empty
-                if let Some(ref row) = existing {
-                    if row.data != "{}" {
-                        return row.data.clone();
-                    }
-                }
-                "{}".to_string()
-            })
-        }
-    };
-
-    if existing.is_some() {
-        conn.execute(
-            "UPDATE settings SET data = ?1, am_data = ?2 WHERE id = ?3",
-            &[Value::Text(&data_str), Value::Blob(am_data), Value::Text(settings_id)],
-        )?;
-    } else {
-        conn.execute(
-            "INSERT INTO settings (id, data, am_data, is_dirty) VALUES (?1, ?2, ?3, FALSE)",
-            &[Value::Text(settings_id), Value::Text(&data_str), Value::Blob(am_data)],
-        )?;
-    }
-
-    Ok(())
-}
-
-/// Apply a remotely-merged Automerge equipment profile document.
-pub fn apply_remote_merge_equipment_profile(
-    conn: &(impl Connection + ?Sized),
-    profile_id: &str,
-    am_data: &[u8],
-) -> Result<(), DbError> {
-    let existing = equipment_profile::get_equipment_profile(conn, profile_id)?;
-
-    match hydrate_from_automerge::<EquipmentProfileDocument>(am_data) {
-        Ok(doc) => {
-            let data_json = serde_json::to_string(&doc.equipment).expect("Failed to serialize equipment");
-            let efficiency_json = serde_json::to_string(&doc.efficiency).expect("Failed to serialize efficiency");
-            if existing.is_some() {
-                conn.execute(
-                    "UPDATE equipment_profile SET name = ?1, data = ?2, efficiency = ?3, am_data = ?4, is_deleted = ?5 WHERE id = ?6",
-                    &[
-                        Value::Text(&doc.name),
-                        Value::Text(&data_json),
-                        Value::Text(&efficiency_json),
-                        Value::Blob(am_data),
-                        Value::Bool(doc.is_deleted),
-                        Value::Text(profile_id),
-                    ],
-                )?;
-            } else {
-                conn.execute(
-                    "INSERT INTO equipment_profile (id, name, data, efficiency, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, ?5, ?6, FALSE)",
-                    &[
-                        Value::Text(profile_id),
-                        Value::Text(&doc.name),
-                        Value::Text(&data_json),
-                        Value::Text(&efficiency_json),
-                        Value::Blob(am_data),
-                        Value::Bool(doc.is_deleted),
-                    ],
-                )?;
-            }
-        }
-        Err(_) => {
-            if existing.is_some() {
-                conn.execute(
-                    "UPDATE equipment_profile SET am_data = ?1 WHERE id = ?2",
-                    &[Value::Blob(am_data), Value::Text(profile_id)],
-                )?;
-            } else {
-                conn.execute(
-                    "INSERT INTO equipment_profile (id, name, data, efficiency, am_data, is_deleted, is_dirty) VALUES (?1, '', '{}', '{}', ?2, FALSE, FALSE)",
-                    &[Value::Text(profile_id), Value::Blob(am_data)],
-                )?;
-            }
-        }
-    }
-
-    Ok(())
 }
 
 #[cfg(test)]
@@ -764,43 +722,47 @@ mod tests {
 
         // Create sets dirty
         let row = create_recipe(&conn, "Dirty Test", &sample_recipe(), None, None).unwrap();
-        let dirty = list_dirty_recipes(&conn).unwrap();
-        assert_eq!(dirty.len(), 1);
+        let dirty = list_dirty_docs(&conn).unwrap();
+        let recipe_dirty: Vec<_> = dirty.iter().filter(|(dt, _)| *dt == DocType::Recipe).collect();
+        assert_eq!(recipe_dirty.len(), 1);
 
         // Clear dirty
-        clear_dirty(&conn, &row.id).unwrap();
-        let dirty = list_dirty_recipes(&conn).unwrap();
-        assert_eq!(dirty.len(), 0);
+        clear_dirty_doc(&conn, DocType::Recipe, &row.id).unwrap();
+        let dirty = list_dirty_docs(&conn).unwrap();
+        let recipe_dirty: Vec<_> = dirty.iter().filter(|(dt, _)| *dt == DocType::Recipe).collect();
+        assert_eq!(recipe_dirty.len(), 0);
 
         // Update sets dirty again
         update_recipe(&conn, &row.id, "Still Dirty", &sample_recipe(), None).unwrap();
-        let dirty = list_dirty_recipes(&conn).unwrap();
-        assert_eq!(dirty.len(), 1);
+        let dirty = list_dirty_docs(&conn).unwrap();
+        let recipe_dirty: Vec<_> = dirty.iter().filter(|(dt, _)| *dt == DocType::Recipe).collect();
+        assert_eq!(recipe_dirty.len(), 1);
     }
 
     #[test]
     fn sync_state_crud() {
         let conn = test_conn();
 
-        // Create a recipe first (foreign key)
-        let row = create_recipe(&conn, "Sync Test", &sample_recipe(), None, None).unwrap();
-
         // No sync state initially
-        let state = get_sync_state(&conn, &row.id, "server").unwrap();
+        let state = get_sync_state(&conn, DocType::Recipe, "some-id", "server").unwrap();
         assert!(state.is_none());
 
         // Save sync state
         let fake_state = vec![1, 2, 3, 4];
-        save_sync_state(&conn, &row.id, "server", &fake_state).unwrap();
+        save_sync_state(&conn, DocType::Recipe, "some-id", "server", &fake_state).unwrap();
 
-        let state = get_sync_state(&conn, &row.id, "server").unwrap().unwrap();
+        let state = get_sync_state(&conn, DocType::Recipe, "some-id", "server").unwrap().unwrap();
         assert_eq!(state, fake_state);
 
         // Upsert
         let updated_state = vec![5, 6, 7];
-        save_sync_state(&conn, &row.id, "server", &updated_state).unwrap();
-        let state = get_sync_state(&conn, &row.id, "server").unwrap().unwrap();
+        save_sync_state(&conn, DocType::Recipe, "some-id", "server", &updated_state).unwrap();
+        let state = get_sync_state(&conn, DocType::Recipe, "some-id", "server").unwrap().unwrap();
         assert_eq!(state, updated_state);
+
+        // Different doc_type for same doc_id is independent
+        let state = get_sync_state(&conn, DocType::Batch, "some-id", "server").unwrap();
+        assert!(state.is_none());
     }
 
     #[test]
@@ -818,7 +780,7 @@ mod tests {
         };
         let am_data = reconcile_to_automerge(&doc, None).unwrap();
 
-        apply_remote_merge(&conn, "remote-id", &am_data).unwrap();
+        apply_remote_merge_doc(&conn, DocType::Recipe, "remote-id", &am_data).unwrap();
 
         let fetched = get_recipe(&conn, "remote-id").unwrap().unwrap();
         assert_eq!(fetched.name, "Remote Beer");
@@ -830,7 +792,7 @@ mod tests {
         let conn = test_conn();
 
         let row = create_recipe(&conn, "Local Beer", &sample_recipe(), None, None).unwrap();
-        clear_dirty(&conn, &row.id).unwrap();
+        clear_dirty_doc(&conn, DocType::Recipe, &row.id).unwrap();
 
         // Simulate a remote merge with updated name
         let doc = RecipeDocument {
@@ -843,7 +805,7 @@ mod tests {
         };
         let am_data = reconcile_to_automerge(&doc, None).unwrap();
 
-        apply_remote_merge(&conn, &row.id, &am_data).unwrap();
+        apply_remote_merge_doc(&conn, DocType::Recipe, &row.id, &am_data).unwrap();
 
         let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
         assert_eq!(fetched.name, "Merged Beer");
@@ -865,7 +827,7 @@ mod tests {
         };
         let am_data = reconcile_to_automerge(&doc, None).unwrap();
 
-        apply_remote_merge(&conn, "remote-equip", &am_data).unwrap();
+        apply_remote_merge_doc(&conn, DocType::Recipe, "remote-equip", &am_data).unwrap();
 
         let fetched = get_recipe(&conn, "remote-equip").unwrap().unwrap();
         assert!(fetched.equipment.is_some());
@@ -874,14 +836,14 @@ mod tests {
     }
 
     #[test]
-    fn list_all_recipe_ids_includes_deleted() {
+    fn list_all_doc_ids_includes_deleted() {
         let conn = test_conn();
 
         let row1 = create_recipe(&conn, "Beer 1", &sample_recipe(), None, None).unwrap();
         let row2 = create_recipe(&conn, "Beer 2", &sample_recipe(), None, None).unwrap();
         delete_recipe(&conn, &row2.id).unwrap();
 
-        let ids = list_all_recipe_ids(&conn).unwrap();
+        let ids = list_all_doc_ids(&conn, DocType::Recipe).unwrap();
         assert_eq!(ids.len(), 2);
         assert!(ids.contains(&row1.id));
         assert!(ids.contains(&row2.id));

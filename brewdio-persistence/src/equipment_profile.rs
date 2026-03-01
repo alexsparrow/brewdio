@@ -3,6 +3,8 @@ use brewdio_core::equipment_profile::EquipmentProfile;
 
 use crate::automerge::{new_ulid, reconcile_to_automerge};
 use crate::connection::{Connection, DbError, Value};
+use crate::protocol::DocType;
+use crate::traits::{SyncDocument, SyncRow};
 
 pub struct EquipmentProfileRow {
     pub id: String,
@@ -45,6 +47,22 @@ impl EquipmentProfileRow {
             efficiency,
             is_deleted: self.is_deleted,
         })
+    }
+}
+
+impl SyncDocument for EquipmentProfileDocument {
+    fn id(&self) -> &str { &self.id }
+    fn is_deleted(&self) -> bool { self.is_deleted }
+    fn set_is_deleted(&mut self, deleted: bool) { self.is_deleted = deleted; }
+}
+
+impl SyncRow for EquipmentProfileRow {
+    type Document = EquipmentProfileDocument;
+    fn doc_type() -> DocType { DocType::EquipmentProfile }
+    fn id(&self) -> &str { &self.id }
+    fn am_data(&self) -> &[u8] { &self.am_data }
+    fn into_document(&self) -> Result<EquipmentProfileDocument, DbError> {
+        self.to_document().map_err(|e| DbError(e.to_string()))
     }
 }
 
@@ -181,50 +199,7 @@ pub fn delete_equipment_profile(
     id: &str,
 ) -> Result<(), DbError> {
     let existing = get_equipment_profile(conn, id)?;
-    if let Some(row) = existing {
-        let mut doc = row.to_document().map_err(|e| DbError(e.to_string()))?;
-        doc.is_deleted = true;
-        let am_data =
-            reconcile_to_automerge(&doc, Some(&row.am_data)).map_err(|e| DbError(e))?;
-
-        conn.execute(
-            "UPDATE equipment_profile SET is_deleted = TRUE, is_dirty = TRUE, am_data = ?1 WHERE id = ?2",
-            &[Value::Blob(&am_data), Value::Text(id)],
-        )?;
-    }
-    Ok(())
-}
-
-// --- Sync-related functions ---
-
-pub fn list_all_equipment_profile_ids(
-    conn: &(impl Connection + ?Sized),
-) -> Result<Vec<String>, DbError> {
-    conn.query_map(
-        "SELECT id FROM equipment_profile",
-        &[],
-        |row| row.get_text(0),
-    )
-}
-
-pub fn list_dirty_equipment_profiles(
-    conn: &(impl Connection + ?Sized),
-) -> Result<Vec<EquipmentProfileRow>, DbError> {
-    conn.query_map(
-        "SELECT id, name, data, efficiency, am_data, is_deleted, is_dirty FROM equipment_profile WHERE is_dirty = TRUE",
-        &[],
-        row_from_query,
-    )
-}
-
-pub fn clear_dirty_equipment_profile(
-    conn: &(impl Connection + ?Sized),
-    id: &str,
-) -> Result<(), DbError> {
-    conn.execute(
-        "UPDATE equipment_profile SET is_dirty = FALSE WHERE id = ?1",
-        &[Value::Text(id)],
-    )
+    crate::traits::set_deleted(conn, existing, id, true)
 }
 
 #[cfg(test)]
@@ -324,11 +299,13 @@ mod tests {
         let profile = sample_profile();
 
         let row = create_equipment_profile(&conn, &profile).unwrap();
-        let dirty = list_dirty_equipment_profiles(&conn).unwrap();
-        assert_eq!(dirty.len(), 1);
+        let dirty = crate::db::list_dirty_docs(&conn).unwrap();
+        let ep_dirty: Vec<_> = dirty.iter().filter(|(dt, _)| *dt == crate::protocol::DocType::EquipmentProfile).collect();
+        assert_eq!(ep_dirty.len(), 1);
 
-        clear_dirty_equipment_profile(&conn, &row.id).unwrap();
-        let dirty = list_dirty_equipment_profiles(&conn).unwrap();
-        assert_eq!(dirty.len(), 0);
+        crate::db::clear_dirty_doc(&conn, crate::protocol::DocType::EquipmentProfile, &row.id).unwrap();
+        let dirty = crate::db::list_dirty_docs(&conn).unwrap();
+        let ep_dirty: Vec<_> = dirty.iter().filter(|(dt, _)| *dt == crate::protocol::DocType::EquipmentProfile).collect();
+        assert_eq!(ep_dirty.len(), 0);
     }
 }
