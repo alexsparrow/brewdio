@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/brewdio/brewdio/compare/v0.3.0...v0.4.0) (2026-03-01)
+
+
+### Features
+
+* Keybindings in webui ([5752cc6](https://github.com/brewdio/brewdio/commit/5752cc6cecf58c334782c9413c7e088663ee4e54))
+
 ## [0.3.0](https://github.com/brewdio/brewdio/compare/v0.2.7...v0.3.0) (2026-02-28)
 
 
