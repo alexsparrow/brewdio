@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { RecipeType, EquipmentType } from 'brewdio-wasm';
 import { getAppDb } from './app-db';
+import { recipeKeys } from './query-keys';
+
+export { recipeKeys };
 
 // Re-export the recipe document type used throughout the app.
 export interface RecipeDocument {
@@ -9,15 +12,6 @@ export interface RecipeDocument {
   recipe: RecipeType;
   equipment?: EquipmentType;
 }
-
-// ---------------------------------------------------------------------------
-// Query keys
-// ---------------------------------------------------------------------------
-
-export const recipeKeys = {
-  all: ['recipes'] as const,
-  detail: (id: string) => ['recipes', id] as const,
-};
 
 // ---------------------------------------------------------------------------
 // Queries

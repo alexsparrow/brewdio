@@ -1,6 +1,9 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query';
 import type { RecipeType, EquipmentType } from 'brewdio-wasm';
 import { getAppDb } from './app-db';
+import { batchKeys } from './query-keys';
+
+export { batchKeys };
 
 // ---------------------------------------------------------------------------
 // Types — matches the old BatchDocument shape for consumer compatibility
@@ -64,13 +67,8 @@ function batchDocToData(doc: Omit<BatchDocument, 'id' | 'name' | 'recipeId'>) {
 }
 
 // ---------------------------------------------------------------------------
-// Query keys
+// Query keys (re-exported from ./query-keys)
 // ---------------------------------------------------------------------------
-
-export const batchKeys = {
-  all: ['batches'] as const,
-  detail: (id: string) => ['batches', id] as const,
-};
 
 // ---------------------------------------------------------------------------
 // Queries

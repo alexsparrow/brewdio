@@ -1,5 +1,8 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query';
 import { getAppDb } from './app-db';
+import { settingsKeys } from './query-keys';
+
+export { settingsKeys };
 
 // ---------------------------------------------------------------------------
 // Types
@@ -26,12 +29,8 @@ export const DEFAULT_SETTINGS: SettingsDocument = {
 };
 
 // ---------------------------------------------------------------------------
-// Query keys
+// Query keys (re-exported from ./query-keys)
 // ---------------------------------------------------------------------------
-
-export const settingsKeys = {
-  all: ['settings'] as const,
-};
 
 // ---------------------------------------------------------------------------
 // Queries
