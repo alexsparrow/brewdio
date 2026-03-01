@@ -2,5 +2,11 @@
 members = ["brewdio-core", "brewdio-persistence", "brewdio-wasm", "brewdio-tui", "brewdio-server"]
 resolver = "2"
 
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = "z"
+strip = true
+
 [patch.crates-io]
 indexed_db_futures = { path = "patches/indexed_db_futures" }
