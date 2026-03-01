@@ -1,6 +1,9 @@
 {
   "name": "brewdio",
   "version": "0.5.0",
+  "scripts": {
+    "build:wasm": "wasm-pack build brewdio-wasm --target web --dev"
+  },
   "workspaces": [
     "brewdio-webui",
     "brewdio-wasm/pkg"
