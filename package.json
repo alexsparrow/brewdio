@@ -4,5 +4,8 @@
   "workspaces": [
     "brewdio-webui",
     "brewdio-wasm/pkg"
-  ]
+  ],
+  "patchedDependencies": {
+    "tinykeys@3.0.0": "patches/tinykeys@3.0.0.patch"
+  }
 }

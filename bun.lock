@@ -98,6 +98,9 @@
       },
     },
   },
+  "patchedDependencies": {
+    "tinykeys@3.0.0": "patches/tinykeys@3.0.0.patch",
+  },
   "packages": {
     "@ai-sdk/gateway": ["@ai-sdk/gateway@2.0.43", "", { "dependencies": { "@ai-sdk/provider": "2.0.1", "@ai-sdk/provider-utils": "3.0.21", "@vercel/oidc": "3.1.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-wVrXKw0ldcU04Y8EY3vR+qPdogZCZEj8pnkpRNRF552jqYPPVY88atPiC9s6XOyE+k6Y1YnusYXqwp6KKaBGAA=="],
 
