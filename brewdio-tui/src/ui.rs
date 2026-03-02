@@ -2,7 +2,7 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Bar, BarChart, BarGroup, Block, Borders, Clear, List, ListItem, Paragraph},
+    widgets::{Bar, BarChart, BarGroup, Block, Borders, Clear, List, ListItem, Paragraph, Wrap},
     Frame,
 };
 
@@ -18,11 +18,12 @@ const CHAT_MIN_WIDTH: u16 = 40;
 pub fn draw(frame: &mut Frame, app: &App) {
     let area = frame.area();
 
+    if app.chat_visible {
     if let Some(ref chat) = app.chat {
         let has_api_key = !app.settings_doc.openai_api_key.is_empty();
         let chat_fits_side = area.width >= CHAT_MIN_WIDTH * 2;
 
-        if chat_fits_side {
+        if chat_fits_side && !chat.fullscreen {
             // Side-by-side: left = normal screen, right = chat panel
             let cols = Layout::default()
                 .direction(Direction::Horizontal)
@@ -40,6 +41,7 @@ pub fn draw(frame: &mut Frame, app: &App) {
             crate::chat::ui::draw_chat(frame, chat, has_api_key, false);
         }
         return;
+    }
     }
 
     match &app.screen {
@@ -691,8 +693,10 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
     let inner = block.inner(area);
     frame.render_widget(block, area);
 
-    let row_count = if is_batch { 7 } else { 6 };
-    let mut constraints: Vec<Constraint> = (0..row_count).map(|_| Constraint::Length(1)).collect();
+    // All rows are Length(1) except the last (notes) which can expand up to 5 lines.
+    let fixed_rows = if is_batch { 6 } else { 5 };
+    let mut constraints: Vec<Constraint> = (0..fixed_rows).map(|_| Constraint::Length(1)).collect();
+    constraints.push(Constraint::Max(5)); // notes row
     constraints.push(Constraint::Min(0));
 
     let rows = Layout::default()
@@ -809,46 +813,28 @@ fn draw_header(frame: &mut Frame, app: &App, area: Rect) {
         row_idx += 1;
     }
 
-    // Notes row
-    let notes_text = if is_batch {
-        if app.batch_notes_text.is_empty() {
-            "(none)".to_string()
-        } else {
-            let first_line = app.batch_notes_text.lines().next().unwrap_or("");
-            let max_len = inner.width.saturating_sub(10) as usize;
-            if first_line.len() > max_len {
-                format!("{}...", &first_line[..max_len.saturating_sub(3)])
-            } else if app.batch_notes_text.lines().count() > 1 {
-                format!("{}...", first_line)
-            } else {
-                first_line.to_string()
-            }
-        }
+    // Notes row (wraps up to 5 lines)
+    let notes_raw = if is_batch {
+        app.batch_notes_text.as_str()
     } else {
-        let notes = app
-            .current_doc
+        app.current_doc
             .as_ref()
             .and_then(|d| d.recipe.notes.as_deref())
-            .unwrap_or("");
-        if notes.is_empty() {
-            "(none)".to_string()
-        } else {
-            let first_line = notes.lines().next().unwrap_or("");
-            let max_len = inner.width.saturating_sub(10) as usize;
-            if first_line.len() > max_len {
-                format!("{}...", &first_line[..max_len.saturating_sub(3)])
-            } else if notes.lines().count() > 1 {
-                format!("{}...", first_line)
-            } else {
-                first_line.to_string()
-            }
-        }
+            .unwrap_or("")
     };
-    let notes_line = Line::from(vec![
-        Span::styled(" Notes: ", Style::default().fg(Color::DarkGray)),
-        Span::styled(notes_text, Style::default().fg(Color::DarkGray)),
-    ]);
-    frame.render_widget(Paragraph::new(notes_line), rows[row_idx]);
+    let notes_area = rows[row_idx];
+    if notes_raw.is_empty() {
+        let notes_line = Line::from(vec![
+            Span::styled(" Notes: ", Style::default().fg(Color::DarkGray)),
+            Span::styled("(none)", Style::default().fg(Color::DarkGray)),
+        ]);
+        frame.render_widget(Paragraph::new(notes_line), notes_area);
+    } else {
+        let text = format!(" Notes: {}", notes_raw.replace('\n', " "));
+        let paragraph = Paragraph::new(Span::styled(text, Style::default().fg(Color::DarkGray)))
+            .wrap(Wrap { trim: false });
+        frame.render_widget(paragraph, notes_area);
+    }
 
     // Overlay batch size dialog if active
     if app.batch_size_dialog.is_some() {
@@ -1105,24 +1091,25 @@ fn draw_status_bar(frame: &mut Frame, app: &App, area: Rect) {
     // Sync status indicator (right-aligned)
     let sync_text = match &app.sync_connected {
         Some(flag) => {
-            if flag.load(std::sync::atomic::Ordering::Relaxed) {
-                Some((" Connected ", Color::Rgb(80, 180, 80)))
-            } else {
-                Some((" Disconnected ", Color::Rgb(180, 80, 80)))
+            use brewdio_persistence::sync_worker::{SYNC_STATUS_CONNECTED, SYNC_STATUS_CLIENT_OUTDATED, SYNC_STATUS_SERVER_OUTDATED};
+            match flag.load(std::sync::atomic::Ordering::Relaxed) {
+                SYNC_STATUS_CONNECTED => Some((" Connected ", Color::Rgb(80, 180, 80), "\u{25CF} ")),
+                SYNC_STATUS_CLIENT_OUTDATED => Some((" Incompatible - Update App ", Color::Rgb(220, 160, 40), "\u{26A0} ")),
+                SYNC_STATUS_SERVER_OUTDATED => Some((" Incompatible - Update Server ", Color::Rgb(220, 160, 40), "\u{26A0} ")),
+                _ => Some((" Disconnected ", Color::Rgb(180, 80, 80), "\u{25CB} ")),
             }
         }
         None => None,
     };
 
-    let sync_width = sync_text.as_ref().map_or(0, |(t, _)| t.len() + 2); // +2 for icon + space
+    let sync_width = sync_text.as_ref().map_or(0, |(t, _, icon)| t.len() + icon.len());
     let used: usize = spans.iter().map(|s| s.content.len()).sum();
     let remaining = (area.width as usize).saturating_sub(used + sync_width);
     if remaining > 0 {
         spans.push(Span::styled(" ".repeat(remaining), bar_style));
     }
 
-    if let Some((label, color)) = sync_text {
-        let icon = if color == Color::Rgb(80, 180, 80) { "\u{25CF} " } else { "\u{25CB} " };
+    if let Some((label, color, icon)) = sync_text {
         spans.push(Span::styled(
             icon,
             Style::default().bg(bg).fg(color),
@@ -1867,6 +1854,14 @@ fn draw_hops_tab(frame: &mut Frame, app: &App, area: Rect) {
         )));
         frame.render_widget(empty, inner);
     } else {
+        // Compute column widths for table-like alignment
+        let max_name_len = additions.iter().map(|a| a.name.len()).max().unwrap_or(0);
+        let max_timing_len = additions
+            .iter()
+            .map(|a| format_hop_timing(&a.timing).len())
+            .max()
+            .unwrap_or(0);
+
         let items: Vec<ListItem> = additions
             .iter()
             .enumerate()
@@ -1886,14 +1881,14 @@ fn draw_hops_tab(frame: &mut Frame, app: &App, area: Rect) {
                 let timing_str = format_hop_timing(&addition.timing);
                 let name = &addition.name;
 
-                // Layout: prefix(3) + name + "  " + timing + padding + amount
-                let fixed = 3 + name.len() + 2 + timing_str.len() + amount_str.len();
+                // Pad name and timing to fixed column widths
+                let name_pad = max_name_len - name.len() + 2;
+                let timing_pad = max_timing_len - timing_str.len();
+
+                // Remaining space goes between timing and amount (right-aligned)
+                let fixed = 3 + max_name_len + 2 + max_timing_len + amount_str.len();
                 let total_width = inner.width as usize;
-                let padding = if total_width > fixed {
-                    total_width - fixed
-                } else {
-                    1
-                };
+                let trailing = total_width.saturating_sub(fixed).max(1);
 
                 let style = if is_selected {
                     Style::default()
@@ -1908,7 +1903,7 @@ fn draw_hops_tab(frame: &mut Frame, app: &App, area: Rect) {
                 let mut spans = vec![
                     Span::styled(prefix, style),
                     Span::styled(name.clone(), style),
-                    Span::styled("  ", Style::default()),
+                    Span::styled(" ".repeat(name_pad), Style::default()),
                     Span::styled(
                         timing_str,
                         if is_selected {
@@ -1917,7 +1912,7 @@ fn draw_hops_tab(frame: &mut Frame, app: &App, area: Rect) {
                             Style::default().fg(Color::DarkGray)
                         },
                     ),
-                    Span::styled(" ".repeat(padding), Style::default()),
+                    Span::styled(" ".repeat(timing_pad + trailing), Style::default()),
                 ];
                 spans.extend(qty_amt(amount_val, &amount_unit, val_color));
                 ListItem::new(Line::from(spans))

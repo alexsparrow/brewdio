@@ -308,7 +308,7 @@ pub enum SettingEditState {
 
 pub struct App {
     pub conn: Arc<Mutex<Connection>>,
-    pub sync_connected: Option<Arc<std::sync::atomic::AtomicBool>>,
+    pub sync_connected: Option<Arc<std::sync::atomic::AtomicU8>>,
     pub sync_changed: Option<Arc<std::sync::atomic::AtomicBool>>,
     pub screen: Screen,
     // Home tab
@@ -361,6 +361,7 @@ pub struct App {
     history_rx: Option<mpsc::Receiver<Vec<HistoryEntry>>>,
     // Chat state
     pub chat: Option<ChatState>,
+    pub chat_visible: bool,
     pub chat_rx: Option<mpsc::Receiver<ChatEvent>>,
     pub runtime_handle: tokio::runtime::Handle,
     pub should_quit: bool,
@@ -418,6 +419,7 @@ impl App {
             history_loading: false,
             history_rx: None,
             chat: None,
+            chat_visible: false,
             chat_rx: None,
             runtime_handle,
             should_quit: false,
@@ -472,17 +474,26 @@ impl App {
     }
 
     /// Open the chat overlay. If viewing a recipe, includes recipe context.
+    /// Reuses existing chat history if available.
     pub fn open_chat(&mut self) {
         let recipe_context = self.current_doc.as_ref().map(|doc| {
             (doc.id.clone(), doc.recipe.clone())
         });
-        self.chat = Some(ChatState::new(recipe_context));
+        if let Some(ref mut chat) = self.chat {
+            // Update recipe context for existing chat session
+            chat.recipe_context = recipe_context;
+            // Scroll to bottom on re-open
+            chat.user_scrolled = false;
+            chat.scroll_offset = 0;
+        } else {
+            self.chat = Some(ChatState::new(recipe_context));
+        }
+        self.chat_visible = true;
     }
 
-    /// Close the chat overlay.
+    /// Close the chat overlay (hides it, preserves history).
     pub fn close_chat(&mut self) {
-        self.chat = None;
-        self.chat_rx = None;
+        self.chat_visible = false;
     }
 
     /// Submit the current chat input as a message and start streaming.
@@ -492,7 +503,8 @@ impl App {
             None => return,
         };
 
-        let input = chat.input.trim().to_string();
+        let input = chat.input_text();
+        let input = input.trim().to_string();
         if input.is_empty() || chat.is_streaming {
             return;
         }
@@ -509,7 +521,7 @@ impl App {
             content: input.clone(),
             tool_calls: Vec::new(),
         });
-        chat.input.clear();
+        chat.clear_input();
         chat.is_streaming = true;
         chat.user_scrolled = false;
 
@@ -524,9 +536,7 @@ impl App {
         let model = self.settings_doc.ai_model.clone();
 
         self.runtime_handle.spawn(async move {
-            chat::client::stream_chat(api_key, base_url, model, messages, recipe_context, conn, tx.clone()).await;
-            // If stream_chat returned without sending Done, send it now
-            let _ = tx.send(ChatEvent::Done);
+            chat::client::stream_chat(api_key, base_url, model, messages, recipe_context, conn, tx).await;
         });
     }
 
@@ -544,6 +554,10 @@ impl App {
                     Ok(event) => events.push(event),
                     Err(mpsc::TryRecvError::Empty) => break,
                     Err(mpsc::TryRecvError::Disconnected) => {
+                        if !events.is_empty() {
+                            // Already collected events (likely Done/Error) — process them
+                            break;
+                        }
                         if let Some(chat) = self.chat.as_mut() {
                             if chat.is_streaming {
                                 // Task dropped without sending Done/Error
@@ -605,6 +619,7 @@ impl App {
                             arguments,
                             result: None,
                             error: None,
+                            extra: serde_json::Map::new(),
                         });
                     }
                 }

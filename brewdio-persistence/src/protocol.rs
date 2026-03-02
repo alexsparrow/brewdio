@@ -40,6 +40,14 @@ pub enum SyncMessage {
         settings_ids: Vec<String>,
         #[serde(default)]
         equipment_profile_ids: Vec<String>,
+        #[serde(default)]
+        schema_version: u32,
+    },
+    /// Server rejects a client due to version mismatch.
+    Reject {
+        reason: String,
+        server_version: u32,
+        client_version: u32,
     },
     /// Automerge sync message for a specific document.
     SyncDoc {

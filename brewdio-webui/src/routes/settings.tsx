@@ -225,7 +225,21 @@ const statusColors: Record<string, string> = {
   connected: "bg-green-500",
   connecting: "bg-yellow-500",
   disconnected: "bg-gray-400",
+  client_outdated: "bg-orange-500",
+  server_outdated: "bg-orange-500",
 };
+
+const statusLabels: Record<string, string> = {
+  connected: "Connected",
+  connecting: "Connecting",
+  disconnected: "Disconnected",
+  client_outdated: "Incompatible - Update App",
+  server_outdated: "Incompatible - Update Server",
+};
+
+function isVersionMismatch(status: string) {
+  return status === "client_outdated" || status === "server_outdated";
+}
 
 function SyncSection() {
   const [syncStatus, setSyncStatus] = useState(getSyncStatus);
@@ -265,15 +279,47 @@ function SyncSection() {
             value={serverUrl}
             onChange={(e) => setServerUrl(e.target.value)}
             placeholder="ws://192.168.1.100:8080/ws"
-            disabled={syncStatus !== "disconnected"}
+            disabled={syncStatus !== "disconnected" && !isVersionMismatch(syncStatus)}
           />
         </div>
 
-        <div className="flex items-center gap-3">
-          {syncStatus === "disconnected" ? (
-            <Button onClick={handleConnect} disabled={!serverUrl.trim()}>
-              Connect
+        {syncStatus === "client_outdated" && (
+          <div className="rounded-md border border-orange-300 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-800 p-3 space-y-2">
+            <p className="text-sm text-orange-800 dark:text-orange-300">
+              App version is incompatible with the sync server. Please refresh
+              the page to load the latest version.
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => window.location.reload()}
+            >
+              Refresh Page
             </Button>
+          </div>
+        )}
+
+        {syncStatus === "server_outdated" && (
+          <div className="rounded-md border border-orange-300 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-800 p-3 space-y-2">
+            <p className="text-sm text-orange-800 dark:text-orange-300">
+              The sync server is running an older version. Please update the
+              server to continue syncing.
+            </p>
+          </div>
+        )}
+
+        <div className="flex items-center gap-3">
+          {syncStatus === "disconnected" || isVersionMismatch(syncStatus) ? (
+            <>
+              <Button onClick={handleConnect} disabled={!serverUrl.trim()}>
+                Connect
+              </Button>
+              {isVersionMismatch(syncStatus) && (
+                <Button variant="outline" onClick={handleDisconnect}>
+                  Disconnect
+                </Button>
+              )}
+            </>
           ) : (
             <Button variant="outline" onClick={handleDisconnect}>
               Disconnect
@@ -281,9 +327,9 @@ function SyncSection() {
           )}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span
-              className={`inline-block h-2.5 w-2.5 rounded-full ${statusColors[syncStatus]}`}
+              className={`inline-block h-2.5 w-2.5 rounded-full ${statusColors[syncStatus] ?? "bg-gray-400"}`}
             />
-            {syncStatus}
+            {statusLabels[syncStatus] ?? syncStatus}
           </div>
         </div>
       </div>

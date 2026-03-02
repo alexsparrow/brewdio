@@ -12,7 +12,7 @@ use tokio::time::{interval, sleep};
 #[cfg(feature = "wasm")]
 use wasmtimer::tokio::interval;
 
-use crate::connection::Connection;
+use crate::connection::{Connection, SCHEMA_VERSION};
 use crate::db;
 use crate::protocol::{DocType, SyncMessage};
 use crate::sync::SyncSession;
@@ -21,6 +21,22 @@ const PEER_ID: &str = "server";
 const DIRTY_CHECK_INTERVAL: Duration = Duration::from_secs(2);
 #[cfg(feature = "native")]
 const RECONNECT_DELAY: Duration = Duration::from_secs(5);
+
+/// Sync connection status reported via the `on_status` callback.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SyncStatus {
+    Connected,
+    Disconnected,
+    VersionMismatch { local_version: u32, remote_version: u32 },
+}
+
+/// Status codes for AtomicU8 (native TUI).
+pub const SYNC_STATUS_DISCONNECTED: u8 = 0;
+pub const SYNC_STATUS_CONNECTED: u8 = 1;
+/// Client is older than server — user should update the app.
+pub const SYNC_STATUS_CLIENT_OUTDATED: u8 = 2;
+/// Server is older than client — server needs updating.
+pub const SYNC_STATUS_SERVER_OUTDATED: u8 = 3;
 
 /// Persistent sync sessions keyed by (DocType, doc_id), kept alive for the connection.
 type Sessions = HashMap<(DocType, String), SyncSession>;
@@ -31,6 +47,7 @@ pub enum SyncError {
     Json(serde_json::Error),
     Db(crate::connection::DbError),
     Protocol(String),
+    VersionMismatch { local_version: u32, remote_version: u32 },
 }
 
 impl fmt::Display for SyncError {
@@ -40,6 +57,9 @@ impl fmt::Display for SyncError {
             SyncError::Json(e) => write!(f, "JSON error: {}", e),
             SyncError::Db(e) => write!(f, "DB error: {}", e),
             SyncError::Protocol(e) => write!(f, "Protocol error: {}", e),
+            SyncError::VersionMismatch { local_version, remote_version } => {
+                write!(f, "Version mismatch: local={}, remote={}", local_version, remote_version)
+            }
         }
     }
 }
@@ -72,7 +92,7 @@ impl From<crate::connection::DbError> for SyncError {
 pub async fn run_sync(
     conn: &(impl Connection + Sync),
     server_url: &str,
-    on_status: impl Fn(bool),
+    on_status: impl Fn(SyncStatus),
     on_change: impl Fn(DocType),
 ) -> Result<(), SyncError> {
     log::info!("[sync] connecting to {}", server_url);
@@ -94,6 +114,7 @@ pub async fn run_sync(
         batch_ids: local_batch_ids.clone(),
         settings_ids: local_settings_ids.clone(),
         equipment_profile_ids: local_equipment_profile_ids.clone(),
+        schema_version: SCHEMA_VERSION,
     };
     log::debug!(
         "[sync] sending Hello (recipes={}, batches={}, settings={}, equipment={})",
@@ -106,7 +127,7 @@ pub async fn run_sync(
         .send(Message::Text(serde_json::to_string(&hello)?.into()))
         .await?;
 
-    // Wait for server Hello
+    // Wait for server Hello (or Reject)
     let server_hello = loop {
         match ws_rx.next().await {
             Some(Ok(Message::Text(text))) => {
@@ -121,23 +142,58 @@ pub async fn run_sync(
 
     let (server_recipe_ids, server_batch_ids, server_settings_ids, server_equipment_profile_ids) =
         match server_hello {
+            SyncMessage::Reject {
+                reason,
+                server_version,
+                client_version,
+            } => {
+                log::warn!(
+                    "[sync] server rejected connection: {} (server_version={}, client_version={})",
+                    reason, server_version, client_version
+                );
+                on_status(SyncStatus::VersionMismatch {
+                    local_version: SCHEMA_VERSION,
+                    remote_version: server_version,
+                });
+                return Err(SyncError::VersionMismatch {
+                    local_version: client_version,
+                    remote_version: server_version,
+                });
+            }
             SyncMessage::Hello {
                 recipe_ids,
                 batch_ids,
                 settings_ids,
                 equipment_profile_ids,
-            } => (
-                recipe_ids.into_iter().collect::<HashSet<_>>(),
-                batch_ids.into_iter().collect::<HashSet<_>>(),
-                settings_ids.into_iter().collect::<HashSet<_>>(),
-                equipment_profile_ids.into_iter().collect::<HashSet<_>>(),
-            ),
+                schema_version,
+            } => {
+                if schema_version != SCHEMA_VERSION {
+                    log::warn!(
+                        "[sync] server schema_version={} does not match local={}",
+                        schema_version, SCHEMA_VERSION
+                    );
+                    on_status(SyncStatus::VersionMismatch {
+                        local_version: SCHEMA_VERSION,
+                        remote_version: schema_version,
+                    });
+                    return Err(SyncError::VersionMismatch {
+                        local_version: SCHEMA_VERSION,
+                        remote_version: schema_version,
+                    });
+                }
+                (
+                    recipe_ids.into_iter().collect::<HashSet<_>>(),
+                    batch_ids.into_iter().collect::<HashSet<_>>(),
+                    settings_ids.into_iter().collect::<HashSet<_>>(),
+                    equipment_profile_ids.into_iter().collect::<HashSet<_>>(),
+                )
+            }
             _ => return Err(SyncError::Protocol("Expected Hello from server".into())),
         };
 
     // Handshake complete — mark as connected
     log::info!("[sync] connected, handshake complete");
-    on_status(true);
+    on_status(SyncStatus::Connected);
 
     // Send NewDoc for docs only we have
     let local_sets: [(DocType, HashSet<String>, &HashSet<String>); 4] = [
@@ -196,12 +252,12 @@ pub async fn run_sync(
                 }
                 Some(Ok(Message::Close(_))) | None => {
                     log::info!("[sync] connection closed");
-                    on_status(false);
+                    on_status(SyncStatus::Disconnected);
                     return Ok(());
                 }
                 Some(Err(e)) => {
                     log::info!("[sync] connection error: {}", e);
-                    on_status(false);
+                    on_status(SyncStatus::Disconnected);
                     return Err(e.into());
                 }
                 _ => {}
@@ -374,30 +430,82 @@ async fn handle_incoming(
         SyncMessage::Hello { .. } => {
             // Unexpected mid-session Hello, ignore
         }
+        SyncMessage::Reject { .. } => {
+            // Unexpected mid-session Reject, ignore
+        }
     }
 
     Ok(())
 }
 
+/// Shared state for a background sync worker, bundling the atomic flags
+/// that the UI reads to show sync status and detect remote changes.
+#[cfg(feature = "native")]
+pub struct SyncHandle {
+    /// Sync status code — see `SYNC_STATUS_*` constants.
+    pub status: std::sync::Arc<std::sync::atomic::AtomicU8>,
+    /// Set to `true` whenever a remote change is applied to the DB.
+    pub changed: std::sync::Arc<std::sync::atomic::AtomicBool>,
+}
+
+#[cfg(feature = "native")]
+impl SyncHandle {
+    pub fn new() -> Self {
+        Self {
+            status: std::sync::Arc::new(std::sync::atomic::AtomicU8::new(SYNC_STATUS_DISCONNECTED)),
+            changed: std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        }
+    }
+}
+
 /// Spawn a background sync worker (native only).
 /// Connects to the given WebSocket server URL with automatic reconnection.
+/// Keeps retrying on version mismatch (server may be restarted/upgraded).
 #[cfg(feature = "native")]
 pub fn spawn_sync(
     conn: std::sync::Arc<std::sync::Mutex<rusqlite::Connection>>,
     server_url: String,
-    connected: std::sync::Arc<std::sync::atomic::AtomicBool>,
-    changed: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    handle: &SyncHandle,
 ) -> tokio::task::JoinHandle<()> {
+    let status = handle.status.clone();
+    let changed = handle.changed.clone();
     tokio::spawn(async move {
         loop {
-            let _ = run_sync(
+            let result = run_sync(
                 &*conn,
                 &server_url,
-                |c| connected.store(c, std::sync::atomic::Ordering::Relaxed),
+                |s| {
+                    let code = match &s {
+                        SyncStatus::Connected => SYNC_STATUS_CONNECTED,
+                        SyncStatus::Disconnected => SYNC_STATUS_DISCONNECTED,
+                        SyncStatus::VersionMismatch { local_version, remote_version } => {
+                            if local_version < remote_version {
+                                SYNC_STATUS_CLIENT_OUTDATED
+                            } else {
+                                SYNC_STATUS_SERVER_OUTDATED
+                            }
+                        }
+                    };
+                    status.store(code, std::sync::atomic::Ordering::Relaxed);
+                },
                 |_| changed.store(true, std::sync::atomic::Ordering::Relaxed),
             )
             .await;
-            connected.store(false, std::sync::atomic::Ordering::Relaxed);
+
+            // On version mismatch, show the appropriate status but keep retrying
+            // (the server may be restarted/upgraded)
+            if let Err(SyncError::VersionMismatch { local_version, remote_version }) = result {
+                log::warn!("[sync] version mismatch (local={}, remote={}), will retry", local_version, remote_version);
+                let code = if local_version < remote_version {
+                    SYNC_STATUS_CLIENT_OUTDATED
+                } else {
+                    SYNC_STATUS_SERVER_OUTDATED
+                };
+                status.store(code, std::sync::atomic::Ordering::Relaxed);
+            } else {
+                status.store(SYNC_STATUS_DISCONNECTED, std::sync::atomic::Ordering::Relaxed);
+            }
+
             sleep(RECONNECT_DELAY).await;
         }
     })

@@ -9,6 +9,7 @@ use futures_util::{SinkExt, StreamExt};
 use tokio::sync::broadcast;
 use tokio::time::{interval, Duration};
 
+use brewdio_persistence::connection::SCHEMA_VERSION;
 use brewdio_persistence::db;
 use brewdio_persistence::protocol::{DocType, SyncMessage};
 use brewdio_persistence::sync::SyncSession;
@@ -71,14 +72,37 @@ async fn run_sync(
             batch_ids,
             settings_ids,
             equipment_profile_ids,
+            schema_version,
         } => {
             eprintln!(
-                "[server] received Hello with {} recipe(s), {} batch(es), {} settings, {} equipment_profile(s)",
+                "[server] received Hello with {} recipe(s), {} batch(es), {} settings, {} equipment_profile(s), schema_version={}",
                 recipe_ids.len(),
                 batch_ids.len(),
                 settings_ids.len(),
-                equipment_profile_ids.len()
+                equipment_profile_ids.len(),
+                schema_version,
             );
+
+            // Reject client if schema version doesn't match
+            if schema_version != SCHEMA_VERSION {
+                eprintln!(
+                    "[server] version mismatch: client={}, server={} — rejecting",
+                    schema_version, SCHEMA_VERSION
+                );
+                let reject = SyncMessage::Reject {
+                    reason: format!(
+                        "Schema version mismatch: client={}, server={}",
+                        schema_version, SCHEMA_VERSION
+                    ),
+                    server_version: SCHEMA_VERSION,
+                    client_version: schema_version,
+                };
+                ws_tx
+                    .send(Message::Text(serde_json::to_string(&reject)?.into()))
+                    .await?;
+                return Ok(());
+            }
+
             (
                 recipe_ids.into_iter().collect::<HashSet<_>>(),
                 batch_ids.into_iter().collect::<HashSet<_>>(),
@@ -117,6 +141,7 @@ async fn run_sync(
         batch_ids: local_batch_ids.clone(),
         settings_ids: local_settings_ids.clone(),
         equipment_profile_ids: local_equipment_profile_ids.clone(),
+        schema_version: SCHEMA_VERSION,
     };
     ws_tx
         .send(Message::Text(serde_json::to_string(&hello)?.into()))
@@ -350,6 +375,9 @@ async fn handle_incoming(
         }
         SyncMessage::Hello { .. } => {
             eprintln!("[server] unexpected mid-session Hello, ignoring");
+        }
+        SyncMessage::Reject { .. } => {
+            eprintln!("[server] unexpected Reject from client, ignoring");
         }
     }
 

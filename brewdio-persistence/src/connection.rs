@@ -67,6 +67,9 @@ const MIGRATIONS: &[&str] = &[
     "#,
 ];
 
+/// The current schema version, derived from the number of migrations applied.
+pub const SCHEMA_VERSION: u32 = MIGRATIONS.len() as u32;
+
 /// Run all pending migrations and update PRAGMA user_version.
 pub fn run_migrations(conn: &(impl Connection + ?Sized)) -> Result<(), DbError> {
     let version: i32 = conn

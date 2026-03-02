@@ -8,7 +8,7 @@ use wasm_bindgen::prelude::*;
 use brewdio_persistence::connection_wasm::WasmConnection;
 use brewdio_persistence::protocol::DocType;
 use brewdio_persistence::sync::SyncSession as InnerSyncSession;
-use brewdio_persistence::sync_worker::run_sync;
+use brewdio_persistence::sync_worker::{run_sync, SyncError, SyncStatus};
 
 use crate::db::AppDb;
 
@@ -125,11 +125,21 @@ pub fn start_sync(db: &AppDb, server_url: &str, on_status: js_sys::Function) {
                     let on_equipment = on_equipment_change.clone();
                     let on_status_ref = on_status_fn.clone();
 
-                    let _ = run_sync(
+                    let result = run_sync(
                         &*conn,
                         &url,
-                        |connected| {
-                            let status = if connected { "connected" } else { "disconnected" };
+                        |sync_status| {
+                            let status = match &sync_status {
+                                SyncStatus::Connected => "connected",
+                                SyncStatus::Disconnected => "disconnected",
+                                SyncStatus::VersionMismatch { local_version, remote_version } => {
+                                    if local_version < remote_version {
+                                        "client_outdated"
+                                    } else {
+                                        "server_outdated"
+                                    }
+                                }
+                            };
                             let _ = on_status_ref.call1(
                                 &JsValue::NULL,
                                 &JsValue::from_str(status),
@@ -149,11 +159,25 @@ pub fn start_sync(db: &AppDb, server_url: &str, on_status: js_sys::Function) {
                     )
                     .await;
 
-                    // Disconnected — notify status
-                    let _ = on_status_fn.call1(
-                        &JsValue::NULL,
-                        &JsValue::from_str("disconnected"),
-                    );
+                    // On version mismatch, show appropriate status but keep retrying
+                    // (server may be restarted/upgraded)
+                    if let Err(SyncError::VersionMismatch { local_version, remote_version }) = result {
+                        let status = if local_version < remote_version {
+                            "client_outdated"
+                        } else {
+                            "server_outdated"
+                        };
+                        let _ = on_status_fn.call1(
+                            &JsValue::NULL,
+                            &JsValue::from_str(status),
+                        );
+                    } else {
+                        // Disconnected — notify status
+                        let _ = on_status_fn.call1(
+                            &JsValue::NULL,
+                            &JsValue::from_str("disconnected"),
+                        );
+                    }
                     wasmtimer::tokio::sleep(Duration::from_secs(5)).await;
                 }
             },

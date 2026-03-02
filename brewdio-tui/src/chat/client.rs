@@ -7,7 +7,7 @@ use serde_json::{json, Value as JsonValue};
 use super::tools;
 use super::{ChatEvent, ChatMessage, ChatRole};
 
-const MAX_TOOL_ROUNDS: usize = 5;
+const MAX_TOOL_ROUNDS: usize = 50;
 
 const SYSTEM_PROMPT: &str = "\
 You are a helpful brewing assistant. When using tools:
@@ -52,14 +52,21 @@ fn build_messages(
                         .tool_calls
                         .iter()
                         .map(|tc| {
-                            json!({
+                            let mut obj = json!({
                                 "id": tc.id,
                                 "type": "function",
                                 "function": {
                                     "name": tc.name,
                                     "arguments": serde_json::to_string(&tc.arguments).unwrap_or_default(),
                                 }
-                            })
+                            });
+                            // Replay provider-specific fields (e.g. Gemini thought_signature)
+                            if let Some(map) = obj.as_object_mut() {
+                                for (k, v) in &tc.extra {
+                                    map.insert(k.clone(), v.clone());
+                                }
+                            }
+                            obj
                         })
                         .collect();
 
@@ -105,6 +112,8 @@ struct PendingToolCall {
     id: String,
     name: String,
     arguments_buf: String,
+    /// Extra provider-specific fields to preserve across round-trips.
+    extra: serde_json::Map<String, JsonValue>,
 }
 
 /// Main async entry point: streams chat with an OpenAI-compatible API, handles tool calls, sends events via tx.
@@ -264,6 +273,16 @@ pub async fn stream_chat(
                                             pending.arguments_buf.push_str(args);
                                         }
                                     }
+
+                                    // Capture extra provider-specific fields
+                                    if let Some(obj) = tc_delta.as_object() {
+                                        for (k, v) in obj {
+                                            match k.as_str() {
+                                                "index" | "id" | "type" | "function" => {}
+                                                _ => { pending.extra.insert(k.clone(), v.clone()); }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -286,6 +305,7 @@ pub async fn stream_chat(
             let arguments: JsonValue = serde_json::from_str(&pending.arguments_buf)
                 .unwrap_or(json!({}));
 
+            log::debug!("[chat] tool call: {} args={}", pending.name, arguments);
             let _ = tx.send(ChatEvent::ToolCallStart {
                 id: pending.id.clone(),
                 name: pending.name.clone(),
@@ -309,9 +329,11 @@ pub async fn stream_chat(
                         arguments,
                         result: Some(result_val),
                         error: None,
+                        extra: pending.extra.clone(),
                     });
                 }
                 Err(err) => {
+                    log::error!("[chat] tool {} error: {}", pending.name, err);
                     let _ = tx.send(ChatEvent::ToolCallError {
                         id: pending.id.clone(),
                         error: err.clone(),
@@ -322,6 +344,7 @@ pub async fn stream_chat(
                         arguments,
                         result: None,
                         error: Some(err),
+                        extra: pending.extra.clone(),
                     });
                 }
             }

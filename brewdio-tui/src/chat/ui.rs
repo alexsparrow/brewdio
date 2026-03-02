@@ -258,10 +258,17 @@ fn draw_messages(frame: &mut Frame, chat: &ChatState, area: Rect) {
     // Calculate scroll: auto-scroll to bottom unless user has scrolled up
     let visible_height = area.height as usize;
     let total_lines = lines.len();
+    let bottom = total_lines.saturating_sub(visible_height);
     let scroll = if chat.user_scrolled {
-        chat.scroll_offset.min(total_lines.saturating_sub(visible_height))
+        let clamped = chat.scroll_offset.min(bottom);
+        if clamped >= bottom {
+            // User scrolled back to the bottom — re-engage auto-scroll
+            bottom
+        } else {
+            clamped
+        }
     } else {
-        total_lines.saturating_sub(visible_height)
+        bottom
     };
 
     let paragraph = Paragraph::new(lines)
@@ -282,37 +289,30 @@ fn draw_input(frame: &mut Frame, chat: &ChatState, area: Rect, has_api_key: bool
         return;
     }
 
+    // Prompt on the left, editor on the right
+    let cols = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Length(2), Constraint::Min(1)])
+        .split(inner);
+
     let prompt = Span::styled("> ", Style::default().fg(Color::Cyan));
-    let input_text = if !has_api_key {
-        Span::styled(
+    frame.render_widget(Paragraph::new(Line::from(prompt)), cols[0]);
+
+    if !has_api_key {
+        let placeholder = Paragraph::new(Line::from(Span::styled(
             "Set API key in Settings first",
             Style::default().fg(Color::DarkGray),
-        )
+        )));
+        frame.render_widget(placeholder, cols[1]);
     } else if chat.is_streaming {
-        Span::styled(
-            &chat.input,
+        let text = chat.input_text();
+        let dimmed = Paragraph::new(Line::from(Span::styled(
+            text,
             Style::default().fg(Color::DarkGray),
-        )
-    } else if chat.input.is_empty() {
-        Span::styled(
-            "Type your message...",
-            Style::default().fg(Color::DarkGray),
-        )
+        )));
+        frame.render_widget(dimmed, cols[1]);
     } else {
-        Span::raw(&chat.input)
-    };
-
-    let input_line = Line::from(vec![prompt, input_text]);
-    let paragraph = Paragraph::new(input_line);
-    frame.render_widget(paragraph, inner);
-
-    // Show cursor position when input is active
-    if has_api_key && !chat.is_streaming {
-        let cursor_x = inner.x + 2 + chat.input.len() as u16;
-        let cursor_y = inner.y;
-        if cursor_x < inner.x + inner.width {
-            frame.set_cursor_position((cursor_x, cursor_y));
-        }
+        frame.render_widget(&chat.editor, cols[1]);
     }
 }
 
@@ -323,7 +323,9 @@ fn draw_help_bar(frame: &mut Frame, chat: &ChatState, area: Rect) {
             Span::styled("Esc", Style::default().fg(Color::Cyan)),
             Span::raw(" cancel  "),
             Span::styled("\u{2191}\u{2193}", Style::default().fg(Color::Cyan)),
-            Span::raw(" scroll"),
+            Span::raw(" scroll  "),
+            Span::styled("Tab", Style::default().fg(Color::Cyan)),
+            Span::raw(" resize"),
         ]
     } else {
         vec![
@@ -333,7 +335,9 @@ fn draw_help_bar(frame: &mut Frame, chat: &ChatState, area: Rect) {
             Span::styled("Esc", Style::default().fg(Color::Cyan)),
             Span::raw(" close  "),
             Span::styled("\u{2191}\u{2193}", Style::default().fg(Color::Cyan)),
-            Span::raw(" scroll"),
+            Span::raw(" scroll  "),
+            Span::styled("Tab", Style::default().fg(Color::Cyan)),
+            Span::raw(" resize"),
         ]
     };
 

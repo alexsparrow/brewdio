@@ -1,7 +1,7 @@
 import { startSync as wasmStartSync, stopSync as wasmStopSync } from "brewdio-wasm";
 import { getAppDb } from "@/lib/db/app-db";
 
-type SyncStatus = "disconnected" | "connecting" | "connected";
+type SyncStatus = "disconnected" | "connecting" | "connected" | "client_outdated" | "server_outdated";
 let status: SyncStatus = "disconnected";
 let listeners = new Set<(s: SyncStatus) => void>();
 

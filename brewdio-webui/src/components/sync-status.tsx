@@ -13,6 +13,8 @@ const statusConfig: Record<
   disconnected: { label: "Disconnected", dotClass: "bg-gray-400" },
   connecting: { label: "Connecting", dotClass: "bg-yellow-400" },
   connected: { label: "Connected", dotClass: "bg-green-400" },
+  client_outdated: { label: "Update App", dotClass: "bg-orange-400" },
+  server_outdated: { label: "Update Server", dotClass: "bg-orange-400" },
 };
 
 export function SyncStatus() {

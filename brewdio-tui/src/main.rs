@@ -5,7 +5,6 @@ mod styles;
 mod ui;
 
 use std::io;
-use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -51,24 +50,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let runtime = tokio::runtime::Runtime::new()?;
 
     // Start background sync worker if BREWDIO_SERVER_URL is set
-    let sync_connected = Arc::new(AtomicBool::new(false));
-    let sync_changed = Arc::new(AtomicBool::new(false));
-    let has_sync = if let Ok(url) = std::env::var("BREWDIO_SERVER_URL") {
+    let sync_handle = if let Ok(url) = std::env::var("BREWDIO_SERVER_URL") {
+        let handle = brewdio_persistence::sync_worker::SyncHandle::new();
         let conn_clone = conn.clone();
-        let connected = sync_connected.clone();
-        let changed = sync_changed.clone();
+        let status = handle.status.clone();
+        let changed = handle.changed.clone();
         runtime.spawn(async move {
-            let _ = brewdio_persistence::sync_worker::spawn_sync(conn_clone, url, connected, changed).await;
+            let _ = brewdio_persistence::sync_worker::spawn_sync(conn_clone, url, &handle).await;
         });
-        true
+        Some((status, changed))
     } else {
-        false
+        None
     };
 
     let mut app = App::new(conn, runtime.handle().clone());
-    if has_sync {
-        app.sync_connected = Some(sync_connected);
-        app.sync_changed = Some(sync_changed);
+    if let Some((status, changed)) = sync_handle {
+        app.sync_connected = Some(status);
+        app.sync_changed = Some(changed);
     }
 
     // Setup terminal
@@ -112,8 +110,8 @@ fn run_loop(
                 }
 
                 // Chat overlay intercepts all input when open
-                if app.chat.is_some() {
-                    handle_chat_input(app, key.code);
+                if app.chat_visible {
+                    handle_chat_input(app, key);
                     continue;
                 }
 
@@ -953,10 +951,10 @@ fn handle_batch_size_dialog(app: &mut App, key: KeyCode) {
     }
 }
 
-fn handle_chat_input(app: &mut App, key: KeyCode) {
+fn handle_chat_input(app: &mut App, key: KeyEvent) {
     let is_streaming = app.chat.as_ref().map_or(false, |c| c.is_streaming);
 
-    match key {
+    match key.code {
         KeyCode::Esc => {
             if is_streaming {
                 // Cancel streaming by closing the receiver
@@ -973,18 +971,9 @@ fn handle_chat_input(app: &mut App, key: KeyCode) {
                 app.submit_chat_message();
             }
         }
-        KeyCode::Backspace => {
-            if !is_streaming {
-                if let Some(chat) = app.chat.as_mut() {
-                    chat.input.pop();
-                }
-            }
-        }
-        KeyCode::Char(c) => {
-            if !is_streaming {
-                if let Some(chat) = app.chat.as_mut() {
-                    chat.input.push(c);
-                }
+        KeyCode::Tab => {
+            if let Some(chat) = app.chat.as_mut() {
+                chat.fullscreen = !chat.fullscreen;
             }
         }
         KeyCode::Up => {
@@ -996,8 +985,25 @@ fn handle_chat_input(app: &mut App, key: KeyCode) {
         KeyCode::Down => {
             if let Some(chat) = app.chat.as_mut() {
                 chat.scroll_offset += 1;
+                // Re-engage auto-scroll when user scrolls back to bottom
+                chat.user_scrolled = true;
             }
         }
-        _ => {}
+        KeyCode::End => {
+            // Jump to bottom and re-engage auto-scroll
+            if let Some(chat) = app.chat.as_mut() {
+                chat.user_scrolled = false;
+                chat.scroll_offset = 0;
+            }
+        }
+        _ => {
+            // Delegate to TextArea for readline-style editing
+            // (Ctrl+A/E/K/U/W, Left/Right, Home/End, Backspace, Delete, etc.)
+            if !is_streaming {
+                if let Some(chat) = app.chat.as_mut() {
+                    chat.editor.input(key);
+                }
+            }
+        }
     }
 }
