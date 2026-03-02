@@ -24,6 +24,7 @@ use tui_textarea::TextArea;
 
 use brewdio_core::units;
 
+use crate::chat::{self, ChatEvent, ChatMessage, ChatRole, ChatState};
 use crate::search_selector::{SearchItem, SearchSelector};
 use crate::styles;
 
@@ -358,6 +359,10 @@ pub struct App {
     pub history_scroll: usize,
     pub history_loading: bool,
     history_rx: Option<mpsc::Receiver<Vec<HistoryEntry>>>,
+    // Chat state
+    pub chat: Option<ChatState>,
+    pub chat_rx: Option<mpsc::Receiver<ChatEvent>>,
+    pub runtime_handle: tokio::runtime::Handle,
     pub should_quit: bool,
 }
 
@@ -368,7 +373,7 @@ pub enum NotesTarget {
 }
 
 impl App {
-    pub fn new(conn: Arc<Mutex<Connection>>) -> Self {
+    pub fn new(conn: Arc<Mutex<Connection>>, runtime_handle: tokio::runtime::Handle) -> Self {
         let mut app = App {
             conn,
             sync_connected: None,
@@ -412,6 +417,9 @@ impl App {
             history_scroll: 0,
             history_loading: false,
             history_rx: None,
+            chat: None,
+            chat_rx: None,
+            runtime_handle,
             should_quit: false,
         };
         app.refresh_recipes();
@@ -460,6 +468,204 @@ impl App {
                 }
             }
             _ => {}
+        }
+    }
+
+    /// Open the chat overlay. If viewing a recipe, includes recipe context.
+    pub fn open_chat(&mut self) {
+        let recipe_context = self.current_doc.as_ref().map(|doc| {
+            (doc.id.clone(), doc.recipe.clone())
+        });
+        self.chat = Some(ChatState::new(recipe_context));
+    }
+
+    /// Close the chat overlay.
+    pub fn close_chat(&mut self) {
+        self.chat = None;
+        self.chat_rx = None;
+    }
+
+    /// Submit the current chat input as a message and start streaming.
+    pub fn submit_chat_message(&mut self) {
+        let chat = match self.chat.as_mut() {
+            Some(c) => c,
+            None => return,
+        };
+
+        let input = chat.input.trim().to_string();
+        if input.is_empty() || chat.is_streaming {
+            return;
+        }
+
+        // Check for API key
+        let api_key = self.settings_doc.openai_api_key.clone();
+        if api_key.is_empty() {
+            return;
+        }
+
+        // Add user message
+        chat.messages.push(ChatMessage {
+            role: ChatRole::User,
+            content: input.clone(),
+            tool_calls: Vec::new(),
+        });
+        chat.input.clear();
+        chat.is_streaming = true;
+        chat.user_scrolled = false;
+
+        // Clone state for async task
+        let messages = chat.messages.clone();
+        let recipe_context = chat.recipe_context.clone();
+        let conn = self.conn.clone();
+        let (tx, rx) = mpsc::channel();
+        self.chat_rx = Some(rx);
+
+        let base_url = self.settings_doc.ai_base_url.clone();
+        let model = self.settings_doc.ai_model.clone();
+
+        self.runtime_handle.spawn(async move {
+            chat::client::stream_chat(api_key, base_url, model, messages, recipe_context, conn, tx.clone()).await;
+            // If stream_chat returned without sending Done, send it now
+            let _ = tx.send(ChatEvent::Done);
+        });
+    }
+
+    /// Poll for chat events from the streaming task. Called each frame.
+    pub fn poll_chat(&mut self) {
+        // Collect all pending events first to avoid borrow issues
+        let events: Vec<ChatEvent> = {
+            let rx = match self.chat_rx.as_ref() {
+                Some(rx) => rx,
+                None => return,
+            };
+            let mut events = Vec::new();
+            loop {
+                match rx.try_recv() {
+                    Ok(event) => events.push(event),
+                    Err(mpsc::TryRecvError::Empty) => break,
+                    Err(mpsc::TryRecvError::Disconnected) => {
+                        if let Some(chat) = self.chat.as_mut() {
+                            if chat.is_streaming {
+                                // Task dropped without sending Done/Error
+                                chat.is_streaming = false;
+                                chat.messages.push(ChatMessage {
+                                    role: ChatRole::Assistant,
+                                    content: "Error: Connection to AI lost unexpectedly.".to_string(),
+                                    tool_calls: Vec::new(),
+                                });
+                            }
+                        }
+                        self.chat_rx = None;
+                        return;
+                    }
+                }
+            }
+            events
+        };
+
+        let mut needs_refresh = false;
+
+        for event in events {
+            let chat = match self.chat.as_mut() {
+                Some(c) => c,
+                None => return,
+            };
+
+            match event {
+                ChatEvent::TokenDelta(text) => {
+                    // Append to the last assistant message, or create one
+                    if let Some(last) = chat.messages.last_mut() {
+                        if last.role == ChatRole::Assistant && last.tool_calls.is_empty() {
+                            last.content.push_str(&text);
+                            continue;
+                        }
+                    }
+                    chat.messages.push(ChatMessage {
+                        role: ChatRole::Assistant,
+                        content: text,
+                        tool_calls: Vec::new(),
+                    });
+                }
+                ChatEvent::ToolCallStart { id, name, arguments } => {
+                    let needs_new = chat.messages.last()
+                        .map_or(true, |m| m.role != ChatRole::Assistant || (!m.content.is_empty() && m.tool_calls.is_empty()));
+
+                    if needs_new {
+                        chat.messages.push(ChatMessage {
+                            role: ChatRole::Assistant,
+                            content: String::new(),
+                            tool_calls: Vec::new(),
+                        });
+                    }
+
+                    if let Some(last) = chat.messages.last_mut() {
+                        last.tool_calls.push(chat::ToolCallInfo {
+                            id,
+                            name,
+                            arguments,
+                            result: None,
+                            error: None,
+                        });
+                    }
+                }
+                ChatEvent::ToolCallResult { id, result } => {
+                    for msg in chat.messages.iter_mut().rev() {
+                        for tc in &mut msg.tool_calls {
+                            if tc.id == id {
+                                tc.result = Some(result.clone());
+                                break;
+                            }
+                        }
+                    }
+                    // Flag for refresh if recipe was modified
+                    if result.get("recipeId").is_some() || result.get("success") == Some(&serde_json::json!(true)) {
+                        needs_refresh = true;
+                    }
+                }
+                ChatEvent::ToolCallError { id, error } => {
+                    for msg in chat.messages.iter_mut().rev() {
+                        for tc in &mut msg.tool_calls {
+                            if tc.id == id {
+                                tc.error = Some(error.clone());
+                                break;
+                            }
+                        }
+                    }
+                }
+                ChatEvent::Done => {
+                    chat.is_streaming = false;
+                    self.chat_rx = None;
+                    break;
+                }
+                ChatEvent::Error(msg) => {
+                    chat.is_streaming = false;
+                    chat.messages.push(ChatMessage {
+                        role: ChatRole::Assistant,
+                        content: format!("Error: {}", msg),
+                        tool_calls: Vec::new(),
+                    });
+                    self.chat_rx = None;
+                    break;
+                }
+            }
+        }
+
+        // Refresh TUI state after processing all events
+        if needs_refresh {
+            self.refresh_recipes();
+            if let Screen::RecipeEdit { ref recipe_id } = self.screen {
+                let recipe_id = recipe_id.clone();
+                let row = {
+                    let c = self.conn.lock().unwrap_or_else(|e| e.into_inner());
+                    db::get_recipe(&*c, &recipe_id).ok().flatten()
+                };
+                if let Some(row) = row {
+                    if let Ok(doc) = row.to_document() {
+                        self.name_input = doc.name.clone();
+                        self.current_doc = Some(doc);
+                    }
+                }
+            }
         }
     }
 

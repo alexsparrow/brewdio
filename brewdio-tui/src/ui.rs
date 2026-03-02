@@ -11,7 +11,37 @@ use brewdio_core::beerjson_types::{CultureAdditionTypeAmount, FermentableAdditio
 use brewdio_persistence::settings::{SettingKind, SETTINGS_DESCRIPTORS};
 
 
+/// Minimum width for the chat panel to appear as a side panel.
+/// Below this, chat takes over the full screen.
+const CHAT_MIN_WIDTH: u16 = 40;
+
 pub fn draw(frame: &mut Frame, app: &App) {
+    let area = frame.area();
+
+    if let Some(ref chat) = app.chat {
+        let has_api_key = !app.settings_doc.openai_api_key.is_empty();
+        let chat_fits_side = area.width >= CHAT_MIN_WIDTH * 2;
+
+        if chat_fits_side {
+            // Side-by-side: left = normal screen, right = chat panel
+            let cols = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
+                .split(area);
+
+            match &app.screen {
+                Screen::Home => draw_home_in(frame, app, cols[0]),
+                Screen::RecipeEdit { .. } => draw_recipe_edit_in(frame, app, cols[0]),
+                Screen::BatchEdit { .. } => draw_batch_edit_in(frame, app, cols[0]),
+            }
+            crate::chat::ui::draw_chat(frame, chat, has_api_key, true);
+        } else {
+            // Full screen chat
+            crate::chat::ui::draw_chat(frame, chat, has_api_key, false);
+        }
+        return;
+    }
+
     match &app.screen {
         Screen::Home => draw_home(frame, app),
         Screen::RecipeEdit { .. } => draw_recipe_edit(frame, app),
@@ -26,6 +56,10 @@ fn help_block() -> Block<'static> {
 }
 
 fn draw_home(frame: &mut Frame, app: &App) {
+    draw_home_in(frame, app, frame.area());
+}
+
+fn draw_home_in(frame: &mut Frame, app: &App, area: Rect) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
@@ -33,7 +67,7 @@ fn draw_home(frame: &mut Frame, app: &App) {
             Constraint::Min(3),   // Content
             Constraint::Length(3), // Help bar
         ])
-        .split(frame.area());
+        .split(area);
 
     // Status bar
     draw_status_bar(frame, app, chunks[0]);
@@ -72,6 +106,8 @@ fn draw_home(frame: &mut Frame, app: &App) {
             spans.extend_from_slice(&[
                 Span::styled("[r]", Style::default().fg(Color::Cyan)),
                 Span::raw(if app.show_deleted { "ecipes  " } else { "ubbish  " }),
+                Span::styled("[c]", Style::default().fg(Color::Cyan)),
+                Span::raw("hat  "),
                 Span::styled("[Tab]", Style::default().fg(Color::Cyan)),
                 Span::raw(" next  "),
                 Span::styled("[q]", Style::default().fg(Color::Cyan)),
@@ -84,6 +120,8 @@ fn draw_home(frame: &mut Frame, app: &App) {
             Span::raw(" open  "),
             Span::styled("[d]", Style::default().fg(Color::Cyan)),
             Span::raw("elete  "),
+            Span::styled("[c]", Style::default().fg(Color::Cyan)),
+            Span::raw("hat  "),
             Span::styled("[Tab]", Style::default().fg(Color::Cyan)),
             Span::raw(" next  "),
             Span::styled("[q]", Style::default().fg(Color::Cyan)),
@@ -122,6 +160,8 @@ fn draw_home(frame: &mut Frame, app: &App) {
                     Paragraph::new(Line::from(vec![
                         Span::styled(" [Enter]", Style::default().fg(Color::Cyan)),
                         Span::raw(" edit  "),
+                        Span::styled("[c]", Style::default().fg(Color::Cyan)),
+                        Span::raw("hat  "),
                         Span::styled("[Tab]", Style::default().fg(Color::Cyan)),
                         Span::raw(" next  "),
                         Span::styled("[q]", Style::default().fg(Color::Cyan)),
@@ -426,6 +466,10 @@ fn setting_display_value(doc: &brewdio_persistence::settings::SettingsDocument, 
 }
 
 fn draw_recipe_edit(frame: &mut Frame, app: &App) {
+    draw_recipe_edit_in(frame, app, frame.area());
+}
+
+fn draw_recipe_edit_in(frame: &mut Frame, app: &App, area: Rect) {
     // Header has 4 rows (Name, Style, Batch, Notes) + 2 border = 6
     // Vitals: 5 vitals × 2 lines + 2 border = 12
     // Top row height is driven by vitals
@@ -440,7 +484,7 @@ fn draw_recipe_edit(frame: &mut Frame, app: &App) {
             Constraint::Min(3),            // Tab content (full width)
             Constraint::Length(3),          // Help bar
         ])
-        .split(frame.area());
+        .split(area);
 
     // Status bar
     draw_status_bar(frame, app, outer[0]);
@@ -511,13 +555,13 @@ fn draw_recipe_edit(frame: &mut Frame, app: &App) {
     } else if app.notes_editor.is_some() {
         " [F2] save  [Esc] cancel"
     } else if app.active_tab == Tab::History {
-        " [j/k] navigate  [n]ame  [s]tyle  [e]quip  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
+        " [j/k] navigate  [c]hat  [n]ame  [s]tyle  [e]quip  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
     } else if app.active_tab == Tab::Batches {
-        " [Enter] open  [j/k] navigate  [n]ame  [s]tyle  [e]quip  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
+        " [Enter] open  [j/k] navigate  [c]hat  [n]ame  [s]tyle  [e]quip  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
     } else if app.active_tab == Tab::Fermentables || app.active_tab == Tab::Hops || app.active_tab == Tab::Cultures {
-        " [a]dd  [Enter] edit  [d]elete  [j/k] navigate  [n]ame  [s]tyle  [e]quip  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
+        " [a]dd  [Enter] edit  [d]elete  [j/k] navigate  [c]hat  [n]ame  [s]tyle  [e]quip  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
     } else {
-        " [n]ame  [s]tyle  [e]quip  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
+        " [c]hat  [n]ame  [s]tyle  [e]quip  [v]ol  [b]rew  [o]notes  [1-7] tabs  [Esc] back"
     };
     let help = Paragraph::new(Line::from(Span::raw(help_text)))
         .block(help_block());
@@ -527,7 +571,7 @@ fn draw_recipe_edit(frame: &mut Frame, app: &App) {
     if let Some(idx) = app.confirm_equipment_idx {
         let all = brewdio_core::data::equipment();
         let new_eff = all[idx].efficiency.brewhouse.value;
-        draw_confirm_equipment(frame, new_eff, frame.area());
+        draw_confirm_equipment(frame, new_eff, area);
     }
 
     // Notes popup overlay
@@ -537,6 +581,10 @@ fn draw_recipe_edit(frame: &mut Frame, app: &App) {
 }
 
 fn draw_batch_edit(frame: &mut Frame, app: &App) {
+    draw_batch_edit_in(frame, app, frame.area());
+}
+
+fn draw_batch_edit_in(frame: &mut Frame, app: &App, area: Rect) {
     let top_height = 12;
 
     let outer = Layout::default()
@@ -547,7 +595,7 @@ fn draw_batch_edit(frame: &mut Frame, app: &App) {
             Constraint::Min(3),
             Constraint::Length(3),
         ])
-        .split(frame.area());
+        .split(area);
 
     draw_status_bar(frame, app, outer[0]);
 
@@ -612,11 +660,11 @@ fn draw_batch_edit(frame: &mut Frame, app: &App) {
     } else if app.notes_editor.is_some() {
         " [F2] save  [Esc] cancel"
     } else if app.active_tab == Tab::History {
-        " [j/k] navigate  [n]ame  [b]rew date  [e]quip  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
+        " [j/k] navigate  [c]hat  [n]ame  [b]rew date  [e]quip  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
     } else if app.active_tab == Tab::Fermentables || app.active_tab == Tab::Hops || app.active_tab == Tab::Cultures {
-        " [a]dd  [Enter] edit  [d]elete  [j/k] navigate  [n]ame  [b]rew date  [e]quip  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
+        " [a]dd  [Enter] edit  [d]elete  [j/k] navigate  [c]hat  [n]ame  [b]rew date  [e]quip  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
     } else {
-        " [n]ame  [b]rew date  [e]quip  [v]ol  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
+        " [c]hat  [n]ame  [b]rew date  [e]quip  [v]ol  [r]ecipe  [o]notes  [1-6] tabs  [Esc] back"
     };
     let help = Paragraph::new(Line::from(Span::raw(help_text)))
         .block(help_block());
@@ -626,7 +674,7 @@ fn draw_batch_edit(frame: &mut Frame, app: &App) {
     if let Some(idx) = app.confirm_equipment_idx {
         let all = brewdio_core::data::equipment();
         let new_eff = all[idx].efficiency.brewhouse.value;
-        draw_confirm_equipment(frame, new_eff, frame.area());
+        draw_confirm_equipment(frame, new_eff, area);
     }
 
     // Notes popup overlay

@@ -80,6 +80,12 @@ pub struct SettingsDocument {
     #[serde(default = "serde_default_author")]
     #[autosurgeon(missing = "missing_author")]
     pub default_author: String,
+    #[serde(default)]
+    #[autosurgeon(missing = "default_empty_string")]
+    pub ai_base_url: String,
+    #[serde(default)]
+    #[autosurgeon(missing = "default_empty_string")]
+    pub ai_model: String,
 }
 
 impl Default for SettingsDocument {
@@ -92,6 +98,8 @@ impl Default for SettingsDocument {
             default_temperature_unit: serde_default_temperature_unit(),
             openai_api_key: String::new(),
             default_author: serde_default_author(),
+            ai_base_url: String::new(),
+            ai_model: String::new(),
         }
     }
 }
@@ -119,8 +127,10 @@ pub const SETTINGS_DESCRIPTORS: &[SettingDescriptor] = &[
     SettingDescriptor { key: "defaultVolumeUnit", kind: SettingKind::VolumeUnit, description: "Default unit for volume measurements" },
     SettingDescriptor { key: "defaultMassUnit", kind: SettingKind::MassUnit, description: "Default unit for mass/weight measurements" },
     SettingDescriptor { key: "defaultTemperatureUnit", kind: SettingKind::TemperatureUnit, description: "Default unit for temperature readings" },
-    SettingDescriptor { key: "openaiApiKey", kind: SettingKind::Secret, description: "API key for OpenAI recipe generation" },
+    SettingDescriptor { key: "openaiApiKey", kind: SettingKind::Secret, description: "API key for AI assistant" },
     SettingDescriptor { key: "defaultAuthor", kind: SettingKind::Text, description: "Default author name for new recipes" },
+    SettingDescriptor { key: "aiBaseUrl", kind: SettingKind::Text, description: "AI API base URL (blank for OpenAI)" },
+    SettingDescriptor { key: "aiModel", kind: SettingKind::Text, description: "AI model name (blank for gpt-4o-mini)" },
 ];
 
 impl SettingsDocument {
@@ -133,6 +143,8 @@ impl SettingsDocument {
             "defaultTemperatureUnit" => self.default_temperature_unit.clone(),
             "openaiApiKey" => self.openai_api_key.clone(),
             "defaultAuthor" => self.default_author.clone(),
+            "aiBaseUrl" => self.ai_base_url.clone(),
+            "aiModel" => self.ai_model.clone(),
             _ => String::new(),
         }
     }
@@ -146,6 +158,8 @@ impl SettingsDocument {
             "defaultTemperatureUnit" => self.default_temperature_unit = value.to_string(),
             "openaiApiKey" => self.openai_api_key = value.to_string(),
             "defaultAuthor" => self.default_author = value.to_string(),
+            "aiBaseUrl" => self.ai_base_url = value.to_string(),
+            "aiModel" => self.ai_model = value.to_string(),
             _ => {}
         }
     }

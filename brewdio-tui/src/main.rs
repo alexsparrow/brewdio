@@ -1,4 +1,5 @@
 mod app;
+mod chat;
 mod search_selector;
 mod styles;
 mod ui;
@@ -31,8 +32,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(data_dir)?;
     let db_path = data_dir.join("brewdio.db");
 
-    // Set up file-based logging for sync debugging
-    let log_path = data_dir.join("brewdio-sync.log");
+    // Set up file-based logging
+    let log_path = data_dir.join("brewdio.log");
     let log_file = std::fs::OpenOptions::new()
         .create(true)
         .append(true)
@@ -46,24 +47,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let conn = brewdio_persistence::connection_native::open(db_path.to_str().unwrap())?;
     let conn = Arc::new(Mutex::new(conn));
 
+    // Always create tokio runtime (needed for chat + optional sync worker)
+    let runtime = tokio::runtime::Runtime::new()?;
+
     // Start background sync worker if BREWDIO_SERVER_URL is set
     let sync_connected = Arc::new(AtomicBool::new(false));
     let sync_changed = Arc::new(AtomicBool::new(false));
-    let _runtime = if let Ok(url) = std::env::var("BREWDIO_SERVER_URL") {
-        let rt = tokio::runtime::Runtime::new()?;
+    let has_sync = if let Ok(url) = std::env::var("BREWDIO_SERVER_URL") {
         let conn_clone = conn.clone();
         let connected = sync_connected.clone();
         let changed = sync_changed.clone();
-        rt.spawn(async move {
+        runtime.spawn(async move {
             let _ = brewdio_persistence::sync_worker::spawn_sync(conn_clone, url, connected, changed).await;
         });
-        Some(rt)
+        true
     } else {
-        None
+        false
     };
 
-    let mut app = App::new(conn);
-    if _runtime.is_some() {
+    let mut app = App::new(conn, runtime.handle().clone());
+    if has_sync {
         app.sync_connected = Some(sync_connected);
         app.sync_changed = Some(sync_changed);
     }
@@ -99,11 +102,21 @@ fn run_loop(
         // Check for remote sync changes
         app.poll_sync_changes();
 
+        // Check for chat streaming events
+        app.poll_chat();
+
         if event::poll(Duration::from_millis(100))? {
             if let Event::Key(key) = event::read()? {
                 if key.kind != KeyEventKind::Press {
                     continue;
                 }
+
+                // Chat overlay intercepts all input when open
+                if app.chat.is_some() {
+                    handle_chat_input(app, key.code);
+                    continue;
+                }
+
                 match &app.screen {
                     Screen::Home => handle_home_input(app, key.code),
                     Screen::RecipeEdit { .. } => handle_edit_input(app, key),
@@ -140,6 +153,10 @@ fn handle_home_input(app: &mut App, key: KeyCode) {
             }
             KeyCode::Char('3') => {
                 app.home_tab = HomeTab::Settings;
+                return;
+            }
+            KeyCode::Char('c') => {
+                app.open_chat();
                 return;
             }
             KeyCode::Char('q') => {
@@ -394,6 +411,7 @@ fn handle_edit_input(app: &mut App, key: KeyEvent) {
     // Normal edit mode — global keys first
     match key_code {
         KeyCode::Esc | KeyCode::Char('q') => { app.back_to_list(); return; }
+        KeyCode::Char('c') => { app.open_chat(); return; }
         KeyCode::Char('n') => { app.editing_name = true; return; }
         KeyCode::Char('s') => { app.open_style_selector(); return; }
         KeyCode::Char('e') => { app.open_equipment_selector(); return; }
@@ -499,6 +517,7 @@ fn handle_batch_edit_input(app: &mut App, key: KeyEvent) {
 
     match key_code {
         KeyCode::Esc | KeyCode::Char('q') => { app.back_from_batch(); return; }
+        KeyCode::Char('c') => { app.open_chat(); return; }
         KeyCode::Char('r') => { app.open_recipe_from_batch(); return; }
         KeyCode::Char('n') => { app.editing_name = true; return; }
         KeyCode::Char('b') => { app.start_edit_brew_date(); return; }
@@ -931,5 +950,54 @@ fn handle_batch_size_dialog(app: &mut App, key: KeyCode) {
             }
             _ => {}
         },
+    }
+}
+
+fn handle_chat_input(app: &mut App, key: KeyCode) {
+    let is_streaming = app.chat.as_ref().map_or(false, |c| c.is_streaming);
+
+    match key {
+        KeyCode::Esc => {
+            if is_streaming {
+                // Cancel streaming by closing the receiver
+                app.chat_rx = None;
+                if let Some(chat) = app.chat.as_mut() {
+                    chat.is_streaming = false;
+                }
+            } else {
+                app.close_chat();
+            }
+        }
+        KeyCode::Enter => {
+            if !is_streaming {
+                app.submit_chat_message();
+            }
+        }
+        KeyCode::Backspace => {
+            if !is_streaming {
+                if let Some(chat) = app.chat.as_mut() {
+                    chat.input.pop();
+                }
+            }
+        }
+        KeyCode::Char(c) => {
+            if !is_streaming {
+                if let Some(chat) = app.chat.as_mut() {
+                    chat.input.push(c);
+                }
+            }
+        }
+        KeyCode::Up => {
+            if let Some(chat) = app.chat.as_mut() {
+                chat.user_scrolled = true;
+                chat.scroll_offset = chat.scroll_offset.saturating_sub(1);
+            }
+        }
+        KeyCode::Down => {
+            if let Some(chat) = app.chat.as_mut() {
+                chat.scroll_offset += 1;
+            }
+        }
+        _ => {}
     }
 }
