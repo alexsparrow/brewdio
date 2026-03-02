@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/brewdio/brewdio/compare/v0.6.1...v0.6.2) (2026-03-02)
+
+
+### Bug Fixes
+
+* bump readme ([1488cf8](https://github.com/brewdio/brewdio/commit/1488cf8a36d3e83d30f19eceead14e8424726b14))
+
 ## [0.6.1](https://github.com/brewdio/brewdio/compare/v0.6.0...v0.6.1) (2026-03-02)
 
 
