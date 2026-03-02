@@ -29,7 +29,8 @@ brewdio is a modern, privacy-focused brewing companion that puts you in control 
 - **Recipe Helper** — Chat-based assistant that can search ingredients, suggest styles, and create or modify recipes
 - **Context-Aware** — Knows which recipe you're viewing and can read/update it directly
 - **Tool-Based** — Uses structured tool calls for ingredient search, recipe creation, and editing
-- **Private** — Runs against your own OpenAI API key; nothing leaves your browser except API calls
+- **Multi-Provider** — Works with any OpenAI-compatible API: OpenAI, Gemini, Groq, Together, Ollama, LM Studio, and more
+- **Private** — Runs against your own API key; nothing leaves your device except API calls
 
 ### User Experience
 - **Local-First** — All data stored locally using SQLite (IndexedDB-backed in the browser, native on desktop)
@@ -63,7 +64,8 @@ brewdio/
 │   └── sync_worker.rs         # Native background sync worker (tokio)
 ├── brewdio-wasm/          # wasm-bindgen bindings (core + persistence + SyncWorker)
 ├── brewdio-server/        # Sync relay server (Axum + WebSocket + broadcast)
-├── brewdio-tui/           # Terminal UI (ratatui)
+├── brewdio-tui/           # Terminal UI (ratatui + tui-textarea)
+│   └── src/chat/              # AI chat client, tools, and UI
 └── brewdio-webui/         # React web frontend
     └── src/
         ├── routes/            # File-based routing (TanStack Router)
@@ -83,7 +85,7 @@ brewdio/
 | `brewdio-persistence` | SQLite-backed storage with Automerge CRDT sync. Compiles to both native (rusqlite) and WASM (sqlite-wasm-rs). |
 | `brewdio-wasm` | wasm-bindgen bindings that expose core + persistence + SyncWorker to JavaScript/TypeScript. |
 | `brewdio-server` | Axum WebSocket relay server. Receives changes from one client and broadcasts to all others via `tokio::sync::broadcast`. |
-| `brewdio-tui` | Terminal UI built with ratatui. Full recipe/batch/settings management with vim-style navigation, live vitals, ingredient search, equipment profiles, and background sync. |
+| `brewdio-tui` | Terminal UI built with ratatui. Full recipe/batch/settings management with vim-style navigation, live vitals, ingredient search, equipment profiles, AI chat assistant, and background sync. |
 
 ### Terminal UI
 
@@ -97,7 +99,8 @@ The `brewdio-tui/` crate is a full-featured terminal interface built with [ratat
 - **Equipment profiles** — 40+ built-in profiles with efficiency %, searchable selector with confirmation prompt
 - **Batch management** — Create batches from recipes, edit brew dates, independent batch notes
 - **Trash & recovery** — Soft-delete recipes with `d`, toggle trash view with `r`, undelete with `u`
-- **Notes editor** — Multiline modal editor for recipe and batch notes
+- **Notes editor** — Multiline modal editor for recipe and batch notes with readline-style shortcuts
+- **AI chat panel** — Side-panel or fullscreen chat (`c` to open, `Tab` to toggle size) with streaming responses and persistent history
 - **Change history** — View Automerge CRDT change log with timestamps and actor IDs
 - **Background sync** — Set `BREWDIO_SERVER_URL` to enable; status indicator in top-right corner (green = connected)
 - **XDG data directory** — Database stored at `~/.local/share/brewdio/brewdio.db`
@@ -166,6 +169,22 @@ cargo run -p brewdio-server
 | `BREWDIO_DB` | `brewdio.db` | Path to the SQLite database (server & TUI) |
 | `BREWDIO_SERVER_URL` | — | WebSocket server URL for TUI sync (e.g. `ws://localhost:3000/ws`) |
 | `PORT` | `3000` | Port for the sync server |
+
+### AI Assistant Configuration
+
+The AI assistant is configured in the Settings tab (both TUI and web UI):
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| AI API Key | — | API key for your chosen provider |
+| AI Base URL | `https://api.openai.com/v1` | Base URL for the API (blank = OpenAI) |
+| AI Model | `gpt-4o-mini` | Model name (blank = gpt-4o-mini) |
+
+Works with any OpenAI-compatible endpoint. Example provider URLs:
+- **OpenAI** — leave blank (default)
+- **Gemini** — `https://generativelanguage.googleapis.com/v1beta/openai`
+- **Groq** — `https://api.groq.com/openai/v1`
+- **Ollama** — `http://localhost:11434/v1`
 
 ### Building for Production
 
