@@ -20,8 +20,14 @@ wasmtimer = "0.4"
 console_log = "1"
 log = "0.4"
 
+[package.metadata.wasm-pack.profile.dev]
+wasm-opt = false
+
+[package.metadata.wasm-pack.profile.profiling]
+wasm-opt = false
+
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = ["-Oz", "--all-features"]
+wasm-opt = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
