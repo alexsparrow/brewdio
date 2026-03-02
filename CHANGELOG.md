@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/brewdio/brewdio/compare/v0.6.0...v0.6.1) (2026-03-02)
+
+
+### Bug Fixes
+
+* Run tests on all branches ([8127103](https://github.com/brewdio/brewdio/commit/8127103fbd4c57d2128b10747655fdb9e189f8ca))
+
 ## [0.6.0](https://github.com/brewdio/brewdio/compare/v0.5.0...v0.6.0) (2026-03-02)
 
 
