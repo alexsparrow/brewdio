@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.6.0](https://github.com/brewdio/brewdio/compare/v0.5.0...v0.6.0) (2026-03-02)
+
+
+### Features
+
+* beginnings of TUI AI chat feature ([39c3be9](https://github.com/brewdio/brewdio/commit/39c3be95adb3dbb153699419d1d499ac0de69b20))
+* Check schema version during sync ([3609d71](https://github.com/brewdio/brewdio/commit/3609d719f0716ce26310ab416aa741c12e9b9f51))
+* improve AI assistant usability ([3609d71](https://github.com/brewdio/brewdio/commit/3609d719f0716ce26310ab416aa741c12e9b9f51))
+* live sync of changes between tabs when offline ([28a7865](https://github.com/brewdio/brewdio/commit/28a7865622afe371fdf6e4f959086f62ec81fce7))
+
+
+### Bug Fixes
+
+* format ABV in webui to 1 dedcimal place ([937c0cd](https://github.com/brewdio/brewdio/commit/937c0cdcab6a539ee29ef92605c304fb5379b3d0))
+* settings sync works better ([4d4c94d](https://github.com/brewdio/brewdio/commit/4d4c94debcb2ea66be0a3b5dfe3bd701f9f5c97a))
+* wrap long lines in notes ([3609d71](https://github.com/brewdio/brewdio/commit/3609d719f0716ce26310ab416aa741c12e9b9f51))
+
 ## [0.5.0](https://github.com/brewdio/brewdio/compare/v0.4.0...v0.5.0) (2026-03-01)
 
 
