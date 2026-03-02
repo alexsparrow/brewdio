@@ -22,13 +22,14 @@ jobs:
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          token: ${{ secrets.RELEASE_PAT }}
 
       - name: Update Cargo.lock on release PR
         if: steps.release.outputs.pr
         uses: actions/checkout@v4
         with:
           ref: ${{ fromJson(steps.release.outputs.pr).headBranchName }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_PAT }}
 
       - name: Install Rust
         if: steps.release.outputs.pr
