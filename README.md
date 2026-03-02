@@ -257,4 +257,3 @@ This project is open source. Check the LICENSE file for details.
 ---
 
 **Happy Brewing!**
-
