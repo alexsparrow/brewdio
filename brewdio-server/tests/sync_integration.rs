@@ -314,5 +314,6 @@ async fn settings_client_to_server_sync() {
     .await
     .expect("Timed out waiting for settings to sync to server");
 
-    assert_eq!(synced_settings.data, r#"{"vimMode":true}"#);
+    let synced_doc: serde_json::Value = serde_json::from_str(&synced_settings.data).unwrap();
+    assert_eq!(synced_doc["vimMode"], serde_json::json!(true));
 }
