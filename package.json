@@ -1,6 +1,6 @@
 {
   "name": "brewdio",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "scripts": {
     "build:wasm": "wasm-pack build brewdio-wasm --target web --dev"
   },

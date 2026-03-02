@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.3](https://github.com/brewdio/brewdio/compare/v0.6.2...v0.6.3) (2026-03-02)
+
+
+### Bug Fixes
+
+* ci config ([b9971be](https://github.com/brewdio/brewdio/commit/b9971bee492c86f7b9dd640d1ade7ab4b9bff458))
+* disable wasm-opt for now ([3f61270](https://github.com/brewdio/brewdio/commit/3f612701e2ad19e0f82f6b714c9bdf73348b280a))
+* Trivial change ([86e4659](https://github.com/brewdio/brewdio/commit/86e465902c89bb473f92c235cab815dc659b0cea))
+* tweak readme ([82d417e](https://github.com/brewdio/brewdio/commit/82d417e88550509f624d3e80a899062e3fabb441))
+
 ## [0.6.2](https://github.com/brewdio/brewdio/compare/v0.6.1...v0.6.2) (2026-03-02)
 
 
