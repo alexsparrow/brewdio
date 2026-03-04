@@ -341,7 +341,7 @@ dependencies = [
 
 [[package]]
 name = "brewdio-core"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "automerge",
  "autosurgeon",
@@ -364,7 +364,7 @@ dependencies = [
 
 [[package]]
 name = "brewdio-desktop"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "brewdio-core",
  "brewdio-persistence",
@@ -382,7 +382,7 @@ dependencies = [
 
 [[package]]
 name = "brewdio-persistence"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "automerge",
  "autosurgeon",
@@ -409,7 +409,7 @@ dependencies = [
 
 [[package]]
 name = "brewdio-server"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "axum",
  "bcrypt",
@@ -428,7 +428,7 @@ dependencies = [
 
 [[package]]
 name = "brewdio-tui"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "brewdio-core",
  "brewdio-persistence",
@@ -447,7 +447,7 @@ dependencies = [
 
 [[package]]
 name = "brewdio-wasm"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "brewdio-core",
  "brewdio-persistence",
