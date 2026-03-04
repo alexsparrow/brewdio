@@ -107,7 +107,7 @@ jobs:
         include:
           - target: aarch64-apple-darwin
             os: macos-latest
-            bundles: dmg
+            bundles: app
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
             bundles: appimage
@@ -147,12 +147,19 @@ jobs:
       - name: Build Tauri app
         run: cargo tauri build --config brewdio-desktop/tauri.conf.json --bundles ${{ matrix.bundles }} --target ${{ matrix.target }}
 
+      - name: Package macOS app
+        if: runner.os == 'macOS'
+        run: |
+          cd target/${{ matrix.target }}/release/bundle/macos
+          tar czf ../../../../../brewdio-desktop-${{ matrix.target }}.tar.gz Brewdio.app
+          cd ../../../../..
+
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.release-please.outputs.tag_name }}
           files: |
-            target/${{ matrix.target }}/release/bundle/dmg/*.dmg
+            brewdio-desktop-${{ matrix.target }}.tar.gz
             target/${{ matrix.target }}/release/bundle/appimage/*.AppImage
 
   deploy-webui:
