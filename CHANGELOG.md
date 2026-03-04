@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.7.0](https://github.com/brewdio/brewdio/compare/v0.6.3...v0.7.0) (2026-03-04)
+
+
+### Features
+
+* desktop app with tauri ([1179434](https://github.com/brewdio/brewdio/commit/1179434cb424ccba3edb6fc9bb66337c992fbf26))
+* desktop app with tauri ([a3b958d](https://github.com/brewdio/brewdio/commit/a3b958d334d390647257c69d1d3c9c50ef9f1d99))
+
+
+### Bug Fixes
+
+* ci + claude.md ([76958c5](https://github.com/brewdio/brewdio/commit/76958c540044831285c9085bc26fe45715422df5))
+* tests ([a091e2a](https://github.com/brewdio/brewdio/commit/a091e2ada5037f0a64e80f5c0a9c6e7e77a3afb6))
+
 ## [0.6.3](https://github.com/brewdio/brewdio/compare/v0.6.2...v0.6.3) (2026-03-02)
 
 
