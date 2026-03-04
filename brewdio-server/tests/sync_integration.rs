@@ -60,6 +60,7 @@ fn test_auth_config() -> AuthConfig {
         google_client_id: None,
         admin_email: None,
         admin_password: None,
+        no_auth: false,
     }
 }
 
@@ -119,14 +120,12 @@ async fn client_to_server_sync() {
 
     assert_eq!(recipes.len(), 1);
     assert_eq!(recipes[0].name, "Client IPA");
-    assert!(!recipes[0].is_deleted, "Synced recipe should not be soft-deleted");
 
-    // Also verify client-side recipe is still not deleted
+    // Also verify client-side recipe is still present
     {
         let c = client_conn.lock().unwrap();
         let client_recipes = db::list_recipes(&*c).unwrap();
         assert_eq!(client_recipes.len(), 1);
-        assert!(!client_recipes[0].is_deleted, "Client recipe should not be soft-deleted after sync");
     }
 }
 
@@ -170,14 +169,12 @@ async fn server_to_client_sync() {
 
     assert_eq!(recipes.len(), 1);
     assert_eq!(recipes[0].name, "Server Stout");
-    assert!(!recipes[0].is_deleted, "Synced recipe should not be soft-deleted");
 
-    // Also verify server-side recipe is still not deleted
+    // Also verify server-side recipe is still present
     {
         let c = server_conn.lock().unwrap();
         let server_recipes = db::list_recipes(&*c).unwrap();
         assert_eq!(server_recipes.len(), 1);
-        assert!(!server_recipes[0].is_deleted, "Server recipe should not be soft-deleted after sync");
     }
 }
 
@@ -258,20 +255,16 @@ async fn shared_recipe_sync_preserves_is_deleted() {
     .await
     .expect("Timed out waiting for shared recipe to converge");
 
-    // Verify neither side has the recipe soft-deleted
+    // Verify both sides still have the recipe (list_recipes/get_recipe filter out soft-deleted)
     {
         let c = server_conn.lock().unwrap();
-        let row = db::get_recipe(&*c, recipe_id).unwrap().unwrap();
-        assert!(!row.is_deleted, "Server recipe should not be soft-deleted after shared sync");
-        let listed = db::list_recipes(&*c).unwrap();
-        assert_eq!(listed.len(), 1, "Server should still list 1 recipe");
+        assert!(db::get_recipe(&*c, recipe_id).unwrap().is_some(), "Server recipe should still exist after shared sync");
+        assert_eq!(db::list_recipes(&*c).unwrap().len(), 1, "Server should still list 1 recipe");
     }
     {
         let c = client_conn.lock().unwrap();
-        let row = db::get_recipe(&*c, recipe_id).unwrap().unwrap();
-        assert!(!row.is_deleted, "Client recipe should not be soft-deleted after shared sync");
-        let listed = db::list_recipes(&*c).unwrap();
-        assert_eq!(listed.len(), 1, "Client should still list 1 recipe");
+        assert!(db::get_recipe(&*c, recipe_id).unwrap().is_some(), "Client recipe should still exist after shared sync");
+        assert_eq!(db::list_recipes(&*c).unwrap().len(), 1, "Client should still list 1 recipe");
     }
 }
 
@@ -320,7 +313,6 @@ async fn batch_client_to_server_sync() {
 
     assert_eq!(batches.len(), 1);
     assert_eq!(batches[0].name, "Test Batch");
-    assert!(!batches[0].is_deleted);
 }
 
 #[tokio::test]
