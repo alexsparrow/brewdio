@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as BreweryRouteImport } from './routes/brewery'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RecipesRecipeIdRouteImport } from './routes/recipes.$recipeId'
@@ -25,6 +26,11 @@ import { Route as BatchesBatchIdJsonRouteImport } from './routes/batches.$batchI
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BreweryRoute = BreweryRouteImport.update({
@@ -86,6 +92,7 @@ const BatchesBatchIdJsonRoute = BatchesBatchIdJsonRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/brewery': typeof BreweryRoute
+  '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/batches/$batchId': typeof BatchesBatchIdRoute
   '/recipes/$recipeId': typeof RecipesRecipeIdRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/brewery': typeof BreweryRoute
+  '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/batches/$batchId': typeof BatchesBatchIdRoute
   '/recipes/$recipeId': typeof RecipesRecipeIdRoute
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/brewery': typeof BreweryRoute
+  '/login': typeof LoginRoute
   '/settings': typeof SettingsRoute
   '/batches/$batchId': typeof BatchesBatchIdRoute
   '/recipes/$recipeId': typeof RecipesRecipeIdRoute
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/brewery'
+    | '/login'
     | '/settings'
     | '/batches/$batchId'
     | '/recipes/$recipeId'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/brewery'
+    | '/login'
     | '/settings'
     | '/batches/$batchId'
     | '/recipes/$recipeId'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/brewery'
+    | '/login'
     | '/settings'
     | '/batches/$batchId'
     | '/recipes/$recipeId'
@@ -174,6 +186,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BreweryRoute: typeof BreweryRoute
+  LoginRoute: typeof LoginRoute
   SettingsRoute: typeof SettingsRoute
   BatchesBatchIdRoute: typeof BatchesBatchIdRoute
   RecipesRecipeIdRoute: typeof RecipesRecipeIdRoute
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/brewery': {
@@ -278,6 +298,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BreweryRoute: BreweryRoute,
+  LoginRoute: LoginRoute,
   SettingsRoute: SettingsRoute,
   BatchesBatchIdRoute: BatchesBatchIdRoute,
   RecipesRecipeIdRoute: RecipesRecipeIdRoute,

@@ -1,12 +1,15 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query';
-import type { RecipeType, EquipmentType } from 'brewdio-wasm';
-import { getAppDb } from './app-db';
+import { getBackend } from './app-db';
 import { batchKeys } from './query-keys';
+import type { Batch, BatchData } from './backend';
 
 export { batchKeys };
 
+// Re-export typed Batch from backend.
+export type { Batch, BatchData };
+
 // ---------------------------------------------------------------------------
-// Types — matches the old BatchDocument shape for consumer compatibility
+// Types — flattened BatchDocument for consumer compatibility
 // ---------------------------------------------------------------------------
 
 export interface BatchDocument {
@@ -14,43 +17,26 @@ export interface BatchDocument {
   name: string;
   recipeId: string;
   equipmentId: string;
-  recipe: RecipeType;
-  equipment: EquipmentType;
+  recipe: import('brewdio-wasm').RecipeType;
+  equipment: import('brewdio-wasm').EquipmentType;
   brewDate: number;
   notes?: string;
   createdAt: number;
   updatedAt: number;
 }
 
-/** Raw shape returned by the WASM layer */
-interface BatchRaw {
-  id: string;
-  name: string;
-  recipeId: string;
-  data: {
-    recipeId?: string;
-    equipmentId: string;
-    recipe: RecipeType;
-    equipment: EquipmentType;
-    brewDate: number;
-    notes?: string;
-    createdAt: number;
-    updatedAt: number;
-  };
-}
-
-function rawToBatchDoc(raw: BatchRaw): BatchDocument {
+function batchToBatchDoc(b: Batch): BatchDocument {
   return {
-    id: raw.id,
-    name: raw.name,
-    recipeId: raw.recipeId,
-    equipmentId: raw.data.equipmentId,
-    recipe: raw.data.recipe,
-    equipment: raw.data.equipment,
-    brewDate: raw.data.brewDate,
-    notes: raw.data.notes,
-    createdAt: raw.data.createdAt,
-    updatedAt: raw.data.updatedAt,
+    id: b.id,
+    name: b.name,
+    recipeId: b.recipeId,
+    equipmentId: b.data.equipmentId,
+    recipe: b.data.recipe,
+    equipment: b.data.equipment,
+    brewDate: b.data.brewDate,
+    notes: b.data.notes,
+    createdAt: b.data.createdAt,
+    updatedAt: b.data.updatedAt,
   };
 }
 
@@ -67,20 +53,15 @@ function batchDocToData(doc: Omit<BatchDocument, 'id' | 'name' | 'recipeId'>) {
 }
 
 // ---------------------------------------------------------------------------
-// Query keys (re-exported from ./query-keys)
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
 // Queries
 // ---------------------------------------------------------------------------
 
 export function useBatches() {
   return useQuery<BatchDocument[]>({
     queryKey: batchKeys.all,
-    queryFn: () => {
-      const db = getAppDb();
-      const raws = db.listBatches() as unknown as BatchRaw[];
-      return raws.map(rawToBatchDoc);
+    queryFn: async () => {
+      const batches = await getBackend().listBatches();
+      return batches.map(batchToBatchDoc);
     },
   });
 }
@@ -88,10 +69,9 @@ export function useBatches() {
 export function useBatch(id: string) {
   return useQuery<BatchDocument | null>({
     queryKey: batchKeys.detail(id),
-    queryFn: () => {
-      const db = getAppDb();
-      const raw = db.getBatch(id) as unknown as BatchRaw | null;
-      return raw ? rawToBatchDoc(raw) : null;
+    queryFn: async () => {
+      const b = await getBackend().getBatch(id);
+      return b ? batchToBatchDoc(b) : null;
     },
   });
 }
@@ -100,33 +80,29 @@ export function useBatch(id: string) {
 // Imperative helpers
 // ---------------------------------------------------------------------------
 
-export function createBatchImperative(
+export async function createBatchImperative(
   name: string,
   recipeId: string,
   data: Omit<BatchDocument, 'id' | 'name' | 'recipeId'>,
-): string {
-  const db = getAppDb();
-  return db.createBatch(name, recipeId, batchDocToData(data));
+): Promise<string> {
+  return getBackend().createBatch(name, recipeId, batchDocToData(data));
 }
 
-export function updateBatchImperative(
+export async function updateBatchImperative(
   id: string,
   name: string,
   data: Omit<BatchDocument, 'id' | 'name' | 'recipeId'>,
-): void {
-  const db = getAppDb();
-  db.updateBatch(id, name, batchDocToData(data));
+): Promise<void> {
+  return getBackend().updateBatch(id, name, batchDocToData(data));
 }
 
-export function deleteBatchImperative(id: string): void {
-  const db = getAppDb();
-  db.deleteBatch(id);
+export async function deleteBatchImperative(id: string): Promise<void> {
+  return getBackend().deleteBatch(id);
 }
 
-export function listBatchesImperative(): BatchDocument[] {
-  const db = getAppDb();
-  const raws = db.listBatches() as unknown as BatchRaw[];
-  return raws.map(rawToBatchDoc);
+export async function listBatchesImperative(): Promise<BatchDocument[]> {
+  const batches = await getBackend().listBatches();
+  return batches.map(batchToBatchDoc);
 }
 
 // ---------------------------------------------------------------------------

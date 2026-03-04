@@ -1,6 +1,7 @@
 import { useQuery, type QueryClient } from '@tanstack/react-query';
-import { getAppDb } from './app-db';
+import { getBackend } from './app-db';
 import { settingsKeys } from './query-keys';
+import type { SettingsDocument as BackendSettingsDocument } from './backend';
 
 export { settingsKeys };
 
@@ -29,19 +30,14 @@ export const DEFAULT_SETTINGS: SettingsDocument = {
 };
 
 // ---------------------------------------------------------------------------
-// Query keys (re-exported from ./query-keys)
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
 // Queries
 // ---------------------------------------------------------------------------
 
 export function useSettings() {
   return useQuery<SettingsDocument>({
     queryKey: settingsKeys.all,
-    queryFn: () => {
-      const db = getAppDb();
-      const raw = db.getSettings() as unknown as SettingsDocument | null;
+    queryFn: async () => {
+      const raw = await getBackend().getSettings() as unknown as SettingsDocument | null;
       return raw ?? DEFAULT_SETTINGS;
     },
   });
@@ -51,15 +47,13 @@ export function useSettings() {
 // Imperative helpers
 // ---------------------------------------------------------------------------
 
-export function getSettingsImperative(): SettingsDocument {
-  const db = getAppDb();
-  const raw = db.getSettings() as unknown as SettingsDocument | null;
+export async function getSettingsImperative(): Promise<SettingsDocument> {
+  const raw = await getBackend().getSettings() as unknown as SettingsDocument | null;
   return raw ?? DEFAULT_SETTINGS;
 }
 
-export function saveSettingsImperative(settings: SettingsDocument): void {
-  const db = getAppDb();
-  db.saveSettings(settings);
+export async function saveSettingsImperative(settings: SettingsDocument): Promise<void> {
+  return getBackend().saveSettings(settings as unknown as BackendSettingsDocument);
 }
 
 // ---------------------------------------------------------------------------

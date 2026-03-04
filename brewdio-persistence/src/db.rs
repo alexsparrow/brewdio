@@ -5,7 +5,7 @@ use crate::connection::{Connection, DbError, Value};
 use crate::automerge::{extract_fields_from_automerge, new_ulid, reconcile_to_automerge};
 use crate::equipment_profile::{self, EquipmentProfileDocument};
 use crate::protocol::DocType;
-use crate::recipe::{RecipeDocument, RecipeRow};
+use crate::recipe::{Recipe, RecipeDocument, RecipeRow};
 use crate::settings::{self, SettingsDocument};
 use crate::traits::{set_deleted, apply_remote_merge_generic, RemoteMergeable};
 
@@ -70,8 +70,8 @@ pub fn create_recipe(
     })
 }
 
-/// Get a recipe by ID.
-pub fn get_recipe(conn: &(impl Connection + ?Sized), id: &str) -> Result<Option<RecipeRow>, DbError> {
+/// Get a recipe row by ID (returns raw row with JSON strings and am_data).
+pub fn get_recipe_row(conn: &(impl Connection + ?Sized), id: &str) -> Result<Option<RecipeRow>, DbError> {
     conn.query_one(
         "SELECT id, name, recipe, equipment, equipment_id, am_data, is_deleted, is_dirty FROM recipe WHERE id = ?1",
         &[Value::Text(id)],
@@ -79,13 +79,29 @@ pub fn get_recipe(conn: &(impl Connection + ?Sized), id: &str) -> Result<Option<
     )
 }
 
-/// List all non-deleted recipes.
-pub fn list_recipes(conn: &(impl Connection + ?Sized)) -> Result<Vec<RecipeRow>, DbError> {
+/// List all non-deleted recipe rows (returns raw rows with JSON strings).
+pub fn list_recipe_rows(conn: &(impl Connection + ?Sized)) -> Result<Vec<RecipeRow>, DbError> {
     conn.query_map(
         "SELECT id, name, recipe, equipment, equipment_id, am_data, is_deleted, is_dirty FROM recipe WHERE is_deleted = FALSE",
         &[],
         row_from_query,
     )
+}
+
+/// Get a recipe by ID as a typed `Recipe` struct.
+pub fn get_recipe(conn: &(impl Connection + ?Sized), id: &str) -> Result<Option<Recipe>, DbError> {
+    get_recipe_row(conn, id)?
+        .filter(|r| !r.is_deleted)
+        .map(|r| r.to_recipe())
+        .transpose()
+}
+
+/// List all non-deleted recipes as typed `Recipe` structs.
+pub fn list_recipes(conn: &(impl Connection + ?Sized)) -> Result<Vec<Recipe>, DbError> {
+    list_recipe_rows(conn)?
+        .into_iter()
+        .map(|r| r.to_recipe())
+        .collect()
 }
 
 /// Update a recipe's name and content, re-reconciling into the existing Automerge document.
@@ -103,7 +119,7 @@ pub fn update_recipe(
     );
     let recipe_json = serde_json::to_string(recipe).expect("Failed to serialize recipe");
 
-    let existing = get_recipe(conn, id)?;
+    let existing = get_recipe_row(conn, id)?;
     let existing_am = existing.as_ref().map(|r| r.am_data.as_slice());
 
     // Preserve existing equipment when not explicitly provided
@@ -153,7 +169,7 @@ pub fn set_recipe_equipment(
     equipment: Option<&EquipmentType>,
     equipment_id: Option<&str>,
 ) -> Result<(), DbError> {
-    let existing = get_recipe(conn, id)?;
+    let existing = get_recipe_row(conn, id)?;
     let row = existing.ok_or_else(|| DbError(format!("Recipe {} not found", id)))?;
     let existing_am = row.am_data.as_slice();
 
@@ -206,13 +222,13 @@ pub fn list_all_recipes(conn: &(impl Connection + ?Sized)) -> Result<Vec<RecipeR
 
 /// Restore a soft-deleted recipe by setting `is_deleted = false`.
 pub fn undelete_recipe(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
-    let existing = get_recipe(conn, id)?;
+    let existing = get_recipe_row(conn, id)?;
     set_deleted(conn, existing, id, false)
 }
 
 /// Soft-delete a recipe by setting `is_deleted = true`.
 pub fn delete_recipe(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
-    let existing = get_recipe(conn, id)?;
+    let existing = get_recipe_row(conn, id)?;
     set_deleted(conn, existing, id, true)
 }
 
@@ -510,12 +526,12 @@ pub fn get_doc_am_data(
     id: &str,
 ) -> Result<Option<Vec<u8>>, DbError> {
     match doc_type {
-        DocType::Recipe => get_recipe(conn, id).map(|r| r.map(|r| r.am_data)),
-        DocType::Batch => batch::get_batch(conn, id).map(|r| r.map(|r| r.am_data)),
+        DocType::Recipe => get_recipe_row(conn, id).map(|r| r.map(|r| r.am_data)),
+        DocType::Batch => batch::get_batch_row(conn, id).map(|r| r.map(|r| r.am_data)),
         DocType::Settings => settings::get_settings(conn).map(|r| {
             r.map(|r| r.am_data).filter(|am| !am.is_empty())
         }),
-        DocType::EquipmentProfile => equipment_profile::get_equipment_profile(conn, id).map(|r| r.map(|r| r.am_data)),
+        DocType::EquipmentProfile => equipment_profile::get_equipment_profile_row(conn, id).map(|r| r.map(|r| r.am_data)),
     }
 }
 
@@ -583,11 +599,11 @@ pub fn apply_remote_merge_doc(
 ) -> Result<(), DbError> {
     match doc_type {
         DocType::Recipe => {
-            let exists = get_recipe(conn, id)?.is_some();
+            let exists = get_recipe_row(conn, id)?.is_some();
             apply_remote_merge_generic::<RecipeDocument>(conn, id, am_data, exists)
         }
         DocType::Batch => {
-            let exists = batch::get_batch(conn, id)?.is_some();
+            let exists = batch::get_batch_row(conn, id)?.is_some();
             apply_remote_merge_generic::<BatchDocument>(conn, id, am_data, exists)
         }
         DocType::Settings => {
@@ -595,7 +611,7 @@ pub fn apply_remote_merge_doc(
             apply_remote_merge_generic::<SettingsDocument>(conn, id, am_data, exists)
         }
         DocType::EquipmentProfile => {
-            let exists = equipment_profile::get_equipment_profile(conn, id)?.is_some();
+            let exists = equipment_profile::get_equipment_profile_row(conn, id)?.is_some();
             apply_remote_merge_generic::<EquipmentProfileDocument>(conn, id, am_data, exists)
         }
     }
@@ -655,21 +671,27 @@ mod tests {
         assert!(row.is_dirty);
         assert!(row.equipment.is_none());
 
-        // Get
-        let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
+        // Get (row)
+        let fetched = get_recipe_row(&conn, &row.id).unwrap().unwrap();
         assert_eq!(fetched.name, "Test IPA");
         assert!(fetched.is_dirty);
         assert!(fetched.equipment.is_none());
 
+        // Get (typed)
+        let typed = get_recipe(&conn, &row.id).unwrap().unwrap();
+        assert_eq!(typed.name, "Test IPA");
+        assert!(typed.equipment.is_none());
+
         // List
         let recipes = list_recipes(&conn).unwrap();
         assert_eq!(recipes.len(), 1);
+        assert_eq!(recipes[0].name, "Test IPA");
 
         // Update
         let mut updated_recipe = sample_recipe();
         updated_recipe.name = "Updated IPA".to_string();
         update_recipe(&conn, &row.id, "Updated IPA", &updated_recipe, None).unwrap();
-        let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
+        let fetched = get_recipe_row(&conn, &row.id).unwrap().unwrap();
         assert_eq!(fetched.name, "Updated IPA");
         assert!(fetched.is_dirty);
 
@@ -678,8 +700,12 @@ mod tests {
         let recipes = list_recipes(&conn).unwrap();
         assert_eq!(recipes.len(), 0);
 
+        // Typed get returns None for deleted recipes
+        let typed = get_recipe(&conn, &row.id).unwrap();
+        assert!(typed.is_none());
+
         // Still exists in DB, just marked as deleted
-        let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
+        let fetched = get_recipe_row(&conn, &row.id).unwrap().unwrap();
         assert!(fetched.is_deleted);
         assert!(fetched.is_dirty);
     }
@@ -694,31 +720,27 @@ mod tests {
         assert!(row.equipment.is_some());
         assert_eq!(row.equipment_id.as_deref(), Some("default-setup"));
 
-        // Get
-        let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
-        assert!(fetched.equipment.is_some());
-        let doc = fetched.to_document().unwrap();
-        assert_eq!(doc.equipment.as_ref().unwrap().name, "Default Setup");
-        assert_eq!(doc.equipment_id.as_deref(), Some("default-setup"));
+        // Get (typed)
+        let typed = get_recipe(&conn, &row.id).unwrap().unwrap();
+        assert_eq!(typed.equipment.as_ref().unwrap().name, "Default Setup");
+        assert_eq!(typed.equipment_id.as_deref(), Some("default-setup"));
 
         // Update with different equipment
         let biab = &brewdio_core::data::equipment()[1];
         update_recipe(&conn, &row.id, "BIAB IPA", &sample_recipe(), Some(&biab.equipment)).unwrap();
-        let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
-        let doc = fetched.to_document().unwrap();
-        assert_eq!(doc.equipment.as_ref().unwrap().name, "BIAB (No Sparge)");
+        let typed = get_recipe(&conn, &row.id).unwrap().unwrap();
+        assert_eq!(typed.equipment.as_ref().unwrap().name, "BIAB (No Sparge)");
 
         // Update without equipment preserves existing
         update_recipe(&conn, &row.id, "Still Equipped", &sample_recipe(), None).unwrap();
-        let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
-        let doc = fetched.to_document().unwrap();
-        assert_eq!(doc.equipment.as_ref().unwrap().name, "BIAB (No Sparge)");
+        let typed = get_recipe(&conn, &row.id).unwrap().unwrap();
+        assert_eq!(typed.equipment.as_ref().unwrap().name, "BIAB (No Sparge)");
 
         // Explicitly remove equipment
         set_recipe_equipment(&conn, &row.id, None, None).unwrap();
-        let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
-        assert!(fetched.equipment.is_none());
-        assert!(fetched.equipment_id.is_none());
+        let typed = get_recipe(&conn, &row.id).unwrap().unwrap();
+        assert!(typed.equipment.is_none());
+        assert!(typed.equipment_id.is_none());
     }
 
     #[test]
@@ -787,7 +809,7 @@ mod tests {
 
         apply_remote_merge_doc(&conn, DocType::Recipe, "remote-id", &am_data).unwrap();
 
-        let fetched = get_recipe(&conn, "remote-id").unwrap().unwrap();
+        let fetched = get_recipe_row(&conn, "remote-id").unwrap().unwrap();
         assert_eq!(fetched.name, "Remote Beer");
         assert!(!fetched.is_dirty); // came from server, not dirty
     }
@@ -812,7 +834,7 @@ mod tests {
 
         apply_remote_merge_doc(&conn, DocType::Recipe, &row.id, &am_data).unwrap();
 
-        let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
+        let fetched = get_recipe_row(&conn, &row.id).unwrap().unwrap();
         assert_eq!(fetched.name, "Merged Beer");
         assert!(!fetched.is_dirty); // remote merge doesn't set dirty
     }
@@ -834,10 +856,8 @@ mod tests {
 
         apply_remote_merge_doc(&conn, DocType::Recipe, "remote-equip", &am_data).unwrap();
 
-        let fetched = get_recipe(&conn, "remote-equip").unwrap().unwrap();
-        assert!(fetched.equipment.is_some());
-        let doc = fetched.to_document().unwrap();
-        assert_eq!(doc.equipment.as_ref().unwrap().name, "Default Setup");
+        let typed = get_recipe(&conn, "remote-equip").unwrap().unwrap();
+        assert_eq!(typed.equipment.as_ref().unwrap().name, "Default Setup");
     }
 
     #[test]

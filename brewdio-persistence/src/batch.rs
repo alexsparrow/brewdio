@@ -6,6 +6,19 @@ use crate::automerge::{current_time_millis, new_ulid, reconcile_to_automerge};
 use crate::protocol::DocType;
 use crate::traits::{SyncDocument, SyncRow};
 
+/// Public typed batch for external consumers.
+/// JSON data field is deserialized from the underlying `BatchRow`.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(into_wasm_abi))]
+#[serde(rename_all = "camelCase")]
+pub struct Batch {
+    pub id: String,
+    pub name: String,
+    pub recipe_id: String,
+    pub data: BatchData,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, autosurgeon::Reconcile, autosurgeon::Hydrate)]
 #[serde(rename_all = "camelCase")]
 pub struct BatchData {
@@ -39,6 +52,18 @@ pub struct BatchDocument {
 }
 
 impl BatchRow {
+    /// Convert to a typed `Batch` (deserializes JSON data field).
+    pub fn to_batch(&self) -> Result<Batch, DbError> {
+        let data: BatchData = serde_json::from_str(&self.data)
+            .map_err(|e| DbError(e.to_string()))?;
+        Ok(Batch {
+            id: self.id.clone(),
+            name: self.name.clone(),
+            recipe_id: self.recipe_id.clone(),
+            data,
+        })
+    }
+
     pub fn to_data(&self) -> Result<BatchData, serde_json::Error> {
         serde_json::from_str(&self.data)
     }
@@ -137,7 +162,7 @@ pub fn create_batch(
     })
 }
 
-pub fn get_batch(
+pub fn get_batch_row(
     conn: &(impl Connection + ?Sized),
     id: &str,
 ) -> Result<Option<BatchRow>, DbError> {
@@ -148,12 +173,31 @@ pub fn get_batch(
     )
 }
 
-pub fn list_batches(conn: &(impl Connection + ?Sized)) -> Result<Vec<BatchRow>, DbError> {
+pub fn list_batch_rows(conn: &(impl Connection + ?Sized)) -> Result<Vec<BatchRow>, DbError> {
     conn.query_map(
         "SELECT id, name, recipe_id, data, am_data, is_deleted, is_dirty FROM batch WHERE is_deleted = FALSE",
         &[],
         row_from_query,
     )
+}
+
+/// List all non-deleted batches as typed `Batch` structs.
+pub fn list_batches(conn: &(impl Connection + ?Sized)) -> Result<Vec<Batch>, DbError> {
+    list_batch_rows(conn)?
+        .into_iter()
+        .map(|r| r.to_batch())
+        .collect()
+}
+
+/// Get a batch by ID as a typed `Batch` struct.
+pub fn get_batch(
+    conn: &(impl Connection + ?Sized),
+    id: &str,
+) -> Result<Option<Batch>, DbError> {
+    get_batch_row(conn, id)?
+        .filter(|r| !r.is_deleted)
+        .map(|r| r.to_batch())
+        .transpose()
 }
 
 pub fn update_batch(
@@ -162,7 +206,7 @@ pub fn update_batch(
     name: &str,
     data: &str,
 ) -> Result<(), DbError> {
-    let existing = get_batch(conn, id)?;
+    let existing = get_batch_row(conn, id)?;
     let existing_am = existing.as_ref().map(|r| r.am_data.as_slice());
 
     let parsed_data: BatchData =
@@ -183,7 +227,7 @@ pub fn update_batch(
 }
 
 pub fn delete_batch(conn: &(impl Connection + ?Sized), id: &str) -> Result<(), DbError> {
-    let existing = get_batch(conn, id)?;
+    let existing = get_batch_row(conn, id)?;
     crate::traits::set_deleted(conn, existing, id, true)
 }
 
@@ -259,29 +303,29 @@ mod tests {
         assert!(!row.am_data.is_empty(), "am_data should be populated on create");
 
         // Get
-        let fetched = get_batch(&conn, &row.id).unwrap().unwrap();
+        let fetched = get_batch_row(&conn, &row.id).unwrap().unwrap();
         assert_eq!(fetched.name, "Batch 1");
         assert_eq!(fetched.recipe_id, "recipe-123");
         assert!(fetched.is_dirty);
         assert!(!fetched.am_data.is_empty());
 
         // List
-        let batches = list_batches(&conn).unwrap();
+        let batches = list_batch_rows(&conn).unwrap();
         assert_eq!(batches.len(), 1);
 
         // Update
         update_batch(&conn, &row.id, "Updated Batch", &data).unwrap();
-        let fetched = get_batch(&conn, &row.id).unwrap().unwrap();
+        let fetched = get_batch_row(&conn, &row.id).unwrap().unwrap();
         assert_eq!(fetched.name, "Updated Batch");
         assert!(!fetched.am_data.is_empty(), "am_data should be populated on update");
 
         // Soft-delete
         delete_batch(&conn, &row.id).unwrap();
-        let batches = list_batches(&conn).unwrap();
+        let batches = list_batch_rows(&conn).unwrap();
         assert_eq!(batches.len(), 0);
 
         // Still exists
-        let fetched = get_batch(&conn, &row.id).unwrap().unwrap();
+        let fetched = get_batch_row(&conn, &row.id).unwrap().unwrap();
         assert!(fetched.is_deleted);
         assert!(fetched.is_dirty);
         assert!(!fetched.am_data.is_empty(), "am_data should be populated on delete");

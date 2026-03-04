@@ -1,0 +1,20 @@
+[package]
+name = "brewdio-desktop"
+version = "0.6.2" # x-release-please-version
+edition = "2021"
+
+[dependencies]
+brewdio-core = { path = "../brewdio-core", features = ["crdt"] }
+brewdio-persistence = { path = "../brewdio-persistence", features = ["native"] }
+rusqlite = { version = "0.34", features = ["bundled"] }
+tauri = { version = "2", features = ["devtools"] }
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+directories = "6"
+log = "0.4"
+env_logger = "0.11"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }

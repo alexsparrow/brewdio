@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import type { RecipeDocument } from "@/lib/db/recipes";
 import type { BatchDocument } from "@/lib/db/batches";
 import { recipeKeys } from "@/lib/db/recipes";
-import { getAppDb } from "@/lib/db/app-db";
+import { getBackend } from "@/lib/db/app-db";
 import { useQueryClient } from "@tanstack/react-query";
 import { getStyles, type EquipmentProfile, type RecipeTypeType, type RecipeStyleType, type StyleCategories } from "brewdio-wasm";
 
@@ -43,10 +43,9 @@ export function RecipeHeader({
       onBatchUpdate({ name: newName });
       return;
     }
-    const db = getAppDb();
     const updated = structuredClone(recipe.recipe);
     updated.name = newName;
-    db.updateRecipe(recipe.id, newName, updated);
+    await getBackend().updateRecipe(recipe.id, newName, updated);
     invalidate();
   };
 
@@ -57,10 +56,9 @@ export function RecipeHeader({
       onBatchUpdate({ recipe: updatedRecipe } as Partial<BatchDocument>);
       return;
     }
-    const db = getAppDb();
     const updated = structuredClone(recipe.recipe);
     updated.type = newType as RecipeTypeType;
-    db.updateRecipe(recipe.id, updated.name, updated);
+    await getBackend().updateRecipe(recipe.id, updated.name, updated);
     invalidate();
   };
 
@@ -86,10 +84,9 @@ export function RecipeHeader({
       return;
     }
 
-    const db = getAppDb();
     const updated = structuredClone(recipe.recipe);
     updated.style = styleData;
-    db.updateRecipe(recipe.id, updated.name, updated);
+    await getBackend().updateRecipe(recipe.id, updated.name, updated);
     invalidate();
   };
 
@@ -111,14 +108,13 @@ export function RecipeHeader({
       }
       return;
     }
-    const db = getAppDb();
     if (profile) {
-      db.setRecipeEquipment(recipe.id, profile.equipment, profile.id);
+      await getBackend().setRecipeEquipment(recipe.id, profile.equipment, profile.id);
       const updated = structuredClone(recipe.recipe);
       updated.efficiency = profile.efficiency;
-      db.updateRecipe(recipe.id, updated.name, updated);
+      await getBackend().updateRecipe(recipe.id, updated.name, updated);
     } else {
-      db.setRecipeEquipment(recipe.id, undefined, undefined);
+      await getBackend().setRecipeEquipment(recipe.id, undefined, undefined);
     }
     invalidate();
   };

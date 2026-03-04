@@ -1,22 +1,51 @@
 use std::sync::{Arc, Mutex};
 
-use axum::routing::get;
+use axum::http::Method;
+use axum::routing::{get, post};
 use axum::Router;
 use tokio::net::TcpListener;
 use tokio::task::JoinHandle;
+use tower_http::cors::{Any, CorsLayer};
 
+pub mod auth;
+pub mod db;
+mod user_db;
 mod ws_handler;
+
+use auth::config::AuthConfig;
+use auth::routes::AppState;
 
 pub fn start_server(
     listener: TcpListener,
     conn: Arc<Mutex<rusqlite::Connection>>,
+    auth_config: AuthConfig,
 ) -> JoinHandle<()> {
     let (notify_tx, _) = tokio::sync::broadcast::channel(64);
-    let state = ws_handler::ServerState { conn, notify_tx };
+
+    let state = Arc::new(AppState {
+        conn: conn.clone(),
+        auth_config: auth_config.clone(),
+    });
+
+    let ws_state = ws_handler::ServerState {
+        conn,
+        notify_tx,
+        auth_config,
+    };
+
+    let cors = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
+        .allow_headers(Any);
 
     let app = Router::new()
         .route("/ws", get(ws_handler::ws_upgrade))
-        .with_state(state);
+        .with_state(ws_state)
+        .route("/auth/register", post(auth::routes::register))
+        .route("/auth/login", post(auth::routes::login))
+        .route("/auth/google", post(auth::routes::google_login))
+        .with_state(state)
+        .layer(cors);
 
     tokio::spawn(async move {
         axum::serve(listener, app).await.unwrap();

@@ -139,7 +139,7 @@ pub fn create_equipment_profile(
     })
 }
 
-pub fn get_equipment_profile(
+pub fn get_equipment_profile_row(
     conn: &(impl Connection + ?Sized),
     id: &str,
 ) -> Result<Option<EquipmentProfileRow>, DbError> {
@@ -150,7 +150,7 @@ pub fn get_equipment_profile(
     )
 }
 
-pub fn list_equipment_profiles(
+pub fn list_equipment_profile_rows(
     conn: &(impl Connection + ?Sized),
 ) -> Result<Vec<EquipmentProfileRow>, DbError> {
     conn.query_map(
@@ -160,12 +160,33 @@ pub fn list_equipment_profiles(
     )
 }
 
+/// List all non-deleted equipment profiles as typed `EquipmentProfile` structs.
+pub fn list_equipment_profiles(
+    conn: &(impl Connection + ?Sized),
+) -> Result<Vec<EquipmentProfile>, DbError> {
+    list_equipment_profile_rows(conn)?
+        .into_iter()
+        .map(|r| r.to_profile().map_err(|e| DbError(e.to_string())))
+        .collect()
+}
+
+/// Get an equipment profile by ID as a typed `EquipmentProfile`.
+pub fn get_equipment_profile(
+    conn: &(impl Connection + ?Sized),
+    id: &str,
+) -> Result<Option<EquipmentProfile>, DbError> {
+    get_equipment_profile_row(conn, id)?
+        .filter(|r| !r.is_deleted)
+        .map(|r| r.to_profile().map_err(|e| DbError(e.to_string())))
+        .transpose()
+}
+
 pub fn update_equipment_profile(
     conn: &(impl Connection + ?Sized),
     id: &str,
     profile: &EquipmentProfile,
 ) -> Result<(), DbError> {
-    let existing = get_equipment_profile(conn, id)?;
+    let existing = get_equipment_profile_row(conn, id)?;
     let existing_am = existing.as_ref().map(|r| r.am_data.as_slice());
 
     let data = serde_json::to_string(&profile.equipment).map_err(|e| DbError(e.to_string()))?;
@@ -198,7 +219,7 @@ pub fn delete_equipment_profile(
     conn: &(impl Connection + ?Sized),
     id: &str,
 ) -> Result<(), DbError> {
-    let existing = get_equipment_profile(conn, id)?;
+    let existing = get_equipment_profile_row(conn, id)?;
     crate::traits::set_deleted(conn, existing, id, true)
 }
 
@@ -228,11 +249,11 @@ mod tests {
         assert!(!row.am_data.is_empty());
 
         // Get
-        let fetched = get_equipment_profile(&conn, &row.id).unwrap().unwrap();
+        let fetched = get_equipment_profile_row(&conn, &row.id).unwrap().unwrap();
         assert_eq!(fetched.name, "Default Setup");
 
         // List
-        let profiles = list_equipment_profiles(&conn).unwrap();
+        let profiles = list_equipment_profile_rows(&conn).unwrap();
         assert_eq!(profiles.len(), 1);
 
         // Update
@@ -240,18 +261,18 @@ mod tests {
         updated.equipment.name = "Updated Setup".to_string();
         updated.efficiency.brewhouse.value = 80.0;
         update_equipment_profile(&conn, &row.id, &updated).unwrap();
-        let fetched = get_equipment_profile(&conn, &row.id).unwrap().unwrap();
+        let fetched = get_equipment_profile_row(&conn, &row.id).unwrap().unwrap();
         assert_eq!(fetched.name, "Updated Setup");
         let p = fetched.to_profile().unwrap();
         assert_eq!(p.efficiency.brewhouse.value, 80.0);
 
         // Soft-delete
         delete_equipment_profile(&conn, &row.id).unwrap();
-        let profiles = list_equipment_profiles(&conn).unwrap();
+        let profiles = list_equipment_profile_rows(&conn).unwrap();
         assert_eq!(profiles.len(), 0);
 
         // Still exists
-        let fetched = get_equipment_profile(&conn, &row.id).unwrap().unwrap();
+        let fetched = get_equipment_profile_row(&conn, &row.id).unwrap().unwrap();
         assert!(fetched.is_deleted);
     }
 

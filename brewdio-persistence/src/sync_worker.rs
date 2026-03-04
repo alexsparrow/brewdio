@@ -96,6 +96,7 @@ pub async fn run_sync(
     on_change: impl Fn(DocType),
 ) -> Result<(), SyncError> {
     log::info!("[sync] connecting to {}", server_url);
+    // server_url may already contain ?token=... appended by the caller
     let ws_stream = connect(server_url).await?;
     let (mut ws_tx, mut ws_rx) = ws_stream.split();
     let mut sessions: Sessions = HashMap::new();
@@ -458,22 +459,40 @@ impl SyncHandle {
     }
 }
 
+/// Build a WebSocket URL with optional auth token appended as query parameter.
+pub fn build_ws_url(server_url: &str, auth_token: Option<&str>) -> String {
+    match auth_token {
+        Some(token) if !token.is_empty() => {
+            if server_url.contains('?') {
+                format!("{}&token={}", server_url, token)
+            } else {
+                format!("{}?token={}", server_url, token)
+            }
+        }
+        _ => server_url.to_string(),
+    }
+}
+
 /// Spawn a background sync worker (native only).
 /// Connects to the given WebSocket server URL with automatic reconnection.
 /// Keeps retrying on version mismatch (server may be restarted/upgraded).
+/// If `auth_token` is set (e.g. from BREWDIO_AUTH_TOKEN env var), it will be
+/// appended as `?token=<value>` to the WebSocket URL.
 #[cfg(feature = "native")]
 pub fn spawn_sync(
     conn: std::sync::Arc<std::sync::Mutex<rusqlite::Connection>>,
     server_url: String,
+    auth_token: Option<String>,
     handle: &SyncHandle,
 ) -> tokio::task::JoinHandle<()> {
     let status = handle.status.clone();
     let changed = handle.changed.clone();
+    let ws_url = build_ws_url(&server_url, auth_token.as_deref());
     tokio::spawn(async move {
         loop {
             let result = run_sync(
                 &*conn,
-                &server_url,
+                &ws_url,
                 |s| {
                     let code = match &s {
                         SyncStatus::Connected => SYNC_STATUS_CONNECTED,

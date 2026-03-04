@@ -7,9 +7,15 @@ edition = "2021"
 brewdio-persistence = { path = "../brewdio-persistence", features = ["native"] }
 axum = { version = "0.8", features = ["ws"] }
 tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 futures-util = "0.3"
 rusqlite = { version = "0.34", features = ["bundled"] }
+jsonwebtoken = "9"
+bcrypt = "0.17"
+reqwest = { version = "0.12", features = ["json"] }
+tower-http = { version = "0.6", features = ["cors"] }
+ulid = "1"
 
 [dev-dependencies]
 brewdio-core = { path = "../brewdio-core" }

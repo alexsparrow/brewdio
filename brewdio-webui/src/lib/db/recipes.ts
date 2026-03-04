@@ -1,17 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { RecipeType, EquipmentType } from 'brewdio-wasm';
-import { getAppDb } from './app-db';
+import type { RecipeType } from 'brewdio-wasm';
+import { getBackend } from './app-db';
 import { recipeKeys } from './query-keys';
+import type { Recipe } from './backend';
 
 export { recipeKeys };
 
-// Re-export the recipe document type used throughout the app.
-export interface RecipeDocument {
-  id: string;
-  name: string;
-  recipe: RecipeType;
-  equipment?: EquipmentType;
-}
+// Re-export the typed Recipe from backend for consumer compatibility.
+export type { Recipe };
+
+/** Alias for backwards compatibility with existing code. */
+export type RecipeDocument = Recipe;
 
 // ---------------------------------------------------------------------------
 // Queries
@@ -19,24 +18,17 @@ export interface RecipeDocument {
 
 /** Fetch all (non-deleted) recipes. */
 export function useRecipes() {
-  return useQuery<RecipeDocument[]>({
+  return useQuery<Recipe[]>({
     queryKey: recipeKeys.all,
-    queryFn: () => {
-      const db = getAppDb();
-      return db.listRecipes() as unknown as RecipeDocument[];
-    },
+    queryFn: () => getBackend().listRecipes(),
   });
 }
 
 /** Fetch a single recipe by ID. */
 export function useRecipe(id: string) {
-  return useQuery<RecipeDocument | null>({
+  return useQuery<Recipe | null>({
     queryKey: recipeKeys.detail(id),
-    queryFn: () => {
-      const db = getAppDb();
-      const result = db.getRecipe(id);
-      return (result ?? null) as unknown as RecipeDocument | null;
-    },
+    queryFn: () => getBackend().getRecipe(id),
   });
 }
 
@@ -47,11 +39,8 @@ export function useRecipe(id: string) {
 export function useCreateRecipe() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ name, recipe }: { name: string; recipe: RecipeType }) => {
-      const db = getAppDb();
-      const id = db.createRecipe(name, recipe);
-      return Promise.resolve(id);
-    },
+    mutationFn: ({ name, recipe }: { name: string; recipe: RecipeType }) =>
+      getBackend().createRecipe(name, recipe),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: recipeKeys.all });
     },
@@ -61,11 +50,8 @@ export function useCreateRecipe() {
 export function useUpdateRecipe() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, name, recipe }: { id: string; name: string; recipe: RecipeType }) => {
-      const db = getAppDb();
-      db.updateRecipe(id, name, recipe);
-      return Promise.resolve();
-    },
+    mutationFn: ({ id, name, recipe }: { id: string; name: string; recipe: RecipeType }) =>
+      getBackend().updateRecipe(id, name, recipe),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: recipeKeys.all });
       queryClient.invalidateQueries({ queryKey: recipeKeys.detail(variables.id) });
@@ -76,11 +62,7 @@ export function useUpdateRecipe() {
 export function useDeleteRecipe() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => {
-      const db = getAppDb();
-      db.deleteRecipe(id);
-      return Promise.resolve();
-    },
+    mutationFn: (id: string) => getBackend().deleteRecipe(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: recipeKeys.all });
     },
@@ -92,32 +74,26 @@ export function useDeleteRecipe() {
 // ---------------------------------------------------------------------------
 
 /** Create a recipe imperatively. Returns the new recipe ID. */
-export function createRecipeImperative(name: string, recipe: RecipeType): string {
-  const db = getAppDb();
-  return db.createRecipe(name, recipe);
+export async function createRecipeImperative(name: string, recipe: RecipeType): Promise<string> {
+  return getBackend().createRecipe(name, recipe);
 }
 
 /** Update a recipe imperatively. */
-export function updateRecipeImperative(id: string, name: string, recipe: RecipeType): void {
-  const db = getAppDb();
-  db.updateRecipe(id, name, recipe);
+export async function updateRecipeImperative(id: string, name: string, recipe: RecipeType): Promise<void> {
+  return getBackend().updateRecipe(id, name, recipe);
 }
 
 /** Delete a recipe imperatively. */
-export function deleteRecipeImperative(id: string): void {
-  const db = getAppDb();
-  db.deleteRecipe(id);
+export async function deleteRecipeImperative(id: string): Promise<void> {
+  return getBackend().deleteRecipe(id);
 }
 
 /** List all recipes imperatively. */
-export function listRecipesImperative(): RecipeDocument[] {
-  const db = getAppDb();
-  return db.listRecipes() as unknown as RecipeDocument[];
+export async function listRecipesImperative(): Promise<Recipe[]> {
+  return getBackend().listRecipes();
 }
 
 /** Get a recipe by ID imperatively. */
-export function getRecipeImperative(id: string): RecipeDocument | null {
-  const db = getAppDb();
-  const result = db.getRecipe(id);
-  return (result ?? null) as unknown as RecipeDocument | null;
+export async function getRecipeImperative(id: string): Promise<Recipe | null> {
+  return getBackend().getRecipe(id);
 }

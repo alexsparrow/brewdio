@@ -1,21 +1,21 @@
-import type { AppDb as AppDbClass } from 'brewdio-wasm';
 import type { QueryClient } from '@tanstack/react-query';
+import type { DataBackend } from './backend';
 import { recipeKeys, batchKeys, settingsKeys, equipmentKeys } from './query-keys';
 
 // ---------------------------------------------------------------------------
-// Singleton AppDb instance
+// Singleton DataBackend instance
 // ---------------------------------------------------------------------------
 
-let appDb: AppDbClass | null = null;
+let backend: DataBackend | null = null;
 
 /** Call once during app initialisation (before React renders). */
-export function initAppDb(db: AppDbClass) {
-  appDb = db;
+export function initBackend(b: DataBackend) {
+  backend = b;
 }
 
-export function getAppDb(): AppDbClass {
-  if (!appDb) throw new Error('AppDb not initialised – call initAppDb() first');
-  return appDb;
+export function getBackend(): DataBackend {
+  if (!backend) throw new Error('DataBackend not initialised – call initBackend() first');
+  return backend;
 }
 
 // ---------------------------------------------------------------------------
@@ -39,27 +39,28 @@ function postChange(kind: ChangeKind) {
 }
 
 /**
- * Wire up the WASM change-notification callbacks so that external mutations
- * (e.g. incoming sync) automatically invalidate the TanStack Query cache.
+ * Wire up the DataBackend change-notification callbacks so that external
+ * mutations (e.g. incoming sync) automatically invalidate the TanStack Query
+ * cache.
  *
  * Also sets up a BroadcastChannel so that changes in one tab are reflected
  * in all other open tabs.
  */
 export function registerChangeCallback(queryClient: QueryClient) {
-  const db = getAppDb();
-  db.onRecipesChange(() => {
+  const b = getBackend();
+  b.onRecipesChange(() => {
     queryClient.invalidateQueries({ queryKey: recipeKeys.all });
     postChange('recipes');
   });
-  db.onBatchesChange(() => {
+  b.onBatchesChange(() => {
     queryClient.invalidateQueries({ queryKey: batchKeys.all });
     postChange('batches');
   });
-  db.onSettingsChange(() => {
+  b.onSettingsChange(() => {
     queryClient.invalidateQueries({ queryKey: settingsKeys.all });
     postChange('settings');
   });
-  db.onEquipmentChange(() => {
+  b.onEquipmentChange(() => {
     queryClient.invalidateQueries({ queryKey: equipmentKeys.all });
     postChange('equipment-profiles');
   });

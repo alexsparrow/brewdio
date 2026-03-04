@@ -7,6 +7,8 @@ import wasm from "vite-plugin-wasm";
 import topLevelAwait from "vite-plugin-top-level-await";
 
 // https://vite.dev/config/
+const isTauri = !!process.env.TAURI_ENV_PLATFORM;
+
 export default defineConfig({
   plugins: [TanStackRouterVite(), react(), tailwindcss(), wasm(), topLevelAwait()],
   resolve: {
@@ -18,7 +20,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         app: path.resolve(__dirname, "index.html"),
-        sw: path.resolve(__dirname, "src/sw.ts"),
+        ...(isTauri ? {} : { sw: path.resolve(__dirname, "src/sw.ts") }),
       },
       output: {
         entryFileNames: (chunk) =>
@@ -27,11 +29,16 @@ export default defineConfig({
     },
   },
   server: {
-    proxy: {
-      "/ws": {
-        target: "ws://localhost:8080",
-        ws: true,
+    strictPort: true,
+    ...(!isTauri && {
+      proxy: {
+        "/ws": {
+          target: "ws://localhost:8080",
+          ws: true,
+        },
       },
-    },
+    }),
   },
+  // Don't clear the screen so Tauri logs stay visible
+  clearScreen: false,
 });

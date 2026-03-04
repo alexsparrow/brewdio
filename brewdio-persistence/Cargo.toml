@@ -6,7 +6,7 @@ edition = "2021"
 [features]
 default = ["native"]
 native = ["rusqlite/bundled", "tokio"]
-wasm = ["sqlite-wasm-rs", "wasm-bindgen", "wasm-bindgen-futures", "js-sys", "web-time", "getrandom", "wasmtimer"]
+wasm = ["sqlite-wasm-rs", "wasm-bindgen", "wasm-bindgen-futures", "js-sys", "web-time", "getrandom", "wasmtimer", "tsify", "serde-wasm-bindgen"]
 
 [dependencies]
 # Always (pure, WASM-safe)
@@ -35,3 +35,5 @@ js-sys = { version = "0.3", optional = true }
 web-time = { version = "1", optional = true }
 getrandom = { version = "0.3", features = ["wasm_js"], optional = true }
 wasmtimer = { version = "0.4", optional = true }
+tsify = { version = "0.5.6", features = ["js"], optional = true }
+serde-wasm-bindgen = { version = "0.6", optional = true }

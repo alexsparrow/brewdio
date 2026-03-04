@@ -549,10 +549,10 @@ mod tests {
         crate::db::apply_remote_merge_doc(&conn_a, crate::protocol::DocType::Recipe, &row_b.id, &row_b.am_data).unwrap();
 
         // Verify both recipes on both sides are not deleted
-        let a_on_a = crate::db::get_recipe(&conn_a, &row_a.id).unwrap().unwrap();
-        let b_on_a = crate::db::get_recipe(&conn_a, &row_b.id).unwrap().unwrap();
-        let a_on_b = crate::db::get_recipe(&conn_b, &row_a.id).unwrap().unwrap();
-        let b_on_b = crate::db::get_recipe(&conn_b, &row_b.id).unwrap().unwrap();
+        let a_on_a = crate::db::get_recipe_row(&conn_a, &row_a.id).unwrap().unwrap();
+        let b_on_a = crate::db::get_recipe_row(&conn_a, &row_b.id).unwrap().unwrap();
+        let a_on_b = crate::db::get_recipe_row(&conn_b, &row_a.id).unwrap().unwrap();
+        let b_on_b = crate::db::get_recipe_row(&conn_b, &row_b.id).unwrap().unwrap();
         assert!(!a_on_a.is_deleted, "Server's recipe on server should not be deleted");
         assert!(!b_on_a.is_deleted, "Client's recipe on server should not be deleted");
         assert!(!a_on_b.is_deleted, "Server's recipe on client should not be deleted");
@@ -897,9 +897,9 @@ mod tests {
         .unwrap();
 
         // Verify all three have the recipe
-        let r_a = crate::db::get_recipe(&conn_a, &recipe_id).unwrap().unwrap();
-        let r_s = crate::db::get_recipe(&conn_server, &recipe_id).unwrap().unwrap();
-        let r_b = crate::db::get_recipe(&conn_b, &recipe_id).unwrap().unwrap();
+        let r_a = crate::db::get_recipe_row(&conn_a, &recipe_id).unwrap().unwrap();
+        let r_s = crate::db::get_recipe_row(&conn_server, &recipe_id).unwrap().unwrap();
+        let r_b = crate::db::get_recipe_row(&conn_b, &recipe_id).unwrap().unwrap();
         assert_eq!(r_a.name, "Original Beer");
         assert_eq!(r_s.name, "Original Beer");
         assert_eq!(r_b.name, "Original Beer");
@@ -1051,9 +1051,9 @@ mod tests {
         }
 
         // Verify all DBs have the correct values
-        let final_a = crate::db::get_recipe(&conn_a, &recipe_id).unwrap().unwrap();
-        let final_s = crate::db::get_recipe(&conn_server, &recipe_id).unwrap().unwrap();
-        let final_b = crate::db::get_recipe(&conn_b, &recipe_id).unwrap().unwrap();
+        let final_a = crate::db::get_recipe_row(&conn_a, &recipe_id).unwrap().unwrap();
+        let final_s = crate::db::get_recipe_row(&conn_server, &recipe_id).unwrap().unwrap();
+        let final_b = crate::db::get_recipe_row(&conn_b, &recipe_id).unwrap().unwrap();
 
         // Check recipe JSON was updated correctly via apply_remote_merge
         let recipe_b: RecipeType = serde_json::from_str(&final_b.recipe).unwrap();

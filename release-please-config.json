@@ -13,7 +13,13 @@
         "brewdio-persistence/Cargo.toml",
         "brewdio-wasm/Cargo.toml",
         "brewdio-server/Cargo.toml",
-        "brewdio-tui/Cargo.toml"
+        "brewdio-tui/Cargo.toml",
+        "brewdio-desktop/Cargo.toml",
+        {
+          "type": "json",
+          "path": "brewdio-desktop/tauri.conf.json",
+          "jsonpath": "$.version"
+        }
       ]
     }
   }

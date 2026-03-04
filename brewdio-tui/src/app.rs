@@ -13,7 +13,7 @@ use brewdio_core::water::{
 use brewdio_persistence::automerge::HistoryEntry;
 use brewdio_persistence::batch::{self, BatchData};
 use brewdio_persistence::db;
-use brewdio_persistence::recipe::RecipeDocument;
+use brewdio_persistence::recipe::Recipe;
 use brewdio_persistence::settings;
 use rusqlite::Connection;
 use serde_json::Value as JsonValue;
@@ -326,7 +326,7 @@ pub struct App {
     pub settings_index: usize,
     pub setting_edit: Option<SettingEditState>,
     // Recipe edit state
-    pub current_doc: Option<RecipeDocument>,
+    pub current_doc: Option<Recipe>,
     pub edit_focus: EditFocus,
     pub active_tab: Tab,
     pub name_input: String,
@@ -445,28 +445,24 @@ impl App {
         // Reload the currently open recipe/batch from DB
         match self.screen.clone() {
             Screen::RecipeEdit { recipe_id } => {
-                let row = {
+                let recipe = {
                     let c = self.conn.lock().unwrap_or_else(|e| e.into_inner());
                     db::get_recipe(&*c, &recipe_id).ok().flatten()
                 };
-                if let Some(row) = row {
-                    if let Ok(doc) = row.to_document() {
-                        self.name_input = doc.name.clone();
-                        self.current_doc = Some(doc);
-                    }
+                if let Some(recipe) = recipe {
+                    self.name_input = recipe.name.clone();
+                    self.current_doc = Some(recipe);
                 }
             }
             Screen::BatchEdit { ref batch_id } => {
-                let row = {
+                let b = {
                     let c = self.conn.lock().unwrap_or_else(|e| e.into_inner());
                     batch::get_batch(&*c, batch_id).ok().flatten()
                 };
-                if let Some(row) = row {
-                    if let Ok(data) = row.to_data() {
-                        self.name_input = row.name.clone();
-                        self.batch_notes_text = data.notes.clone().unwrap_or_default();
-                        self.current_batch_data = Some(data);
-                    }
+                if let Some(b) = b {
+                    self.name_input = b.name.clone();
+                    self.batch_notes_text = b.data.notes.clone().unwrap_or_default();
+                    self.current_batch_data = Some(b.data);
                 }
             }
             _ => {}
@@ -670,15 +666,13 @@ impl App {
             self.refresh_recipes();
             if let Screen::RecipeEdit { ref recipe_id } = self.screen {
                 let recipe_id = recipe_id.clone();
-                let row = {
+                let recipe = {
                     let c = self.conn.lock().unwrap_or_else(|e| e.into_inner());
                     db::get_recipe(&*c, &recipe_id).ok().flatten()
                 };
-                if let Some(row) = row {
-                    if let Ok(doc) = row.to_document() {
-                        self.name_input = doc.name.clone();
-                        self.current_doc = Some(doc);
-                    }
+                if let Some(recipe) = recipe {
+                    self.name_input = recipe.name.clone();
+                    self.current_doc = Some(recipe);
                 }
             }
         }
@@ -686,46 +680,52 @@ impl App {
 
     pub fn refresh_recipes(&mut self) {
         let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
-        let result = if self.show_deleted {
-            db::list_all_recipes(&*conn)
+        if self.show_deleted {
+            if let Ok(rows) = db::list_all_recipes(&*conn) {
+                self.recipes = rows
+                    .into_iter()
+                    .map(|r| {
+                        let style = serde_json::from_str::<JsonValue>(&r.recipe)
+                            .ok()
+                            .and_then(|v| v.get("style")?.get("name")?.as_str().map(String::from))
+                            .unwrap_or_default();
+                        RecipeListItem {
+                            id: r.id,
+                            name: r.name,
+                            style,
+                            is_deleted: r.is_deleted,
+                        }
+                    })
+                    .collect();
+            }
         } else {
-            db::list_recipes(&*conn)
-        };
-        if let Ok(rows) = result {
-            self.recipes = rows
-                .into_iter()
-                .map(|r| {
-                    let style = serde_json::from_str::<JsonValue>(&r.recipe)
-                        .ok()
-                        .and_then(|v| v.get("style")?.get("name")?.as_str().map(String::from))
-                        .unwrap_or_default();
-                    RecipeListItem {
-                        id: r.id,
-                        name: r.name,
-                        style,
-                        is_deleted: r.is_deleted,
-                    }
-                })
-                .collect();
+            if let Ok(recipes) = db::list_recipes(&*conn) {
+                self.recipes = recipes
+                    .into_iter()
+                    .map(|r| {
+                        let style = r.recipe.style.as_ref().map(|s| s.name.clone()).unwrap_or_default();
+                        RecipeListItem {
+                            id: r.id,
+                            name: r.name,
+                            style,
+                            is_deleted: false,
+                        }
+                    })
+                    .collect();
+            }
         }
     }
 
     pub fn refresh_batches(&mut self) {
-        if let Ok(rows) = batch::list_batches(&*self.conn.lock().unwrap_or_else(|e| e.into_inner())) {
-            self.batches = rows
+        if let Ok(batches) = batch::list_batches(&*self.conn.lock().unwrap_or_else(|e| e.into_inner())) {
+            self.batches = batches
                 .into_iter()
-                .map(|r| {
-                    let (recipe_name, brew_date) = r
-                        .to_data()
-                        .map(|d| {
-                            (d.recipe.name.clone(), format_epoch_millis(d.brew_date))
-                        })
-                        .unwrap_or_else(|_| ("(unknown)".to_string(), String::new()));
+                .map(|b| {
                     BatchListItem {
-                        id: r.id,
-                        name: r.name,
-                        recipe_name,
-                        brew_date,
+                        id: b.id,
+                        name: b.name,
+                        recipe_name: b.data.recipe.name.clone(),
+                        brew_date: format_epoch_millis(b.data.brew_date),
                     }
                 })
                 .collect();
@@ -850,29 +850,27 @@ impl App {
     }
 
     pub fn open_recipe(&mut self, id: &str) {
-        let row = {
+        let recipe = {
             let c = self.conn.lock().unwrap_or_else(|e| e.into_inner());
             db::get_recipe(&*c, id).ok().flatten()
         };
-        if let Some(row) = row {
-            if let Ok(doc) = row.to_document() {
-                self.name_input = doc.name.clone();
-                self.current_doc = Some(doc);
-                self.history_entries.clear();
-                self.history_scroll = 0;
-                self.history_loading = false;
-                self.history_rx = None;
-                self.screen = Screen::RecipeEdit {
-                    recipe_id: id.to_string(),
-                };
-                self.editing_name = false;
-                self.style_selector = None;
-                self.equipment_selector = None;
-                self.edit_focus = EditFocus::Name;
-                self.active_tab = Tab::Fermentables;
-                self.recipe_batch_list_index = 0;
-                self.refresh_recipe_batches();
-            }
+        if let Some(recipe) = recipe {
+            self.name_input = recipe.name.clone();
+            self.current_doc = Some(recipe);
+            self.history_entries.clear();
+            self.history_scroll = 0;
+            self.history_loading = false;
+            self.history_rx = None;
+            self.screen = Screen::RecipeEdit {
+                recipe_id: id.to_string(),
+            };
+            self.editing_name = false;
+            self.style_selector = None;
+            self.equipment_selector = None;
+            self.edit_focus = EditFocus::Name;
+            self.active_tab = Tab::Fermentables;
+            self.recipe_batch_list_index = 0;
+            self.refresh_recipe_batches();
         }
     }
 
@@ -909,39 +907,36 @@ impl App {
     }
 
     pub fn open_batch(&mut self, batch_id: &str) {
-        if let Ok(Some(row)) =
+        if let Ok(Some(b)) =
             batch::get_batch(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()), batch_id)
         {
-            if let Ok(data) = row.to_data() {
-                // Build a virtual RecipeDocument from the batch's recipe copy
-                let doc = RecipeDocument {
-                    id: batch_id.to_string(),
-                    name: row.name.clone(),
-                    recipe: data.recipe.clone(),
-                    equipment: Some(data.equipment.clone()),
-                    equipment_id: Some(data.equipment_id.clone()),
-                    is_deleted: false,
-                };
-                self.name_input = row.name.clone();
-                self.brew_date_input = format_epoch_millis(data.brew_date);
-                self.current_doc = Some(doc);
-                self.history_entries.clear();
-                self.history_scroll = 0;
-                self.history_loading = false;
-                self.history_rx = None;
-                self.current_batch_id = Some(batch_id.to_string());
-                self.current_batch_data = Some(data.clone());
-                self.batch_notes_text = data.notes.clone().unwrap_or_default();
-                self.screen = Screen::BatchEdit {
-                    batch_id: batch_id.to_string(),
-                };
-                self.editing_name = false;
-                self.editing_brew_date = false;
-                self.style_selector = None;
-                self.equipment_selector = None;
-                self.edit_focus = EditFocus::Name;
-                self.active_tab = Tab::Fermentables;
-            }
+            // Build a virtual Recipe from the batch's recipe copy
+            let doc = Recipe {
+                id: batch_id.to_string(),
+                name: b.name.clone(),
+                recipe: b.data.recipe.clone(),
+                equipment: Some(b.data.equipment.clone()),
+                equipment_id: Some(b.data.equipment_id.clone()),
+            };
+            self.name_input = b.name.clone();
+            self.brew_date_input = format_epoch_millis(b.data.brew_date);
+            self.current_doc = Some(doc);
+            self.history_entries.clear();
+            self.history_scroll = 0;
+            self.history_loading = false;
+            self.history_rx = None;
+            self.current_batch_id = Some(batch_id.to_string());
+            self.batch_notes_text = b.data.notes.clone().unwrap_or_default();
+            self.current_batch_data = Some(b.data);
+            self.screen = Screen::BatchEdit {
+                batch_id: batch_id.to_string(),
+            };
+            self.editing_name = false;
+            self.editing_brew_date = false;
+            self.style_selector = None;
+            self.equipment_selector = None;
+            self.edit_focus = EditFocus::Name;
+            self.active_tab = Tab::Fermentables;
         }
     }
 
@@ -993,7 +988,7 @@ impl App {
     pub fn open_recipe_from_batch(&mut self) {
         let recipe_id = self.current_batch_id.as_ref().and_then(|bid| {
             let conn = self.conn.lock().unwrap_or_else(|e| e.into_inner());
-            batch::get_batch(&*conn, bid).ok().flatten().map(|r| r.recipe_id)
+            batch::get_batch(&*conn, bid).ok().flatten().map(|b| b.recipe_id)
         });
         if let Some(rid) = recipe_id {
             self.save_current_batch();
@@ -1010,22 +1005,18 @@ impl App {
     pub fn refresh_recipe_batches(&mut self) {
         if let Screen::RecipeEdit { ref recipe_id } = self.screen {
             let recipe_id = recipe_id.clone();
-            if let Ok(rows) =
+            if let Ok(batches) =
                 batch::list_batches(&*self.conn.lock().unwrap_or_else(|e| e.into_inner()))
             {
-                self.recipe_batches = rows
+                self.recipe_batches = batches
                     .into_iter()
-                    .filter(|r| r.recipe_id == recipe_id)
-                    .map(|r| {
-                        let (recipe_name, brew_date) = r
-                            .to_data()
-                            .map(|d| (d.recipe.name.clone(), format_epoch_millis(d.brew_date)))
-                            .unwrap_or_else(|_| ("(unknown)".to_string(), String::new()));
+                    .filter(|b| b.recipe_id == recipe_id)
+                    .map(|b| {
                         BatchListItem {
-                            id: r.id,
-                            name: r.name,
-                            recipe_name,
-                            brew_date,
+                            id: b.id,
+                            name: b.name,
+                            recipe_name: b.data.recipe.name.clone(),
+                            brew_date: format_epoch_millis(b.data.brew_date),
                         }
                     })
                     .collect();
@@ -1671,14 +1662,14 @@ impl App {
         let am_data = match &self.screen {
             Screen::RecipeEdit { ref recipe_id } => {
                 let c = self.conn.lock().unwrap_or_else(|e| e.into_inner());
-                db::get_recipe(&*c, recipe_id)
+                db::get_recipe_row(&*c, recipe_id)
                     .ok()
                     .flatten()
                     .map(|row| row.am_data)
             }
             Screen::BatchEdit { ref batch_id } => {
                 let c = self.conn.lock().unwrap_or_else(|e| e.into_inner());
-                batch::get_batch(&*c, batch_id)
+                batch::get_batch_row(&*c, batch_id)
                     .ok()
                     .flatten()
                     .map(|row| row.am_data)

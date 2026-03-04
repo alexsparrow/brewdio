@@ -66,7 +66,7 @@ export async function createRecipe(params: CreateRecipeParams): Promise<string> 
     mash: defaultMash ? structuredClone(defaultMash) : undefined,
   };
 
-  const recipeId = createRecipeImperative(name, newRecipe);
+  const recipeId = await createRecipeImperative(name, newRecipe);
 
   return recipeId;
 }
@@ -105,14 +105,14 @@ export async function updateRecipe(params: UpdateRecipeParams): Promise<void> {
   // Validate the recipe structure before updating
   validateRecipeStructure(recipe);
 
-  updateRecipeImperative(recipeId, recipe.name, recipe);
+  await updateRecipeImperative(recipeId, recipe.name, recipe);
 }
 
 /**
  * Delete a recipe by ID
  */
 export async function deleteRecipe(recipeId: string): Promise<void> {
-  deleteRecipeImperative(recipeId);
+  await deleteRecipeImperative(recipeId);
 }
 
 /**
