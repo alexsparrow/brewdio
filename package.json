@@ -1,6 +1,6 @@
 {
   "name": "brewdio",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "scripts": {
     "build:wasm": "wasm-pack build brewdio-wasm --target web --dev",
     "typecheck": "bun run --filter '*' typecheck",

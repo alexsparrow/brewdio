@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.7.1](https://github.com/brewdio/brewdio/compare/v0.7.0...v0.7.1) (2026-03-04)
+
+
+### Bug Fixes
+
+* build mac .tar.gz instead of .dmg ([fc00795](https://github.com/brewdio/brewdio/commit/fc00795a7f567c4cfdaf329ac6bf4098b1b6a600))
+* build mac .tar.gz instead of .dmg ([045a646](https://github.com/brewdio/brewdio/commit/045a646876e4a6bfb77ecb417bedd154c7185424))
+* ensure tui and server don't depend on openssl ([7eb368b](https://github.com/brewdio/brewdio/commit/7eb368b5bd10599b1b10d910523a089dc6eae68b))
+* ensure tui and server don't depend on openssl ([745ce5d](https://github.com/brewdio/brewdio/commit/745ce5dee9ae02697c05ef7adc18304db5e4170a))
+
 ## [0.7.0](https://github.com/brewdio/brewdio/compare/v0.6.3...v0.7.0) (2026-03-04)
 
 

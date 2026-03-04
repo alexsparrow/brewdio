@@ -1,6 +1,6 @@
 [package]
 name = "brewdio-wasm"
-version = "0.7.0" # x-release-please-version
+version = "0.7.1" # x-release-please-version
 edition = "2024"
 
 [dependencies]
