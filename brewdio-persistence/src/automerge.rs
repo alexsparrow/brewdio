@@ -545,7 +545,7 @@ fn diff_ingredients<T: Serialize>(prev: &[T], curr: &[T], kind: &str, diffs: &mu
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::db::{create_recipe, delete_recipe, get_recipe, update_recipe};
+    use crate::db::{create_recipe, delete_recipe, get_recipe_row, update_recipe};
     use crate::recipe::RecipeDocument;
     use brewdio_core::beerjson_types::RecipeType;
 
@@ -576,7 +576,7 @@ mod tests {
 
         // Create a recipe
         let row = create_recipe(&conn, "Version 1", &sample_recipe(), None, None).unwrap();
-        let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
+        let fetched = get_recipe_row(&conn, &row.id).unwrap().unwrap();
         let history = get_change_history(&fetched.am_data);
         assert_eq!(history.len(), 1, "Create should produce 1 change");
 
@@ -584,7 +584,7 @@ mod tests {
         let mut recipe_v2 = sample_recipe();
         recipe_v2.name = "Version 2".to_string();
         update_recipe(&conn, &row.id, "Version 2", &recipe_v2, None).unwrap();
-        let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
+        let fetched = get_recipe_row(&conn, &row.id).unwrap().unwrap();
         let history = get_change_history(&fetched.am_data);
         assert_eq!(history.len(), 2, "One update should produce 2 changes");
 
@@ -592,7 +592,7 @@ mod tests {
         let mut recipe_v3 = sample_recipe();
         recipe_v3.name = "Version 3".to_string();
         update_recipe(&conn, &row.id, "Version 3", &recipe_v3, None).unwrap();
-        let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
+        let fetched = get_recipe_row(&conn, &row.id).unwrap().unwrap();
         let history = get_change_history(&fetched.am_data);
         assert_eq!(history.len(), 3, "Two updates should produce 3 changes");
 
@@ -624,7 +624,7 @@ mod tests {
         // Soft-delete
         delete_recipe(&conn, &row.id).unwrap();
 
-        let fetched = get_recipe(&conn, &row.id).unwrap().unwrap();
+        let fetched = get_recipe_row(&conn, &row.id).unwrap().unwrap();
         let history = get_change_history(&fetched.am_data);
         assert_eq!(history.len(), 3, "Create + update + delete = 3 changes");
 

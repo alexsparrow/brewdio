@@ -52,11 +52,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Start background sync worker if BREWDIO_SERVER_URL is set
     let sync_handle = if let Ok(url) = std::env::var("BREWDIO_SERVER_URL") {
         let handle = brewdio_persistence::sync_worker::SyncHandle::new();
+        let auth_token = std::env::var("BREWDIO_AUTH_TOKEN").ok();
         let conn_clone = conn.clone();
         let status = handle.status.clone();
         let changed = handle.changed.clone();
         runtime.spawn(async move {
-            let _ = brewdio_persistence::sync_worker::spawn_sync(conn_clone, url, &handle).await;
+            let _ = brewdio_persistence::sync_worker::spawn_sync(conn_clone, url, auth_token, &handle).await;
         });
         Some((status, changed))
     } else {

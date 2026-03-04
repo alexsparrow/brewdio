@@ -10,6 +10,11 @@ use brewdio_persistence::recipe::RecipeDocument;
 use brewdio_persistence::settings;
 use brewdio_persistence::{connection_native, db, sync_worker};
 
+use brewdio_server::auth::config::AuthConfig;
+use brewdio_server::auth::jwt::encode_token;
+use brewdio_server::auth::password::hash_password;
+use brewdio_server::db as server_db;
+
 fn sample_recipe() -> RecipeType {
     serde_json::from_str(
         r#"{
@@ -44,9 +49,44 @@ fn sample_recipe() -> RecipeType {
     .unwrap()
 }
 
+const TEST_JWT_SECRET: &str = "test-secret-for-integration-tests";
+const TEST_USER_ID: &str = "test-user-001";
+const TEST_USER_EMAIL: &str = "test@example.com";
+
+fn test_auth_config() -> AuthConfig {
+    AuthConfig {
+        jwt_secret: TEST_JWT_SECRET.to_string(),
+        allow_signups: true,
+        google_client_id: None,
+        admin_email: None,
+        admin_password: None,
+    }
+}
+
+fn test_jwt() -> String {
+    let user = server_db::UserRow {
+        id: TEST_USER_ID.to_string(),
+        email: TEST_USER_EMAIL.to_string(),
+        password_hash: None,
+        google_id: None,
+        display_name: "Test User".to_string(),
+        is_admin: true,
+    };
+    encode_token(&user, TEST_JWT_SECRET).unwrap()
+}
+
+/// Set up server connection with server-only migrations and test user.
+fn setup_server_conn() -> Arc<Mutex<rusqlite::Connection>> {
+    let conn = connection_native::open(":memory:").unwrap();
+    server_db::run_server_migrations(&conn).unwrap();
+    let hash = hash_password("testpass").unwrap();
+    server_db::create_user(&conn, TEST_USER_ID, TEST_USER_EMAIL, Some(&hash), None, "Test User", true).unwrap();
+    Arc::new(Mutex::new(conn))
+}
+
 #[tokio::test]
 async fn client_to_server_sync() {
-    let server_conn = Arc::new(Mutex::new(connection_native::open(":memory:").unwrap()));
+    let server_conn = setup_server_conn();
     let client_conn = Arc::new(Mutex::new(connection_native::open(":memory:").unwrap()));
 
     {
@@ -56,11 +96,11 @@ async fn client_to_server_sync() {
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    let _server = brewdio_server::start_server(listener, server_conn.clone());
+    let _server = brewdio_server::start_server(listener, server_conn.clone(), test_auth_config());
 
     let url = format!("ws://{}/ws", addr);
     let handle = sync_worker::SyncHandle::new();
-    let _client = sync_worker::spawn_sync(client_conn.clone(), url, &handle);
+    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Some(test_jwt()), &handle);
 
     let recipes = timeout(Duration::from_secs(10), async {
         loop {
@@ -92,21 +132,26 @@ async fn client_to_server_sync() {
 
 #[tokio::test]
 async fn server_to_client_sync() {
-    let server_conn = Arc::new(Mutex::new(connection_native::open(":memory:").unwrap()));
+    let server_conn = setup_server_conn();
     let client_conn = Arc::new(Mutex::new(connection_native::open(":memory:").unwrap()));
 
     {
         let c = server_conn.lock().unwrap();
         db::create_recipe(&*c, "Server Stout", &sample_recipe(), None, None).unwrap();
+        // Assign user_id to the recipe so it's visible to the authenticated user
+        c.execute(
+            "UPDATE recipe SET user_id = ?1 WHERE user_id IS NULL",
+            rusqlite::params![TEST_USER_ID],
+        ).unwrap();
     }
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    let _server = brewdio_server::start_server(listener, server_conn.clone());
+    let _server = brewdio_server::start_server(listener, server_conn.clone(), test_auth_config());
 
     let url = format!("ws://{}/ws", addr);
     let handle = sync_worker::SyncHandle::new();
-    let _client = sync_worker::spawn_sync(client_conn.clone(), url, &handle);
+    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Some(test_jwt()), &handle);
 
     let recipes = timeout(Duration::from_secs(10), async {
         loop {
@@ -141,7 +186,7 @@ async fn server_to_client_sync() {
 /// stays false through the merge.
 #[tokio::test]
 async fn shared_recipe_sync_preserves_is_deleted() {
-    let server_conn = Arc::new(Mutex::new(connection_native::open(":memory:").unwrap()));
+    let server_conn = setup_server_conn();
     let client_conn = Arc::new(Mutex::new(connection_native::open(":memory:").unwrap()));
 
     let recipe_id = "shared-recipe-1";
@@ -162,8 +207,8 @@ async fn shared_recipe_sync_preserves_is_deleted() {
 
         let c = server_conn.lock().unwrap();
         c.execute(
-            "INSERT INTO recipe (id, name, recipe, am_data, is_deleted, is_dirty) VALUES (?1, ?2, ?3, ?4, FALSE, TRUE)",
-            rusqlite::params![recipe_id, "Server Version", recipe_json, am_data],
+            "INSERT INTO recipe (id, name, recipe, am_data, is_deleted, is_dirty, user_id) VALUES (?1, ?2, ?3, ?4, FALSE, TRUE, ?5)",
+            rusqlite::params![recipe_id, "Server Version", recipe_json, am_data, TEST_USER_ID],
         ).unwrap();
     }
     {
@@ -187,11 +232,11 @@ async fn shared_recipe_sync_preserves_is_deleted() {
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    let _server = brewdio_server::start_server(listener, server_conn.clone());
+    let _server = brewdio_server::start_server(listener, server_conn.clone(), test_auth_config());
 
     let url = format!("ws://{}/ws", addr);
     let handle = sync_worker::SyncHandle::new();
-    let _client = sync_worker::spawn_sync(client_conn.clone(), url, &handle);
+    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Some(test_jwt()), &handle);
 
     // Wait for sync to converge (names should match on both sides)
     timeout(Duration::from_secs(10), async {
@@ -232,7 +277,7 @@ async fn shared_recipe_sync_preserves_is_deleted() {
 
 #[tokio::test]
 async fn batch_client_to_server_sync() {
-    let server_conn = Arc::new(Mutex::new(connection_native::open(":memory:").unwrap()));
+    let server_conn = setup_server_conn();
     let client_conn = Arc::new(Mutex::new(connection_native::open(":memory:").unwrap()));
 
     // Create a batch on the client
@@ -252,11 +297,11 @@ async fn batch_client_to_server_sync() {
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    let _server = brewdio_server::start_server(listener, server_conn.clone());
+    let _server = brewdio_server::start_server(listener, server_conn.clone(), test_auth_config());
 
     let url = format!("ws://{}/ws", addr);
     let handle = sync_worker::SyncHandle::new();
-    let _client = sync_worker::spawn_sync(client_conn.clone(), url, &handle);
+    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Some(test_jwt()), &handle);
 
     let batches = timeout(Duration::from_secs(10), async {
         loop {
@@ -280,7 +325,7 @@ async fn batch_client_to_server_sync() {
 
 #[tokio::test]
 async fn settings_client_to_server_sync() {
-    let server_conn = Arc::new(Mutex::new(connection_native::open(":memory:").unwrap()));
+    let server_conn = setup_server_conn();
     let client_conn = Arc::new(Mutex::new(connection_native::open(":memory:").unwrap()));
 
     // Save settings on the client
@@ -293,11 +338,11 @@ async fn settings_client_to_server_sync() {
 
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    let _server = brewdio_server::start_server(listener, server_conn.clone());
+    let _server = brewdio_server::start_server(listener, server_conn.clone(), test_auth_config());
 
     let url = format!("ws://{}/ws", addr);
     let handle = sync_worker::SyncHandle::new();
-    let _client = sync_worker::spawn_sync(client_conn.clone(), url, &handle);
+    let _client = sync_worker::spawn_sync(client_conn.clone(), url, Some(test_jwt()), &handle);
 
     let synced_settings = timeout(Duration::from_secs(10), async {
         loop {

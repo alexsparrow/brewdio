@@ -18,6 +18,13 @@ Default to using Bun instead of Node.js.
 - Prefer `Bun.file` over `node:fs`'s readFile/writeFile
 - Bun.$`ls` instead of execa.
 
+## Type checking
+
+- `bun run typecheck` from the repo root runs typecheck across all workspaces
+- `bun run typecheck` from `brewdio-webui/` runs `tsc -b`
+- `cargo check -p brewdio-desktop` checks the Tauri desktop app
+- `cargo test -p brewdio-persistence` runs all persistence tests (39 tests)
+
 ## Testing
 
 Use `bun test` to run tests.

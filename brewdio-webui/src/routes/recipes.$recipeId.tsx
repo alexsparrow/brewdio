@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useRecipe, recipeKeys } from "@/lib/db/recipes";
-import { getAppDb } from "@/lib/db/app-db";
+import { getBackend } from "@/lib/db/app-db";
 import { useQueryClient } from "@tanstack/react-query";
 import { RecipeEditProvider } from "@/contexts/recipe-edit-context";
 import { RecipeHeader } from "@/components/recipe-header";
@@ -23,12 +23,11 @@ function RecipeDetailComponent() {
   const queryClient = useQueryClient();
   const [brewDialogOpen, setBrewDialogOpen] = useState(false);
 
-  const updateRecipe = (mutateFn: (r: RecipeType) => void) => {
+  const updateRecipe = async (mutateFn: (r: RecipeType) => void) => {
     if (!recipe) return;
     const updated = structuredClone(recipe.recipe);
     mutateFn(updated);
-    const db = getAppDb();
-    db.updateRecipe(recipeId, updated.name, updated);
+    await getBackend().updateRecipe(recipeId, updated.name, updated);
     queryClient.invalidateQueries({ queryKey: recipeKeys.all });
     queryClient.invalidateQueries({ queryKey: recipeKeys.detail(recipeId) });
   };

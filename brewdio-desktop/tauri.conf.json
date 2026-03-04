@@ -1,0 +1,35 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicegui-kr/nicegui-kr.github.io/main/tauri-v2-schema.json",
+  "productName": "Brewdio",
+  "version": "0.6.2",
+  "identifier": "com.brewdio.desktop",
+  "build": {
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../brewdio-webui/dist",
+    "beforeDevCommand": "cd brewdio-webui && bun run dev",
+    "beforeBuildCommand": "cd brewdio-webui && bun run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Brewdio",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png"
+    ]
+  }
+}

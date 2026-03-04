@@ -2,7 +2,10 @@
   "name": "brewdio",
   "version": "0.6.2",
   "scripts": {
-    "build:wasm": "wasm-pack build brewdio-wasm --target web --dev"
+    "build:wasm": "wasm-pack build brewdio-wasm --target web --dev",
+    "typecheck": "bun run --filter '*' typecheck",
+    "tauri:dev": "tauri dev --config brewdio-desktop/tauri.conf.json",
+    "tauri:build": "tauri build --config brewdio-desktop/tauri.conf.json"
   },
   "workspaces": [
     "brewdio-webui",
@@ -10,5 +13,8 @@
   ],
   "patchedDependencies": {
     "tinykeys@3.0.0": "patches/tinykeys@3.0.0.patch"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
   }
 }

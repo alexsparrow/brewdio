@@ -30,3 +30,6 @@ brewdio.db
 
 # wasm-pack build output (stub package.json is force-tracked)
 brewdio-wasm/pkg/
+
+# Tauri auto-generated schemas
+brewdio-desktop/gen/

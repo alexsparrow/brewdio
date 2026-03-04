@@ -5,6 +5,20 @@ use crate::connection::DbError;
 use crate::protocol::DocType;
 use crate::traits::{SyncDocument, SyncRow};
 
+/// Public typed recipe for external consumers.
+/// JSON fields from the underlying `RecipeRow` are deserialized.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(into_wasm_abi))]
+#[serde(rename_all = "camelCase")]
+pub struct Recipe {
+    pub id: String,
+    pub name: String,
+    pub recipe: RecipeType,
+    pub equipment: Option<EquipmentType>,
+    pub equipment_id: Option<String>,
+}
+
 /// Row representation for SQLite storage.
 #[derive(Debug, Clone)]
 pub struct RecipeRow {
@@ -36,6 +50,23 @@ pub struct RecipeDocument {
 }
 
 impl RecipeRow {
+    /// Convert to a typed `Recipe` (deserializes JSON fields).
+    pub fn to_recipe(&self) -> Result<Recipe, DbError> {
+        let recipe: RecipeType = serde_json::from_str(&self.recipe)
+            .map_err(|e| DbError(e.to_string()))?;
+        let equipment: Option<EquipmentType> = self.equipment.as_ref()
+            .map(|json| serde_json::from_str(json))
+            .transpose()
+            .map_err(|e| DbError(e.to_string()))?;
+        Ok(Recipe {
+            id: self.id.clone(),
+            name: self.name.clone(),
+            recipe,
+            equipment,
+            equipment_id: self.equipment_id.clone(),
+        })
+    }
+
     /// Deserialize the JSON `recipe` field into a full `RecipeDocument`.
     pub fn to_document(&self) -> Result<RecipeDocument, serde_json::Error> {
         let recipe: RecipeType = serde_json::from_str(&self.recipe)?;

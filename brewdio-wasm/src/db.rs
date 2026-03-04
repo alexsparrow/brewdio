@@ -1,6 +1,4 @@
 use std::sync::Arc;
-use serde::Serialize;
-use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 use brewdio_core::beerjson_types::{EquipmentType, RecipeType};
 use brewdio_persistence::connection_wasm::WasmConnection;
@@ -8,27 +6,6 @@ use brewdio_persistence::db;
 use brewdio_persistence::batch;
 use brewdio_persistence::equipment_profile;
 use brewdio_persistence::settings;
-
-#[derive(Serialize, Tsify)]
-#[tsify(into_wasm_abi)]
-pub struct RecipeDocumentJs {
-    pub id: String,
-    pub name: String,
-    pub recipe: RecipeType,
-    pub equipment: Option<EquipmentType>,
-    #[serde(rename = "equipmentId")]
-    pub equipment_id: Option<String>,
-}
-
-#[derive(Serialize, Tsify)]
-#[tsify(into_wasm_abi)]
-pub struct BatchDocumentJs {
-    pub id: String,
-    pub name: String,
-    #[serde(rename = "recipeId")]
-    pub recipe_id: String,
-    pub data: serde_json::Value,
-}
 
 /// Install the IndexedDB-backed persistent VFS.
 /// Must be called once before creating an AppDb with `AppDb.open(path)`.
@@ -103,57 +80,22 @@ impl AppDb {
         }
     }
 
+    // --- Recipe operations (now using typed Recipe from persistence) ---
+
     #[wasm_bindgen(js_name = "listRecipes")]
     pub fn list_recipes(&self) -> Result<JsValue, JsError> {
-        let rows = db::list_recipes(&*self.conn)
+        let recipes = db::list_recipes(&*self.conn)
             .map_err(|e| JsError::new(&e.to_string()))?;
-        let docs: Vec<serde_json::Value> = rows
-            .into_iter()
-            .filter_map(|r| {
-                let recipe: RecipeType = serde_json::from_str(&r.recipe).ok()?;
-                let equipment: Option<EquipmentType> = r.equipment.as_ref().and_then(|eq| serde_json::from_str(eq).ok());
-                let mut obj = serde_json::json!({
-                    "id": r.id,
-                    "name": r.name,
-                    "recipe": recipe,
-                });
-                if let Some(eq) = equipment {
-                    obj["equipment"] = serde_json::to_value(eq).ok()?;
-                }
-                if let Some(eid) = r.equipment_id {
-                    obj["equipmentId"] = serde_json::Value::String(eid);
-                }
-                Some(obj)
-            })
-            .collect();
-        crate::to_js(&docs).map_err(|e| JsError::new(&e.to_string()))
+        crate::to_js(&recipes).map_err(|e| JsError::new(&e.to_string()))
     }
 
     #[wasm_bindgen(js_name = "getRecipe")]
     pub fn get_recipe(&self, id: &str) -> Result<JsValue, JsError> {
-        let row = db::get_recipe(&*self.conn, id)
+        let recipe = db::get_recipe(&*self.conn, id)
             .map_err(|e| JsError::new(&e.to_string()))?;
-        match row {
-            Some(r) if !r.is_deleted => {
-                let recipe: RecipeType = serde_json::from_str(&r.recipe)
-                    .map_err(|e| JsError::new(&e.to_string()))?;
-                let equipment: Option<EquipmentType> = r.equipment.as_ref().and_then(|eq| serde_json::from_str(eq).ok());
-                let mut doc = serde_json::json!({
-                    "id": r.id,
-                    "name": r.name,
-                    "recipe": recipe,
-                });
-                if let Some(eq) = equipment {
-                    if let Ok(val) = serde_json::to_value(eq) {
-                        doc["equipment"] = val;
-                    }
-                }
-                if let Some(eid) = r.equipment_id {
-                    doc["equipmentId"] = serde_json::Value::String(eid);
-                }
-                crate::to_js(&doc).map_err(|e| JsError::new(&e.to_string()))
-            }
-            _ => Ok(JsValue::NULL),
+        match recipe {
+            Some(r) => crate::to_js(&r).map_err(|e| JsError::new(&e.to_string())),
+            None => Ok(JsValue::NULL),
         }
     }
 
@@ -189,6 +131,8 @@ impl AppDb {
         Ok(())
     }
 
+    // --- Batch operations (now using typed Batch from persistence) ---
+
     #[wasm_bindgen(js_name = "createBatch")]
     pub fn create_batch(&self, name: &str, recipe_id: &str, data: JsValue) -> Result<String, JsError> {
         let data: serde_json::Value = serde_wasm_bindgen::from_value(data)
@@ -202,41 +146,19 @@ impl AppDb {
 
     #[wasm_bindgen(js_name = "getBatch")]
     pub fn get_batch(&self, id: &str) -> Result<JsValue, JsError> {
-        let row = batch::get_batch(&*self.conn, id)
+        let b = batch::get_batch(&*self.conn, id)
             .map_err(|e| JsError::new(&e.to_string()))?;
-        match row {
-            Some(r) if !r.is_deleted => {
-                let data: serde_json::Value = serde_json::from_str(&r.data)
-                    .unwrap_or(serde_json::Value::Null);
-                let doc = serde_json::json!({
-                    "id": r.id,
-                    "name": r.name,
-                    "recipeId": r.recipe_id,
-                    "data": data,
-                });
-                crate::to_js(&doc).map_err(|e| JsError::new(&e.to_string()))
-            }
-            _ => Ok(JsValue::NULL),
+        match b {
+            Some(b) => crate::to_js(&b).map_err(|e| JsError::new(&e.to_string())),
+            None => Ok(JsValue::NULL),
         }
     }
 
     #[wasm_bindgen(js_name = "listBatches")]
     pub fn list_batches(&self) -> Result<JsValue, JsError> {
-        let rows = batch::list_batches(&*self.conn)
+        let batches = batch::list_batches(&*self.conn)
             .map_err(|e| JsError::new(&e.to_string()))?;
-        let docs: Vec<serde_json::Value> = rows
-            .into_iter()
-            .filter_map(|r| {
-                let data: serde_json::Value = serde_json::from_str(&r.data).ok()?;
-                Some(serde_json::json!({
-                    "id": r.id,
-                    "name": r.name,
-                    "recipeId": r.recipe_id,
-                    "data": data,
-                }))
-            })
-            .collect();
-        crate::to_js(&docs).map_err(|e| JsError::new(&e.to_string()))
+        crate::to_js(&batches).map_err(|e| JsError::new(&e.to_string()))
     }
 
     #[wasm_bindgen(js_name = "updateBatch")]
@@ -258,11 +180,12 @@ impl AppDb {
         Ok(())
     }
 
+    // --- Settings operations ---
+
     #[wasm_bindgen(js_name = "getSettings")]
     pub fn get_settings(&self) -> Result<JsValue, JsError> {
         let doc = settings::get_settings_document(&*self.conn)
             .map_err(|e| JsError::new(&e.to_string()))?;
-        // Serialize to serde_json::Value to produce the same camelCase JSON shape
         let data = serde_json::to_value(&doc)
             .unwrap_or(serde_json::Value::Null);
         crate::to_js(&data).map_err(|e| JsError::new(&e.to_string()))
@@ -278,19 +201,12 @@ impl AppDb {
         Ok(())
     }
 
-    // --- Equipment Profile operations ---
+    // --- Equipment Profile operations (now using typed EquipmentProfile) ---
 
     #[wasm_bindgen(js_name = "listEquipmentProfiles")]
     pub fn list_equipment_profiles(&self) -> Result<JsValue, JsError> {
-        let rows = equipment_profile::list_equipment_profiles(&*self.conn)
+        let profiles = equipment_profile::list_equipment_profiles(&*self.conn)
             .map_err(|e| JsError::new(&e.to_string()))?;
-        let profiles: Vec<serde_json::Value> = rows
-            .into_iter()
-            .filter_map(|r| {
-                let p = r.to_profile().ok()?;
-                serde_json::to_value(&p).ok()
-            })
-            .collect();
         crate::to_js(&profiles).map_err(|e| JsError::new(&e.to_string()))
     }
 

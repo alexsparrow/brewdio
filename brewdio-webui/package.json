@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -46,6 +47,7 @@
     "@tanstack/react-store": "^0.8.0",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/store": "0.8.1",
+    "@tauri-apps/api": "^2",
     "ai": "^5.0.81",
     "brewdio-wasm": "workspace:*",
     "class-variance-authority": "^0.7.1",

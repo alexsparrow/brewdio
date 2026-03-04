@@ -2,10 +2,12 @@ use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
-use axum::extract::State;
+use axum::extract::{Query, State};
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use futures_util::stream::SplitSink;
 use futures_util::{SinkExt, StreamExt};
+use serde::Deserialize;
 use tokio::sync::broadcast;
 use tokio::time::{interval, Duration};
 
@@ -13,6 +15,9 @@ use brewdio_persistence::connection::SCHEMA_VERSION;
 use brewdio_persistence::db;
 use brewdio_persistence::protocol::{DocType, SyncMessage};
 use brewdio_persistence::sync::SyncSession;
+
+use crate::auth::config::AuthConfig;
+use crate::auth::jwt::decode_token;
 
 const PEER_ID: &str = "client";
 const DIRTY_CHECK_INTERVAL: Duration = Duration::from_secs(2);
@@ -27,12 +32,30 @@ type Sessions = HashMap<(DocType, String), SyncSession>;
 pub struct ServerState {
     pub conn: Arc<Mutex<rusqlite::Connection>>,
     pub notify_tx: broadcast::Sender<(DocType, String)>,
+    pub auth_config: AuthConfig,
+}
+
+#[derive(Deserialize)]
+pub struct WsQuery {
+    token: Option<String>,
 }
 
 pub async fn ws_upgrade(
     ws: WebSocketUpgrade,
     State(state): State<ServerState>,
+    Query(query): Query<WsQuery>,
 ) -> impl IntoResponse {
+    if !state.auth_config.no_auth {
+        let token = match query.token {
+            Some(t) => t,
+            None => {
+                return (StatusCode::UNAUTHORIZED, "Missing authentication token").into_response();
+            }
+        };
+        if decode_token(&token, &state.auth_config.jwt_secret).is_err() {
+            return (StatusCode::UNAUTHORIZED, "Invalid or expired token").into_response();
+        }
+    }
     eprintln!("[server] client connected");
     ws.on_upgrade(move |socket| handle_socket(socket, state))
 }

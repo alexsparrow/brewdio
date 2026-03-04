@@ -3,7 +3,9 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import initWasm, { AppDb, initPersistentStorage } from "brewdio-wasm";
-import { initAppDb, registerChangeCallback } from "@/lib/db/app-db";
+import { initBackend, registerChangeCallback } from "@/lib/db/app-db";
+import { WasmBackend } from "@/lib/db/wasm-backend";
+import { setAppDb } from "@/lib/db/wasm-app-db";
 import { startSync } from "@/lib/sync";
 import "./index.css";
 
@@ -22,27 +24,38 @@ declare module "@tanstack/react-router" {
 
 const queryClient = new QueryClient();
 
-// Initialize WASM module, install persistent VFS, then open the database.
+const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+
 async function init() {
-  // Ensure WASM binary is loaded and initialized.
+  // WASM is always needed — calculations & static data (styles, fermentables, etc.)
   await initWasm();
 
-  try {
-    await initPersistentStorage();
-    console.log("[brewdio] Persistent storage initialized (IndexedDB VFS)");
-  } catch (e) {
-    console.warn("[brewdio] Failed to initialize persistent storage, falling back to in-memory:", e);
+  if (isTauri) {
+    // Tauri mode: native SQLite persistence via Tauri commands.
+    // DB is already opened in Tauri's setup hook (Rust side).
+    const { TauriBackend } = await import("@/lib/db/tauri-backend");
+    initBackend(new TauriBackend());
+  } else {
+    // Web mode: WASM SQLite persisted to IndexedDB
+    try {
+      await initPersistentStorage();
+      console.log("[brewdio] Persistent storage initialized (IndexedDB VFS)");
+    } catch (e) {
+      console.warn("[brewdio] Failed to initialize persistent storage, falling back to in-memory:", e);
+    }
+
+    const db = AppDb.open("brewdio.db");
+    setAppDb(db); // Store raw AppDb for WASM sync
+    initBackend(new WasmBackend(db));
   }
 
-  // Open a named database — persists to IndexedDB if VFS was installed successfully.
-  const db = AppDb.open("brewdio.db");
-  initAppDb(db);
   registerChangeCallback(queryClient);
 
   const syncServer = localStorage.getItem("brewdio_server");
   if (syncServer) startSync(syncServer);
 
-  if ("serviceWorker" in navigator) {
+  // Service worker: web only
+  if (!isTauri && "serviceWorker" in navigator) {
     navigator.serviceWorker.register("/sw.js");
   }
 
