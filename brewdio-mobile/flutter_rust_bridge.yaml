@@ -1,0 +1,4 @@
+rust_input: crate::api,crate::frb_mirrors
+dart_output: lib/src/rust
+rust_root: rust/
+build_runner: false
