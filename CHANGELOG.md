@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.8.0](https://github.com/brewdio/brewdio/compare/v0.7.1...v0.8.0) (2026-03-10)
+
+
+### Features
+
+* basic android app ([bd9d6d5](https://github.com/brewdio/brewdio/commit/bd9d6d5e58eda08bbeea906b9424856fbaadbfcf))
+* basic android app ([0eca43d](https://github.com/brewdio/brewdio/commit/0eca43d11307354bfc6c5faa5804ed074b0c6898))
+* run FRB codegen as a library ([9e28452](https://github.com/brewdio/brewdio/commit/9e284524e71c0e892c96c16f05cf17fdfebca97d))
+
+
+### Bug Fixes
+
+* build ([09f10d4](https://github.com/brewdio/brewdio/commit/09f10d47d60eef6e9c102bf27cd32d3a77b33e50))
+* flutter version ([0086b56](https://github.com/brewdio/brewdio/commit/0086b568d2f0fe12fcae74e43ece37da075e1a9f))
+* trim builds ([702a7db](https://github.com/brewdio/brewdio/commit/702a7dbd7777d5f7564d67b1d6f38f862486f361))
+
 ## [0.7.1](https://github.com/brewdio/brewdio/compare/v0.7.0...v0.7.1) (2026-03-04)
 
 
