@@ -33,3 +33,21 @@ brewdio-wasm/pkg/
 
 # Tauri auto-generated schemas
 brewdio-desktop/gen/
+
+# Devenv
+.devenv*
+devenv.local.nix
+devenv.local.yaml
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
+
+# Android (devenv emulator state, SDK local paths)
+.android/
+local.properties
+
+# devenv generated
+version

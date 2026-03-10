@@ -1,0 +1,24 @@
+[package]
+name = "brewdio_mobile"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[build-dependencies]
+syn = { version = "2.0", features = ["full", "parsing", "visit"] }
+quote = "1.0"
+prettyplease = "0.2"
+proc-macro2 = "1.0"
+
+[dependencies]
+brewdio-core = { path = "../../brewdio-core", features = ["crdt"] }
+brewdio-persistence = { path = "../../brewdio-persistence", features = ["native"], default-features = false }
+flutter_rust_bridge = "=2.11.1"
+rusqlite = { version = "0.34", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+log = "0.4"
+android_logger = "0.14"

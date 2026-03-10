@@ -1,9 +1,11 @@
 name: Release
 
+# TODO: revert — temporarily trigger on feature/android for testing build-android
 on:
   push:
     branches:
       - main
+      - feature/android
 
 permissions:
   contents: write
@@ -161,6 +163,52 @@ jobs:
           files: |
             brewdio-desktop-${{ matrix.target }}.tar.gz
             target/${{ matrix.target }}/release/bundle/appimage/*.AppImage
+
+  build-android:
+    # TODO: revert — temporarily run without release-please dependency
+    # needs: release-please
+    # if: needs.release-please.outputs.release_created
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install Rust with Android targets
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,x86_64-linux-android,armv7-linux-androideabi,i686-linux-android
+
+      - name: Install flutter_rust_bridge_codegen
+        run: cargo install flutter_rust_bridge_codegen --version '=2.11.1'
+
+      - name: Install Flutter dependencies
+        working-directory: brewdio-mobile
+        run: flutter pub get
+
+      - name: Generate Rust mirrors and FRB Dart bindings
+        working-directory: brewdio-mobile/rust
+        run: cargo build
+
+      - name: Build APK
+        working-directory: brewdio-mobile
+        run: flutter build apk --release
+
+      # TODO: revert — temporarily disabled upload
+      # - name: Upload release asset
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     tag_name: ${{ needs.release-please.outputs.tag_name }}
+      #     files: brewdio-mobile/build/app/outputs/flutter-apk/app-release.apk
 
   deploy-webui:
     needs: release-please
