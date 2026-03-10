@@ -11,6 +11,7 @@ syn = { version = "2.0", features = ["full", "parsing", "visit"] }
 quote = "1.0"
 prettyplease = "0.2"
 proc-macro2 = "1.0"
+flutter_rust_bridge_codegen = "=2.11.1"
 
 [dependencies]
 brewdio-core = { path = "../../brewdio-core", features = ["crdt"] }

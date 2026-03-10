@@ -188,9 +188,6 @@ jobs:
         with:
           targets: aarch64-linux-android,x86_64-linux-android,armv7-linux-androideabi,i686-linux-android
 
-      - name: Install flutter_rust_bridge_codegen
-        run: cargo install flutter_rust_bridge_codegen --version '=2.11.1'
-
       - name: Install Flutter dependencies
         working-directory: brewdio-mobile
         run: flutter pub get

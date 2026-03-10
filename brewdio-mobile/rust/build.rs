@@ -378,32 +378,23 @@ fn item_kind_name(item: &Item) -> &'static str {
     }
 }
 
-/// Run `flutter_rust_bridge_codegen generate` from the Flutter project root,
-/// then patch the generated Dart to fix invalid enum variant names.
+/// Run FRB codegen programmatically, then patch the generated Dart to fix
+/// invalid enum variant names, then run build_runner for freezed codegen.
 fn run_frb_codegen(manifest_dir: &PathBuf) {
     let flutter_root = manifest_dir.join("..");
 
-    // Run FRB codegen
-    let status = std::process::Command::new("flutter_rust_bridge_codegen")
-        .arg("generate")
-        .current_dir(&flutter_root)
-        .status();
+    // Run FRB codegen via library API (avoids cargo-expand conflict from shelling out)
+    let config = lib_flutter_rust_bridge_codegen::codegen::Config::from_config_file(
+        flutter_root.join("flutter_rust_bridge.yaml").to_str().unwrap(),
+    )
+    .expect("Failed to read flutter_rust_bridge.yaml")
+    .unwrap_or_default();
 
-    match status {
-        Ok(s) if s.success() => {
-            eprintln!("cargo:warning=FRB codegen: success");
-        }
-        Ok(s) => {
-            panic!(
-                "flutter_rust_bridge_codegen exited with {}",
-                s.code().unwrap_or(-1)
-            );
-        }
-        Err(e) => {
-            eprintln!("cargo:warning=FRB codegen: skipped (flutter_rust_bridge_codegen not found: {e})");
-            return;
-        }
-    }
+    let meta_config = lib_flutter_rust_bridge_codegen::codegen::MetaConfig { watch: false };
+
+    lib_flutter_rust_bridge_codegen::codegen::generate(config, meta_config)
+        .expect("FRB codegen failed");
+    eprintln!("cargo:warning=FRB codegen: success");
 
     // Patch frb_mirrors.dart: FRB v2.11.1 ignores #[frb(name)] on mirror enum
     // variants, so `_1` becomes the invalid Dart identifier `1`. Fix it to `n1`.
