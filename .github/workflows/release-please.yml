@@ -1,11 +1,9 @@
 name: Release
 
-# TODO: revert — temporarily trigger on feature/android for testing build-android
 on:
   push:
     branches:
       - main
-      - feature/android
 
 permissions:
   contents: write
@@ -165,9 +163,8 @@ jobs:
             target/${{ matrix.target }}/release/bundle/appimage/*.AppImage
 
   build-android:
-    # TODO: revert — temporarily run without release-please dependency
-    # needs: release-please
-    # if: needs.release-please.outputs.release_created
+    needs: release-please
+    if: needs.release-please.outputs.release_created
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -200,12 +197,11 @@ jobs:
         working-directory: brewdio-mobile
         run: flutter build apk --release
 
-      # TODO: revert — temporarily disabled upload
-      # - name: Upload release asset
-      #   uses: softprops/action-gh-release@v2
-      #   with:
-      #     tag_name: ${{ needs.release-please.outputs.tag_name }}
-      #     files: brewdio-mobile/build/app/outputs/flutter-apk/app-release.apk
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          files: brewdio-mobile/build/app/outputs/flutter-apk/app-release.apk
 
   deploy-webui:
     needs: release-please
